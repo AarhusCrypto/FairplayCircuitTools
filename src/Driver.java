@@ -65,7 +65,7 @@ public class Driver {
 							circuitParser.getCUDAHeader(layersOfGates));
 			eval.run();
 		}
-		//-ge inputfile circuitfile outputfile
+		//-ce inputfile circuitfile outputfile
 		else if (operation.equals(CUDA_EVALUATOR) && checkArgs(args, 4)){
 			
 			inputFile = new File(args[1]);

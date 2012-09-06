@@ -1,4 +1,4 @@
-
+//TODO Check this and the evaluator, the problem must be here
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -66,7 +66,6 @@ public class FairplayCircuitConverter implements Runnable {
 	public List<List<Gate>> getLayersOfGates(List<Gate> gates) {
 		List<List<Gate>> layersOfGates = new ArrayList<List<Gate>>();
 		initMaps(gates);
-		removeBlankWires(gates);
 
 		int totalNumberOfInputs = circuitParser.getTotalNumberOfInputs();
 		/*
@@ -116,71 +115,6 @@ public class FairplayCircuitConverter implements Runnable {
 			leftMap.put(g.getLeftWireIndex(), g);
 			rightMap.put(g.getRightWireIndex(), g);
 			outputMap.put(g.getOutputWireIndex(), g);
-		}
-	}
-
-	/**
-	 * Assumes the inputFile is not sorted by outputWire. If this is the case,
-	 * this code can be greatly optimized.
-	 * @param gates
-	 */
-	@SuppressWarnings("unchecked")
-	private void removeBlankWires(List<Gate> gates){
-
-		// false means blank
-		boolean[] blankWires = circuitParser.getBlankWires();
-		int numberOfWires = circuitParser.getOriginalNumberOfWires();
-
-		// Runs from top to bottom, decrementing the appropriate wires
-		// Is a bit funky since we cannot guarantee the input circuit
-		// is sorted by output wires
-		for(int i =  numberOfWires - 1; i >= 0; i--){
-			boolean b = blankWires[i];
-			if(!b){
-				for(int j = i; j < numberOfWires; j++){
-					Gate outputG = outputMap.get(j);
-					if (outputG != null){
-						outputG.setOutputWireIndex(outputG.getOutputWireIndex() - 1);
-					}
-
-					Collection<Gate> leftWires = leftMap.getCollection(j);
-					if (leftWires != null){
-						for(Gate leftG: leftWires){
-							leftG.setLeftWireIndex(leftG.getLeftWireIndex() - 1);
-						}
-					}
-
-					Collection<Gate> rightWires = rightMap.getCollection(j);
-					if (rightWires != null){
-						for(Gate rightG: rightWires){
-							rightG.setRightWireIndex(rightG.getRightWireIndex() - 1);
-						}
-					}
-				}
-
-				/*
-				 * Should be used if the circuit is sorted by output gate
-				 */
-				//				java.util.ListIterator<Gate> iterator = 
-				//						gates.listIterator(gates.size());
-				//
-				//				while(iterator.hasPrevious()) {
-				//					Gate g = iterator.previous();
-				//					int leftIndex = g.getLeftWireIndex();
-				//					int rightIndex = g.getRightWireIndex();
-				//					int outputIndex = g.getOutputWireIndex();
-				//
-				//					if(leftIndex > i){
-				//						g.setLeftWireIndex(leftIndex - 1);
-				//					}
-				//					if(rightIndex > i){
-				//						g.setRightWireIndex(rightIndex - 1);
-				//					}
-				//					if(outputIndex > i){
-				//						g.setOutputWireIndex(outputIndex - 1);
-				//					}
-				//				}
-			}
 		}
 	}
 

@@ -6,8 +6,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+
+import org.apache.commons.collections.map.MultiValueMap;
 
 
 public class FairplayCircuitParser {
@@ -20,7 +24,6 @@ public class FairplayCircuitParser {
 	private int numberOfNonXORGates;
 	private int totalNumberOfInputs;
 	
-	private String firstHeader;
 	private String secondHeader;
 
 	public FairplayCircuitParser(File circuitFile){
@@ -30,6 +33,7 @@ public class FairplayCircuitParser {
 	/**
 	 * @return A list of gates in the given circuitFile
 	 */
+	@SuppressWarnings("unchecked")
 	public List<Gate> getGates() {
 		boolean counter = false;
 		ArrayList<Gate> res = new ArrayList<Gate>();
@@ -46,10 +50,8 @@ public class FairplayCircuitParser {
 				 * Parse meta-data info
 				 */
 				if(line.matches("[0-9]* [0-9]*")){
-					firstHeader = line;
 					String[] sizeInfo = line.split(" ");
 					originalNumberOfWires = Integer.parseInt(sizeInfo[1]);
-					blankWires = new boolean[originalNumberOfWires];
 					counter = true;
 					continue;
 				}
@@ -72,9 +74,6 @@ public class FairplayCircuitParser {
 				 * Parse each gate line and count numberOfNonXORGates
 				 */
 				Gate g = new Gate(line);
-				blankWires[g.getLeftWireIndex()] = true;
-				blankWires[g.getRightWireIndex()] = true;
-				blankWires[g.getOutputWireIndex()] = true;
 				
 				if (!g.isXOR()){
 					g.setGateNumber(numberOfNonXORGates);
@@ -85,6 +84,60 @@ public class FairplayCircuitParser {
 			fbr.close();
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+		int greatestGateNumber = 0;
+		for(Gate g: res){
+			greatestGateNumber = Math.max(greatestGateNumber, g.getLeftWireIndex());
+			greatestGateNumber = Math.max(greatestGateNumber, g.getRightWireIndex());
+			greatestGateNumber = Math.max(greatestGateNumber, g.getOutputWireIndex());
+		}
+		
+		blankWires = new boolean[greatestGateNumber + 1];
+		for(Gate g: res){
+			blankWires[g.getLeftWireIndex()] = true;
+			blankWires[g.getRightWireIndex()] = true;
+			blankWires[g.getOutputWireIndex()] = true;			
+		}
+
+
+		MultiValueMap leftMap = new MultiValueMap();
+		MultiValueMap rightMap = new MultiValueMap();
+		HashMap<Integer, Gate> outputMap = new HashMap<Integer, Gate>();
+		
+		for(Gate g: res){
+			leftMap.put(g.getLeftWireIndex(), g);
+			rightMap.put(g.getRightWireIndex(), g);
+			outputMap.put(g.getOutputWireIndex(), g);
+		}
+		
+		// false means blank
+		// Runs from top to bottom, decrementing the appropriate wires
+		// Is a bit funky since we cannot guarantee the input circuit
+		// is sorted by output wires
+		for(int i =  originalNumberOfWires - 1; i >= 0; i--){
+			boolean b = blankWires[i];
+			if(!b){
+				for(int j = i; j <= originalNumberOfWires; j++){
+					Gate outputG = outputMap.get(j);
+					if (outputG != null){
+						outputG.setOutputWireIndex(outputG.getOutputWireIndex() - 1);
+					}
+
+					Collection<Gate> leftWires = leftMap.getCollection(j);
+					if (leftWires != null){
+						for(Gate leftG: leftWires){
+							leftG.setLeftWireIndex(leftG.getLeftWireIndex() - 1);
+						}
+					}
+
+					Collection<Gate> rightWires = rightMap.getCollection(j);
+					if (rightWires != null){
+						for(Gate rightG: rightWires){
+							rightG.setRightWireIndex(rightG.getRightWireIndex() - 1);
+						}
+					}
+				}
+			}
 		}
 
 		return res;
@@ -114,11 +167,6 @@ public class FairplayCircuitParser {
 	public String[] getNewFairplayHeader(List<Gate> augCircuit){
 		String[] res = new String[2];
 		
-		
-		String[] split = firstHeader.split(" ");
-		System.out.println(split[0]);
-		System.out.println(split[1]);
-		
 		List<List<Gate>> wrapList = new ArrayList<List<Gate>>();
 		wrapList.add(augCircuit);
 		int totalNumberOfWires = 
@@ -141,16 +189,8 @@ public class FairplayCircuitParser {
 		return totalNumberOfInputs;
 	}
 	
-	public boolean[] getBlankWires(){
-		return blankWires;
-	}
-	
 	public int getNumberOfAliceInputs(){
 		return numberOfAliceInputs;
-	}
-	
-	public int getOriginalNumberOfWires(){
-		return originalNumberOfWires;
 	}
 
 	/**
@@ -168,5 +208,4 @@ public class FairplayCircuitParser {
 		}
 		return hs.size();
 	}
-
 }

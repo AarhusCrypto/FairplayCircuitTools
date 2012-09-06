@@ -8,7 +8,7 @@ import static org.junit.Assert.*;
 
 public class AllTests {
 
-	//@Test
+	@Test
 	public void assertCircuitEvaluator(){
 		File inputFile = new File("test/data/input0.bin");
 		File outputFile = new File("data/out.bin");
@@ -33,7 +33,7 @@ public class AllTests {
 		assertTrue(res);
 	}
 
-	//@Test
+	@Test
 	public void assertAESCircuitConverted() {
 
 		File circuitFile = new File("test/data/aes_fairplay.txt");
@@ -97,7 +97,7 @@ public class AllTests {
 			} catch (IOException e) {
 			}
 		}
-		circuitOutputFile.delete();
+//		circuitOutputFile.delete();
 		assertTrue("The converted circuit did not evaluate correctly", 
 				res);
 	}
