@@ -15,7 +15,7 @@ public class FairplayCircuitParser {
 	private File circuitFile;
 	private int originalNumberOfWires;
 	private boolean[] blankWires;
-	private int numberOfP1Inputs;
+	private int numberOfAliceInputs;
 	private int numberOfBobInputs;
 	private int numberOfNonXORGates;
 	private int totalNumberOfInputs;
@@ -60,9 +60,9 @@ public class FairplayCircuitParser {
 				if (counter == true){
 					secondHeader = line;
 					String[] split = line.split(" ");
-					numberOfP1Inputs = Integer.parseInt(split[0]);
+					numberOfAliceInputs = Integer.parseInt(split[0]);
 					numberOfBobInputs = Integer.parseInt(split[1]);
-					totalNumberOfInputs = numberOfP1Inputs +
+					totalNumberOfInputs = numberOfAliceInputs +
 							numberOfBobInputs;
 					counter = false;
 					continue;
@@ -111,15 +111,20 @@ public class FairplayCircuitParser {
 		
 	}
 	
-	public String[] getNewFairplayHeader(int sizeOfCircuit, int nonXORGatesAdded){
+	public String[] getNewFairplayHeader(List<Gate> augCircuit){
 		String[] res = new String[2];
 		
 		
 		String[] split = firstHeader.split(" ");
-		int numberOfNonXORGates = Integer.parseInt(split[1]);
-		int totalNumberOfNonXORGates = numberOfNonXORGates+ nonXORGatesAdded;
+		System.out.println(split[0]);
+		System.out.println(split[1]);
 		
-		res[0] = sizeOfCircuit + " " +  totalNumberOfNonXORGates;
+		List<List<Gate>> wrapList = new ArrayList<List<Gate>>();
+		wrapList.add(augCircuit);
+		int totalNumberOfWires = 
+				getActualWireCount(wrapList);
+		
+		res[0] = augCircuit.size() + " " +  totalNumberOfWires;
 		
 		String[] inputOutputInfo = secondHeader.split(" ");
 		int newAliceInput = Integer.parseInt(inputOutputInfo[0]) *2;
@@ -140,8 +145,8 @@ public class FairplayCircuitParser {
 		return blankWires;
 	}
 	
-	public int getNumberOfP1Inputs(){
-		return numberOfP1Inputs;
+	public int getNumberOfAliceInputs(){
+		return numberOfAliceInputs;
 	}
 	
 	public int getOriginalNumberOfWires(){

@@ -16,7 +16,7 @@ public class Gate {
 
 	public Gate(String s){
 
-		//Example string: 2 1 96 99 256 0110 
+		//Example string: 2 1 96 99 256 0110
 		String[] split = s.split(" ");
 		counter = numberOfInputWires;
 		time = -1;

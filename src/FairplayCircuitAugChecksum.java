@@ -46,7 +46,7 @@ public class FairplayCircuitAugChecksum implements Runnable {
 	private List<Gate> getAugGates(int numberOfStandardInputs) {
 
 		List<Gate> res = new ArrayList<Gate>();
-		int t_a = circuitParser.getNumberOfP1Inputs();
+		int t_a = circuitParser.getNumberOfAliceInputs();
 		int totalInputSize = numberOfStandardInputs * 2;
 		int gateNumber = 0;
 		int r = totalInputSize - t_a;
@@ -180,8 +180,7 @@ public class FairplayCircuitAugChecksum implements Runnable {
 		try {
 			fbw = new BufferedWriter(new OutputStreamWriter(
 					new FileOutputStream(outputFile), Charset.defaultCharset()));
-			String[] headers = circuitParser.getNewFairplayHeader(augCircuit.size(),
-					numberOfNonXORGatesAdded);
+			String[] headers = circuitParser.getNewFairplayHeader(augCircuit);
 			fbw.write(headers[0]);
 			fbw.newLine();
 			fbw.write(headers[1]);
