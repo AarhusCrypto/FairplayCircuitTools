@@ -1,4 +1,5 @@
 
+
 public class Gate {
 
 	private static final int numberOfInputWires = 2;

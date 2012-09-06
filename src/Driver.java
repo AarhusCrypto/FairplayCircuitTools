@@ -1,3 +1,4 @@
+
 import java.io.File;
 import java.util.List;
 
@@ -17,8 +18,6 @@ public class Driver {
 		File inputFile = null;
 		File circuitFile = null;
 		File outputFile = null;
-		boolean timed = false;
-		boolean verify = true; //Debug purposes, change to true to check AES on known output
 		boolean sorted = false;
 		
 		String operation = args[0];
@@ -28,7 +27,7 @@ public class Driver {
 			outputFile = new File(args[2]);
 			FairplayCircuitParser circuitParser = new FairplayCircuitParser(circuitFile);
 			FairplayCircuitConverter circuitConverter = new FairplayCircuitConverter(
-					circuitParser, outputFile, timed, sorted);
+					circuitParser, outputFile, sorted);
 			circuitConverter.run();
 			
 		}
@@ -56,14 +55,14 @@ public class Driver {
 					new FairplayCircuitParser(circuitFile);
 			FairplayCircuitConverter circuitConverter = 
 					new FairplayCircuitConverter(circuitParser, outputFile, 
-							false, false);
+							false);
 			List<Gate> gates = circuitParser.getGates();
 			List<List<Gate>> layersOfGates = 
 					circuitConverter.getLayersOfGates(gates);
 			
 			CircuitEvaluator eval = 
 					new CircuitEvaluator(inputFile, outputFile, layersOfGates, 
-							circuitParser.getCUDAHeader(layersOfGates), verify);
+							circuitParser.getCUDAHeader(layersOfGates));
 			eval.run();
 		}
 		//-ge inputfile circuitfile outputfile
@@ -75,7 +74,7 @@ public class Driver {
 			CUDACircuitParser circuitParser = new CUDACircuitParser(circuitFile);
 			CircuitEvaluator eval = new CircuitEvaluator(
 					inputFile, outputFile, circuitParser.getGates(), 
-					circuitParser.getCUDAHeader(), verify);
+					circuitParser.getCUDAHeader());
 			eval.run();
 		}
 		else {

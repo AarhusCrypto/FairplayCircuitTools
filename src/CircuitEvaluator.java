@@ -1,3 +1,4 @@
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -17,7 +18,6 @@ public class CircuitEvaluator implements Runnable {
 	private static final int BYTESIZE = 8;
 	private File inputFile;
 	private File outputFile;
-	private boolean verify;
 	private List<List<Gate>> layersOfGates;
 
 	private int inputSize;
@@ -32,10 +32,9 @@ public class CircuitEvaluator implements Runnable {
 	 * @param parseStrategy
 	 */
 	public CircuitEvaluator(File inputFile, File outputFile,
-			List<List<Gate>> layersOfGates, String header, boolean verify){
+			List<List<Gate>> layersOfGates, String header){
 		this.inputFile = inputFile;
 		this.outputFile = outputFile;
-		this.verify = verify;
 		this.layersOfGates = layersOfGates;
 		
 		String[] split = header.split(" ");
@@ -60,9 +59,6 @@ public class CircuitEvaluator implements Runnable {
 
 		writeCircuitOutput(result);
 
-		if (verify){
-			verifyOutput();
-		}
 	}
 
 	/**

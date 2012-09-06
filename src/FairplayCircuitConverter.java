@@ -1,3 +1,4 @@
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -20,7 +21,6 @@ public class FairplayCircuitConverter implements Runnable {
 	private static final int NEW_LAYER_THRESHOLD = 0;
 
 	private File outputFile;
-	private boolean timed;
 	private boolean sorted;
 
 	private MultiValueMap leftMap;
@@ -34,9 +34,8 @@ public class FairplayCircuitConverter implements Runnable {
 	 * @param outputFile
 	 */
 	public FairplayCircuitConverter(FairplayCircuitParser circuitParser, File outputFile,
-			boolean timed, boolean sorted) {
+			boolean sorted) {
 		this.outputFile = outputFile;
-		this.timed = timed;
 		this.sorted = sorted;
 		this.circuitParser = circuitParser;
 
@@ -47,8 +46,6 @@ public class FairplayCircuitConverter implements Runnable {
 
 	@Override
 	public void run() {
-		long startTime = System.currentTimeMillis();
-
 		List<Gate> gates = circuitParser.getGates();
 
 		List<List<Gate>> layersOfGates = getLayersOfGates(gates);
@@ -58,12 +55,6 @@ public class FairplayCircuitConverter implements Runnable {
 		}
 
 		writeOutput(layersOfGates);
-
-		if(timed == true){
-			System.out.println("The converting took: " +
-					((System.currentTimeMillis() - startTime)) + " sec");
-		}
-
 	}
 
 	/**
