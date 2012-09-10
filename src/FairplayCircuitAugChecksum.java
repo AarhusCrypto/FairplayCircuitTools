@@ -134,6 +134,7 @@ public class FairplayCircuitAugChecksum implements Runnable {
 		List<Gate> res = new ArrayList<Gate>();
 		int incNumber = numberOfAddedGates + numberOfInputs;
 		int numberOfAliceInputs = numberOfInputs/2;
+		
 		for(Gate g: parsedGates){
 			int leftWireIndex = g.getLeftWireIndex();
 			int rightWireIndex = g.getRightWireIndex();
@@ -152,11 +153,11 @@ public class FairplayCircuitAugChecksum implements Runnable {
 			}
 					
 			// Increment wires with new gate size
-			if(leftWireIndex > numberOfInputs - 1){
+			if(leftWireIndex > numberOfInputs){
 				int newIndex = leftWireIndex + incNumber;
 				g.setLeftWireIndex(newIndex);
 			}
-			if(rightWireIndex > numberOfInputs - 1){
+			if(rightWireIndex > numberOfInputs){
 				int newIndex = rightWireIndex + incNumber;
 				g.setRightWireIndex(newIndex);
 			}

@@ -23,7 +23,7 @@ public class FairplayCircuitParser {
 	private int numberOfBobInputs;
 	private int numberOfNonXORGates;
 	private int totalNumberOfInputs;
-	
+
 	private String secondHeader;
 
 	public FairplayCircuitParser(File circuitFile){
@@ -74,7 +74,7 @@ public class FairplayCircuitParser {
 				 * Parse each gate line and count numberOfNonXORGates
 				 */
 				Gate g = new Gate(line);
-				
+
 				if (!g.isXOR()){
 					g.setGateNumber(numberOfNonXORGates);
 					numberOfNonXORGates++;
@@ -85,31 +85,21 @@ public class FairplayCircuitParser {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		int greatestGateNumber = 0;
-		for(Gate g: res){
-			greatestGateNumber = Math.max(greatestGateNumber, g.getLeftWireIndex());
-			greatestGateNumber = Math.max(greatestGateNumber, g.getRightWireIndex());
-			greatestGateNumber = Math.max(greatestGateNumber, g.getOutputWireIndex());
-		}
-		
-		blankWires = new boolean[greatestGateNumber + 1];
-		for(Gate g: res){
-			blankWires[g.getLeftWireIndex()] = true;
-			blankWires[g.getRightWireIndex()] = true;
-			blankWires[g.getOutputWireIndex()] = true;			
-		}
-
-
 		MultiValueMap leftMap = new MultiValueMap();
 		MultiValueMap rightMap = new MultiValueMap();
 		HashMap<Integer, Gate> outputMap = new HashMap<Integer, Gate>();
+		blankWires = new boolean[originalNumberOfWires];
 		
 		for(Gate g: res){
 			leftMap.put(g.getLeftWireIndex(), g);
 			rightMap.put(g.getRightWireIndex(), g);
 			outputMap.put(g.getOutputWireIndex(), g);
+			blankWires[g.getLeftWireIndex()] = true;
+			blankWires[g.getRightWireIndex()] = true;
+			blankWires[g.getOutputWireIndex()] = true;		
 		}
-		
+
+		// We now strip the blank wires
 		// false means blank
 		// Runs from top to bottom, decrementing the appropriate wires
 		// Is a bit funky since we cannot guarantee the input circuit
@@ -142,7 +132,7 @@ public class FairplayCircuitParser {
 
 		return res;
 	}
-	
+
 	public String getCUDAHeader(List<List<Gate>> layersOfGates){
 		int totalNumberOfOutputs = totalNumberOfInputs/2;
 		int numberOfWires = getActualWireCount(layersOfGates);
@@ -156,39 +146,39 @@ public class FairplayCircuitParser {
 		for(List<Gate> l: layersOfGates){
 			maxLayerWidth = Math.max(maxLayerWidth, l.size());
 		}
-		
+
 		return totalNumberOfInputs + " " + totalNumberOfOutputs + " " +
 		numberOfWires + " " + numberOfLayers + " " + maxLayerWidth + " " +
 		numberOfNonXORGates;
-		
-		
+
+
 	}
-	
+
 	public String[] getNewFairplayHeader(List<Gate> augCircuit){
 		String[] res = new String[2];
-		
+
 		List<List<Gate>> wrapList = new ArrayList<List<Gate>>();
 		wrapList.add(augCircuit);
 		int totalNumberOfWires = 
 				getActualWireCount(wrapList);
-		
+
 		res[0] = augCircuit.size() + " " +  totalNumberOfWires;
-		
+
 		String[] inputOutputInfo = secondHeader.split(" ");
 		int newAliceInput = Integer.parseInt(inputOutputInfo[0]) *2;
 		int newBobInput = Integer.parseInt(inputOutputInfo[1]) *2;
 		int newOutput = Integer.parseInt(inputOutputInfo[1]) *2;
-		
+
 		res[1] = newAliceInput + " " + newBobInput + " " + inputOutputInfo[4] + " " +
-		newOutput;
-		
+				newOutput;
+
 		return res;
 	}
 
 	public int getTotalNumberOfInputs(){
 		return totalNumberOfInputs;
 	}
-	
+
 	public int getNumberOfAliceInputs(){
 		return numberOfAliceInputs;
 	}

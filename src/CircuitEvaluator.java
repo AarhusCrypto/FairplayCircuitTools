@@ -22,7 +22,6 @@ public class CircuitEvaluator implements Runnable {
 
 	private int inputSize;
 	private int outputSize;
-	@SuppressWarnings("unused")
 	private int numberOfWires;
 
 	/**
@@ -47,6 +46,7 @@ public class CircuitEvaluator implements Runnable {
 	@Override
 	public void run() {
 		if(inputFile.length() != inputSize/BYTESIZE){
+			
 			System.out.println("Input mismatch, check inputfile");
 			return;
 		}
@@ -108,10 +108,8 @@ public class CircuitEvaluator implements Runnable {
 			evals.put(i, inputs.get(i));
 		}
 
-		int maxGateNumber = 0;
 		for(List<Gate> layer: layersOfGates){
 			for(Gate g: layer){
-				maxGateNumber = Math.max(maxGateNumber, g.getOutputWireIndex());
 				String gate = g.getGate();
 				char[] gateArray = gate.toCharArray();
 
@@ -166,12 +164,11 @@ public class CircuitEvaluator implements Runnable {
 			}
 		}
 		int outputCounter = outputSize;
-		for(int i = maxGateNumber; outputCounter > 0; i--){
+		for(int i = numberOfWires - 1; outputCounter > 0; i--){
 			boolean res;
 			if (evals.containsKey(i)){
 				 res = evals.get(i);
-				 outputCounter--;
-				 result.set(outputCounter, res);
+				 result.set(--outputCounter, res);
 			}
 			else {
 				continue;

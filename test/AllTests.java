@@ -54,7 +54,7 @@ public class AllTests {
 	public void assertAESCircuitAugChecksum(){
 
 		File circuitFile = new File("test/data/aes_fairplay.txt");
-		File circuitOutputFile = new File("data/tmp.txt");
+		File circuitOutputFile = new File("data/aug_aes_fairplay.txt");
 		
 		FairplayCircuitParser circuitParser = 
 				new FairplayCircuitParser(circuitFile);
@@ -63,16 +63,17 @@ public class AllTests {
 		ac.run();
 		
 
-		File convertedCircuitFile = new File("data/cuda_tmp.txt");
 		circuitParser = 
 				new FairplayCircuitParser(circuitOutputFile);
 		
+		File convertedCircuit =new File("data/aug_aes_cuda.txt");
 		FairplayCircuitConverter circuitConverter = 
 				new FairplayCircuitConverter(circuitParser, 
-						convertedCircuitFile, false);
+						convertedCircuit, false);
 		circuitConverter.run();
 		
-		checkWithEvaluator(convertedCircuitFile);
+		checkWithEvaluator(convertedCircuit, 
+				new File("test/data/aug_aes_input.bin"));
 	}
 	
 	private void checkWithEvaluator(File circuitOutputFile){
@@ -97,7 +98,29 @@ public class AllTests {
 			} catch (IOException e) {
 			}
 		}
-//		circuitOutputFile.delete();
+		circuitOutputFile.delete();
+		assertTrue("The converted circuit did not evaluate correctly", 
+				res);
+	}
+	
+	private void checkWithEvaluator(File circuitOutputFile, File inputFile){
+		boolean res = true;
+			File outputFile = new File("data/out.bin");
+			CUDACircuitParser cudaCircuitParser = 
+					new CUDACircuitParser(circuitOutputFile);
+			CircuitEvaluator eval = new CircuitEvaluator(
+					inputFile, outputFile, cudaCircuitParser.getGates(), 
+					cudaCircuitParser.getCUDAHeader());
+			eval.run();
+
+			File expectedResultFile = new File("test/data/expected0.bin");
+			try {
+				res = res && FileUtils.contentEquals(expectedResultFile, 
+						outputFile);
+				outputFile.delete();
+			} catch (IOException e) {
+			}
+		circuitOutputFile.delete();
 		assertTrue("The converted circuit did not evaluate correctly", 
 				res);
 	}
