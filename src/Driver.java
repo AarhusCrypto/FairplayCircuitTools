@@ -7,6 +7,7 @@ public class Driver {
 
 	private static final String FAIRPLAY_CONVERT_TO_CUDA = "-fc";
 	private static final String AUG_CHECKSUM = "-ac";
+	private static final String AUG_MULTI_OUTPUT = "-am";
 	private static final String FAIRPLAY_EVALUATOR = "-fe";
 	private static final String CUDA_EVALUATOR = "-ce";
 	
@@ -41,7 +42,17 @@ public class Driver {
 			FairplayCircuitAugChecksum ac = new FairplayCircuitAugChecksum(circuitParser, 
 					outputFile);
 			ac.run();
+		}
+		//-am circuitfile outputfile
+		else if (operation.equals(AUG_MULTI_OUTPUT) && checkArgs(args, 3)){
+			checkArgs(args, 3);
+			circuitFile = new File(args[1]);
+			outputFile = new File(args[2]);
 			
+			FairplayCircuitParser circuitParser = new FairplayCircuitParser(circuitFile);
+			FairplayCircuitAugMultipleOutputs am = 
+					new FairplayCircuitAugMultipleOutputs(circuitParser, outputFile);
+			am.run();
 		}
 		
 		//-fe inputfile circuitfile outputfile
@@ -83,34 +94,10 @@ public class Driver {
 					"use one of the following prefixes for your invoke:");
 			System.out.println(FAIRPLAY_CONVERT_TO_CUDA + ": Fairplay to CUDA format");
 			System.out.println(AUG_CHECKSUM + ": Fairplay checkum augmentation");
+			System.out.println(AUG_MULTI_OUTPUT + ": Fairplay multi output augmentation");
 			System.out.println(FAIRPLAY_EVALUATOR + ": Fairplay evaluation");
 			System.out.println(CUDA_EVALUATOR + ": CUDA evaluation");
 		}
-				
-		
-
-//		for(int param = 0; param < args.length; param++){
-//			if (inputFilename == null) {
-//				inputFilename = args[param];
-//			}
-//			else if (circuitFilename == null){
-//				circuitFilename = args[param];
-//			}
-//			else if (outputFilename == null) {
-//				outputFilename = args[param];
-//			}
-//			else if (args[param].equals("-f")){
-//				parseStrategy = 
-//						new FairplayCompilerParseImpl<Gate>(circuitFilename);
-//			}
-//			else if (args[param].equals("-v")){
-//				verify = true;
-//			}
-//
-//			else System.out.println("Unparsed: " + args[param]); 
-//		}
-//
-//	}
 	}
 
 

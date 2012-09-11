@@ -19,8 +19,10 @@ public class FairplayCircuitParser {
 	private File circuitFile;
 	private int originalNumberOfWires;
 	private boolean[] blankWires;
-	private int numberOfAliceInputs;
-	private int numberOfBobInputs;
+	private int numberOfP1Inputs;
+	private int numberOfP2Inputs;
+	private int numberOfP1Outputs;
+	private int numberOfP2Outputs;
 	private int numberOfNonXORGates;
 	private int totalNumberOfInputs;
 
@@ -61,11 +63,15 @@ public class FairplayCircuitParser {
 				 */
 				if (counter == true){
 					secondHeader = line;
-					String[] split = line.split(" ");
-					numberOfAliceInputs = Integer.parseInt(split[0]);
-					numberOfBobInputs = Integer.parseInt(split[1]);
-					totalNumberOfInputs = numberOfAliceInputs +
-							numberOfBobInputs;
+					
+					String[] split = getHeaderArray(line);
+
+					numberOfP1Inputs = Integer.parseInt(split[0]);
+					numberOfP2Inputs = Integer.parseInt(split[1]);
+					numberOfP1Outputs = Integer.parseInt(split[2]);
+					numberOfP2Outputs = Integer.parseInt(split[3]);
+					totalNumberOfInputs = numberOfP1Inputs +
+							numberOfP2Inputs;
 					counter = false;
 					continue;
 				}
@@ -135,7 +141,7 @@ public class FairplayCircuitParser {
 
 	public String getCUDAHeader(List<List<Gate>> layersOfGates){
 		int totalNumberOfOutputs = totalNumberOfInputs/2;
-		int numberOfWires = getActualWireCount(layersOfGates);
+		int actualNumberOfWires = getActualWireCount(layersOfGates);
 		int numberOfLayers = layersOfGates.size();
 
 		int maxLayerWidth = 0;
@@ -148,7 +154,7 @@ public class FairplayCircuitParser {
 		}
 
 		return totalNumberOfInputs + " " + totalNumberOfOutputs + " " +
-		numberOfWires + " " + numberOfLayers + " " + maxLayerWidth + " " +
+		actualNumberOfWires + " " + numberOfLayers + " " + maxLayerWidth + " " +
 		numberOfNonXORGates;
 
 
@@ -179,8 +185,51 @@ public class FairplayCircuitParser {
 		return totalNumberOfInputs;
 	}
 
-	public int getNumberOfAliceInputs(){
-		return numberOfAliceInputs;
+	public int getNumberOfP1Inputs(){
+		return numberOfP1Inputs;
+	}
+	
+	public int getNumberOfP2Inputs(){
+		return numberOfP2Inputs;
+	}
+	
+	public int getNumberOfP1Outputs(){
+		return numberOfP1Outputs;
+	}
+	
+	public int getNumberOfP2Outputs(){
+		return numberOfP2Outputs;
+	}
+	
+	private String[] getHeaderArray(String line){
+		char[] lineArray = line.toCharArray();
+		String tmp = "";
+		String[] split = new String[line.length()/2]; //Cannot be greater
+		int i = 0;
+		// We here build all the strings to go into our array, if we meet a
+		// ' ' we stop and store our accumulated string in the array.
+		for(char c: lineArray){
+			if (c != ' '){
+				tmp += c;
+			}
+			else {
+				if(!tmp.equals("")){
+				split[i++] = tmp;
+				tmp = "";
+				}
+			}
+		}
+		// We check if there is something left in tmp
+		if(!tmp.equals("")){
+			split[i++] = tmp;
+		}
+		// Finally we fill the built strings into an array of exact size.
+		String[] res = new String[i];
+		for(int j = 0; j < i; j++){
+			res[j] = split[j];
+		}
+		
+		return res;
 	}
 
 	/**

@@ -14,7 +14,7 @@ public class FairplayCircuitAugChecksum implements Runnable {
 	private File outputFile;
 	private FairplayCircuitParser circuitParser;
 	private int numberOfNonXORGatesAdded;
-	private int largestOutputGate;
+	private int largestOutputWire;
 	private List<Gate> outputGates;
 
 	public FairplayCircuitAugChecksum(FairplayCircuitParser circuitParser, File outputFile){
@@ -22,7 +22,7 @@ public class FairplayCircuitAugChecksum implements Runnable {
 		this.circuitParser = circuitParser;
 		outputGates = new ArrayList<Gate>();
 		numberOfNonXORGatesAdded = 0;
-		largestOutputGate = 0;
+		largestOutputWire = 0;
 	}
 
 	@Override
@@ -46,7 +46,7 @@ public class FairplayCircuitAugChecksum implements Runnable {
 	private List<Gate> getAugGates(int numberOfStandardInputs) {
 
 		List<Gate> res = new ArrayList<Gate>();
-		int t_a = circuitParser.getNumberOfAliceInputs();
+		int t_a = circuitParser.getNumberOfP1Inputs();
 		int totalInputSize = numberOfStandardInputs * 2;
 		int gateNumber = 0;
 		int r = totalInputSize - t_a;
@@ -166,7 +166,7 @@ public class FairplayCircuitAugChecksum implements Runnable {
 			//Outputwires should always be incremented
 			int newIndex = g.getOutputWireIndex() + incNumber;
 			g.setOutputWireIndex(newIndex);
-			largestOutputGate = Math.max(largestOutputGate, g.getOutputWireIndex());
+			largestOutputWire = Math.max(largestOutputWire, g.getOutputWireIndex());
 			res.add(g);
 		}
 		return res;
@@ -205,7 +205,7 @@ public class FairplayCircuitAugChecksum implements Runnable {
 	}
 
 	private List<Gate> getOutputGates(){
-		int startIndex = largestOutputGate + 1;
+		int startIndex = largestOutputWire + 1;
 		for(Gate g: outputGates){
 			g.setOutputWireIndex(startIndex);
 			startIndex++;

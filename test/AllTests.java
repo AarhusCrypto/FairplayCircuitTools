@@ -37,7 +37,7 @@ public class AllTests {
 	public void assertAESCircuitConverted() {
 
 		File circuitFile = new File("test/data/aes_fairplay.txt");
-		File circuitOutputFile = new File("data/tmp.txt");
+		File circuitOutputFile = new File("data/aes_cuda.txt");
 
 		FairplayCircuitParser circuitParser = 
 				new FairplayCircuitParser(circuitFile);
@@ -66,11 +66,12 @@ public class AllTests {
 		circuitParser = 
 				new FairplayCircuitParser(circuitOutputFile);
 		
-		File convertedCircuit =new File("data/aug_aes_cuda.txt");
+		File convertedCircuit = new File("data/aug_aes_cuda.txt");
 		FairplayCircuitConverter circuitConverter = 
 				new FairplayCircuitConverter(circuitParser, 
 						convertedCircuit, false);
 		circuitConverter.run();
+		circuitOutputFile.delete();
 		
 		checkWithEvaluator(convertedCircuit, 
 				new File("test/data/aug_aes_input.bin"));
