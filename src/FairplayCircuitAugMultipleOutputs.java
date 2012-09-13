@@ -1,8 +1,5 @@
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 
 
@@ -13,7 +10,7 @@ public class FairplayCircuitAugMultipleOutputs implements Runnable {
 	private List<Gate> outputGates;
 	private int numberOfNonXORGatesAdded;
 	private int largestOutputWire = 0;
-	
+
 	public FairplayCircuitAugMultipleOutputs(FairplayCircuitParser circuitParser,
 			File outputFile){
 		this.circuitParser = circuitParser;
@@ -22,90 +19,91 @@ public class FairplayCircuitAugMultipleOutputs implements Runnable {
 		numberOfNonXORGatesAdded = 0;
 		largestOutputWire = 0;
 	}
-	
+
 	@Override
 	public void run() {
 		List<Gate> parsedGates = circuitParser.getGates();
+
 		
 		int n1 = circuitParser.getNumberOfP1Inputs();
 		int n2 = circuitParser.getNumberOfP2Inputs();
 		int m1 = circuitParser.getNumberOfP1Outputs();
 		int m2 = circuitParser.getNumberOfP2Outputs();
-		
+		int actualNumberOfWires = 
+				circuitParser.getWireCountFromSingleList(parsedGates);
 		int newNumberOfInputs = n1 + 3*m1 + n2;
-		int startOfC = n1+ 2*m1;
-		incrementOriginalGates(parsedGates, 3*m1);
 		int newNumberOfOutputs = 2*m1 + m2;
+
+		List<Gate> parsedGatesAddedInputs = 
+				getAdditionalInputWires(parsedGates, n1, 3*m1);
 		
-		List<List<Gate>> outputGates = getOutputGates(parsedGates, m1, m2);
-		for(Gate g: outputGates.get(0)){
-			System.out.println(g.toFairPlayString());
-		}
-		for(Gate g: outputGates.get(1)){
-			System.out.println(g.toFairPlayString());
-		}
+		int startOfCInput = n1 + 2*m1;
+		int startOfP1Output = actualNumberOfWires - n1 - n2 + 3*m1; //to account for additional inputs
+		int startOfP2Output = actualNumberOfWires - n2 + 3*m1; //to account for additional inputs
+
+//		writeOutput(parsedGatesAddedInputs);
 		
-//		List<Gate> e = getEncryptedP1Output(outputGates.get(0), startOfC);
+		List<Gate> nonOutputPositionedEGates = getEGates(startOfP1Output, startOfCInput, m1);
 		
+		String[] headers = circuitParser.getNewFairplayHeader(nonOutputPositionedEGates);
+		CommonUtilities.outputFairplayCircuit(nonOutputPositionedEGates, 
+				outputFile, headers);
 	}
 
-	private void incrementOriginalGates(List<Gate> gates, int i) {
-		System.out.println(i);
+	private List<Gate> getAdditionalInputWires(List<Gate> gates, int n1, 
+			int addedInputs) {
 		for(Gate g: gates){
-			g.setLeftWireIndex(g.getLeftWireIndex() + i);
-			g.setRightWireIndex(g.getRightWireIndex() + i);
-			g.setOutputWireIndex(g.getOutputWireIndex() + i);
+			int leftIndex = g.getLeftWireIndex();
+			int rightIndex = g.getRightWireIndex();
+			int outputIndex = g.getOutputWireIndex();
+			if(leftIndex >= n1){
+				g.setLeftWireIndex(leftIndex + addedInputs);
+			}
+			if(rightIndex >= n1){
+				g.setRightWireIndex(rightIndex + addedInputs);
+			}
+			if(outputIndex >= n1){
+				g.setOutputWireIndex(outputIndex + addedInputs);
+			}
 		}
-		
+		return gates;
 	}
 
-//	private List<Gate> getEncryptedP1Output(List<Gate> p1Output, int startOfC,
-//			int ) {
-//		List<Gate> res = new ArrayList<Gate>();
-//		
-//		
-//		
-//		for(Gate g: p1Output){
-//			Gate xor = new Gate("2 1 "+ startOfC++ + " " + g.getOutputWireIndex() +
-//						" " +  + " 0001"))
-//		}
-//		
-//		
-//		return res;
-//	}
-
-	private List<List<Gate>> getOutputGates(List<Gate> parsedGates, int p1Outputs, 
-			int p2Outputs) {
-		List<List<Gate>> res = new ArrayList<List<Gate>>();
-		List<Gate> p1OutputGates = new ArrayList<Gate>();
-		List<Gate> p2OutputGates = new ArrayList<Gate>();
-		int actualNumberOfWires = getNewWireCount(parsedGates);
-		int totalOutputs = p1Outputs + p2Outputs;
+	private List<Gate> getEGates(int startOfP1Outputs, int startOfC, int m1) {
+		List<Gate> res = new ArrayList<Gate>();
 		
-		for(Gate g: parsedGates){
-			
-			if (g.getOutputWireIndex() >= actualNumberOfWires - totalOutputs &&
-					g.getOutputWireIndex() < actualNumberOfWires - p2Outputs){
-				p1OutputGates.add(g);
-			}
-			else if(g.getOutputWireIndex() >= actualNumberOfWires - totalOutputs
-					&& g.getOutputWireIndex() >= actualNumberOfWires - p2Outputs){
-				p2OutputGates.add(g);
-			}
+		for(int i = 0; i < m1; i++){
+			int leftWire = startOfP1Outputs + i;
+			int rightWire = startOfC + i;
+			int tmpOutputWire = i;
+			Gate g = new Gate("2 1 "+ leftWire + " " + rightWire +
+					" " + tmpOutputWire + " 0110");
+			res.add(g);
 		}
-		res.add(p1OutputGates);
-		res.add(p2OutputGates);
+
 		return res;
 	}
-	
-	
-	private int getNewWireCount(List<Gate> gates){
-		HashSet<Integer> hs = new HashSet<Integer>();
-		for(Gate g: gates){
-			hs.add(g.getLeftWireIndex());
-			hs.add(g.getRightWireIndex());
-			hs.add(g.getOutputWireIndex());
-		}
-		return hs.size();
-	}
+
+//	private List<List<Gate>> getOriginalOutputGates(List<Gate> parsedGates, int p1Outputs, 
+//			int p2Outputs) {
+//		List<List<Gate>> res = new ArrayList<List<Gate>>();
+//		List<Gate> p1OutputGates = new ArrayList<Gate>();
+//		List<Gate> p2OutputGates = new ArrayList<Gate>();
+//		int actualNumberOfWires = circuitParser.getParsedWireCount();
+//		int totalOutputs = p1Outputs + p2Outputs;
+//
+//		for(Gate g: parsedGates){	
+//			if (g.getOutputWireIndex() >= actualNumberOfWires - totalOutputs &&
+//					g.getOutputWireIndex() < actualNumberOfWires - p2Outputs){
+//				p1OutputGates.add(g);
+//			}
+//			else if(g.getOutputWireIndex() >= actualNumberOfWires - totalOutputs
+//					&& g.getOutputWireIndex() >= actualNumberOfWires - p2Outputs){
+//				p2OutputGates.add(g);
+//			}
+//		}
+//		res.add(p1OutputGates);
+//		res.add(p2OutputGates);
+//		return res;
+//	}
 }

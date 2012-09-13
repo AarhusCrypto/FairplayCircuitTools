@@ -1,10 +1,5 @@
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,7 +35,8 @@ public class FairplayCircuitAugChecksum implements Runnable {
 		augCircuit.addAll(incrementedGates);
 		augCircuit.addAll(augOutputGates);
 
-		writeOutput(augCircuit);
+		String[] headers = circuitParser.getNewFairplayHeader(augCircuit);
+		CommonUtilities.outputFairplayCircuit(augCircuit, outputFile, headers);
 	}
 
 	private List<Gate> getAugGates(int numberOfStandardInputs) {
@@ -170,38 +166,6 @@ public class FairplayCircuitAugChecksum implements Runnable {
 			res.add(g);
 		}
 		return res;
-	}
-
-	/**
-	 * @param layersOfGates
-	 * Writes the given lists of lists to a file
-	 */
-	private void writeOutput(List<Gate> augCircuit) {
-		BufferedWriter fbw = null;
-		try {
-			fbw = new BufferedWriter(new OutputStreamWriter(
-					new FileOutputStream(outputFile), Charset.defaultCharset()));
-			String[] headers = circuitParser.getNewFairplayHeader(augCircuit);
-			fbw.write(headers[0]);
-			fbw.newLine();
-			fbw.write(headers[1]);
-			fbw.newLine();
-			fbw.newLine();
-
-			for(Gate g: augCircuit){
-				fbw.write(g.toFairPlayString());
-				fbw.newLine();
-			}
-
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally { 
-			try {
-				fbw.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
 	}
 
 	private List<Gate> getOutputGates(){

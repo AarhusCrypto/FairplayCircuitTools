@@ -63,7 +63,7 @@ public class FairplayCircuitParser {
 				 */
 				if (counter == true){
 					secondHeader = line;
-					
+
 					String[] split = getHeaderArray(line);
 
 					numberOfP1Inputs = Integer.parseInt(split[0]);
@@ -95,7 +95,7 @@ public class FairplayCircuitParser {
 		MultiValueMap rightMap = new MultiValueMap();
 		HashMap<Integer, Gate> outputMap = new HashMap<Integer, Gate>();
 		blankWires = new boolean[originalNumberOfWires];
-		
+
 		for(Gate g: res){
 			leftMap.put(g.getLeftWireIndex(), g);
 			rightMap.put(g.getRightWireIndex(), g);
@@ -141,7 +141,7 @@ public class FairplayCircuitParser {
 
 	public String getCUDAHeader(List<List<Gate>> layersOfGates){
 		int totalNumberOfOutputs = totalNumberOfInputs/2;
-		int actualNumberOfWires = getActualWireCount(layersOfGates);
+		int actualNumberOfWires = getWireCountFromMultipleLists(layersOfGates);
 		int numberOfLayers = layersOfGates.size();
 
 		int maxLayerWidth = 0;
@@ -163,10 +163,7 @@ public class FairplayCircuitParser {
 	public String[] getNewFairplayHeader(List<Gate> augCircuit){
 		String[] res = new String[2];
 
-		List<List<Gate>> wrapList = new ArrayList<List<Gate>>();
-		wrapList.add(augCircuit);
-		int totalNumberOfWires = 
-				getActualWireCount(wrapList);
+		int totalNumberOfWires = getWireCountFromSingleList(augCircuit);
 
 		res[0] = augCircuit.size() + " " +  totalNumberOfWires;
 
@@ -188,19 +185,23 @@ public class FairplayCircuitParser {
 	public int getNumberOfP1Inputs(){
 		return numberOfP1Inputs;
 	}
-	
+
 	public int getNumberOfP2Inputs(){
 		return numberOfP2Inputs;
 	}
-	
+
 	public int getNumberOfP1Outputs(){
 		return numberOfP1Outputs;
 	}
-	
+
 	public int getNumberOfP2Outputs(){
 		return numberOfP2Outputs;
 	}
-	
+
+	public int getOriginalNumberOfWires(){
+		return originalNumberOfWires;
+	}
+
 	private String[] getHeaderArray(String line){
 		char[] lineArray = line.toCharArray();
 		String tmp = "";
@@ -214,8 +215,8 @@ public class FairplayCircuitParser {
 			}
 			else {
 				if(!tmp.equals("")){
-				split[i++] = tmp;
-				tmp = "";
+					split[i++] = tmp;
+					tmp = "";
 				}
 			}
 		}
@@ -228,7 +229,7 @@ public class FairplayCircuitParser {
 		for(int j = 0; j < i; j++){
 			res[j] = split[j];
 		}
-		
+
 		return res;
 	}
 
@@ -236,9 +237,19 @@ public class FairplayCircuitParser {
 	 * @param multiTimedGates
 	 * @return
 	 */
-	private int getActualWireCount(List<List<Gate>> multiTimedGates) {
+	public int getWireCountFromSingleList(List<Gate> list) {
 		HashSet<Integer> hs = new HashSet<Integer>();
-		for(List<Gate> l: multiTimedGates){
+		for(Gate g: list) {
+			hs.add(g.getLeftWireIndex());
+			hs.add(g.getRightWireIndex());
+			hs.add(g.getOutputWireIndex());
+		}
+		return hs.size();
+	}
+
+	public int getWireCountFromMultipleLists(List<List<Gate>> gates){
+		HashSet<Integer> hs = new HashSet<Integer>();
+		for(List<Gate> l: gates){
 			for(Gate g: l){
 				hs.add(g.getLeftWireIndex());
 				hs.add(g.getRightWireIndex());
@@ -247,4 +258,5 @@ public class FairplayCircuitParser {
 		}
 		return hs.size();
 	}
+
 }
