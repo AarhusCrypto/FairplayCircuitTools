@@ -28,32 +28,58 @@ public class FairplayCircuitAugMultipleOutputs implements Runnable {
 		int n2 = circuitParser.getNumberOfP2Inputs();
 		int m1 = circuitParser.getNumberOfP1Outputs();
 		int m2 = circuitParser.getNumberOfP2Outputs();
-		int actualNumberOfWires = 
-				circuitParser.getWireCountFromSingleList(parsedGates);
 		int addedInput = 3 *m1;
+		int gatesToBeAddedForM = (m1 * m1) + (m1 * m1);
+		int gatesToBeAddedForE = m1;
+		int totalGatesToBeAdded = gatesToBeAddedForM + gatesToBeAddedForE;
+		int originalNumberOfWires = 
+				circuitParser.getWireCountFromSingleList(parsedGates);
+		int newNumberOfWires = originalNumberOfWires + addedInput;
+		
 		int newNumberOfInputs = n1 + addedInput + n2;
 		int newNumberOfOutputs = 2*m1 + m2;
 
-		List<Gate> parsedGatesAddedInputs = 
-				getAdditionalInputWires(parsedGates, n1, addedInput);
-
+		int startOfAInput = n1;
+		int startOfBInput = n1 + m1;
 		int startOfCInput = n1 + 2*m1;
-		int startOfP1Output = actualNumberOfWires - n1 - n2 + addedInput; //to account for added inputs
-		int startOfP2Output = actualNumberOfWires - n2 + addedInput; //to account for added inputs
+		
+		int f1 = originalNumberOfWires - n1 - n2;
+		int f2 = originalNumberOfWires - n2;
+		
+		int startOfEOutput = newNumberOfWires + totalGatesToBeAdded - m2 - 2*m1;
+		int startOfMComputation = newNumberOfWires - m2;
+		int startOfM = newNumberOfWires + totalGatesToBeAdded - m2 - m1;
+		
+		List<Gate> preparedCircuit = 
+				getPreparedCircuit(parsedGates, n1, addedInput, 
+						f2, m2, totalGatesToBeAdded);
 
-		List<Gate> nonOutputPositionedEGates = getEGates(startOfP1Output, startOfCInput, m1);
-
-		String[] headers = circuitParser.getNewFairplayHeader(nonOutputPositionedEGates);
-		CommonUtilities.outputFairplayCircuit(nonOutputPositionedEGates, 
+		List<Gate> eGates = getEGates(f1,
+				startOfEOutput, startOfCInput, m1);
+		List<Gate> mGates = getMGates(startOfEOutput, 
+				startOfAInput, startOfBInput, m1, startOfMComputation, startOfM);
+		
+		preparedCircuit.addAll(eGates);
+		preparedCircuit.addAll(mGates);
+		
+		String[] headers = circuitParser.getNewFairplayHeader(preparedCircuit);
+		CommonUtilities.outputFairplayCircuit(preparedCircuit, 
 				outputFile, headers);
 	}
 
-	private List<Gate> getAdditionalInputWires(List<Gate> gates, int n1, 
-			int addedInputs) {
+	private List<Gate> getPreparedCircuit(List<Gate> gates, int n1, 
+			int addedInputs, int startOfP2Output, int m2, int gatesToBeAdded) {
 		for(Gate g: gates){
 			int leftIndex = g.getLeftWireIndex();
 			int rightIndex = g.getRightWireIndex();
 			int outputIndex = g.getOutputWireIndex();
+			
+			if(outputIndex >= startOfP2Output){
+				g.setOutputWireIndex(outputIndex + gatesToBeAdded);
+			}
+			
+			outputIndex = g.getOutputWireIndex();
+			
 			if(leftIndex >= n1){
 				g.setLeftWireIndex(leftIndex + addedInputs);
 			}
@@ -67,18 +93,72 @@ public class FairplayCircuitAugMultipleOutputs implements Runnable {
 		return gates;
 	}
 
-	private List<Gate> getEGates(int startOfP1Outputs, int startOfC, int m1) {
+	private List<Gate> getEGates(int startOfP1Outputs, int startOfE, int startOfC, int m1) {
 		List<Gate> res = new ArrayList<Gate>();
 
 		for(int i = 0; i < m1; i++){
 			int leftWire = startOfP1Outputs + i;
 			int rightWire = startOfC + i;
-			int tmpOutputWire = i;
+			int outputWire = startOfE + i;
 			Gate g = new Gate("2 1 "+ leftWire + " " + rightWire +
-					" " + tmpOutputWire + " 0110");
+					" " + outputWire + " 0110");
 			res.add(g);
 		}
 
+		return res;
+	}
+	
+	private List<Gate> getMGates(int startOfE, int startOfA, int startOfB, int m1,
+			int startOfMComputation, int startOfM){
+		List<Gate> res = new ArrayList<Gate>();
+		System.out.println("StartOfA: " + startOfA);
+		System.out.println("StartOfB: " + startOfB);
+		System.out.println("StartOfE: " + startOfE);
+		int currentOutputIndex = startOfMComputation;
+		//Construct all the AND gates
+		for(int j = 0; j < m1; j++){
+			for(int i = 0; i < m1; i++){
+				int leftWire = startOfA + i;
+				int rightWire = startOfE + (i + j % m1);
+				int outputWire = currentOutputIndex++;
+				Gate g = new Gate("2 1 "+ leftWire + " " + rightWire +
+						" " + outputWire + " 0001");
+				res.add(g);
+			}
+		}
+		
+		//Construct all XOR Gates
+		int priorOutput = 0;
+		int[] aConvolutedE = new int[m1];
+		for(int j = 0; j < m1; j++){
+			for(int i = 0; i < m1 - 1; i++){
+				int leftWire = 0;
+				int rightWire = 0;
+				if(i == 0){
+					leftWire = startOfMComputation + j * m1 + i;
+					rightWire = startOfMComputation + j * m1 + i + 1;
+				}
+				else{
+					leftWire = startOfMComputation + j * m1 + i + 1;
+					rightWire = priorOutput;
+				}
+
+				int outputWire = priorOutput = currentOutputIndex++;
+				Gate g = new Gate("2 1 "+ leftWire + " " + rightWire +
+						" " + outputWire + " 0110");
+				res.add(g);
+			}
+			aConvolutedE[j] = currentOutputIndex - 1;
+		}
+		
+		for(int i = 0; i < m1; i++){
+			int leftWire = aConvolutedE[i];
+			int rightWire = startOfB + i;
+			int outputWire = startOfM + i;
+			Gate g = new Gate("2 1 "+ leftWire + " " + rightWire +
+					" " + outputWire + " 0110");
+			res.add(g);
+		}
 		return res;
 	}
 

@@ -167,12 +167,12 @@ public class FairplayCircuitParser {
 
 		res[0] = augCircuit.size() + " " +  totalNumberOfWires;
 
-		String[] inputOutputInfo = secondHeader.split(" ");
+		String[] inputOutputInfo = getHeaderArray(secondHeader);
 		int newAliceInput = Integer.parseInt(inputOutputInfo[0]) *2;
 		int newBobInput = Integer.parseInt(inputOutputInfo[1]) *2;
 		int newOutput = Integer.parseInt(inputOutputInfo[1]) *2;
 
-		res[1] = newAliceInput + " " + newBobInput + " " + inputOutputInfo[4] + " " +
+		res[1] = newAliceInput + " " + newBobInput + " " + inputOutputInfo[3] + " " +
 				newOutput;
 
 		return res;
@@ -205,7 +205,7 @@ public class FairplayCircuitParser {
 	private String[] getHeaderArray(String line){
 		char[] lineArray = line.toCharArray();
 		String tmp = "";
-		String[] split = new String[line.length()/2]; //Cannot be greater
+		String[] split = new String[line.length() + 1/2]; //Cannot be greater
 		int i = 0;
 		// We here build all the strings to go into our array, if we meet a
 		// ' ' we stop and store our accumulated string in the array.
