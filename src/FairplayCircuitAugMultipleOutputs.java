@@ -36,8 +36,7 @@ public class FairplayCircuitAugMultipleOutputs implements Runnable {
 				circuitParser.getWireCountFromSingleList(parsedGates);
 		int newNumberOfWires = originalNumberOfWires + addedInput;
 		
-		int newNumberOfInputs = n1 + addedInput + n2;
-		int newNumberOfOutputs = 2*m1 + m2;
+		int newNumberOfP1Inputs = n1 + addedInput;
 
 		int startOfAInput = n1;
 		int startOfBInput = n1 + m1;
@@ -62,7 +61,7 @@ public class FairplayCircuitAugMultipleOutputs implements Runnable {
 		preparedCircuit.addAll(eGates);
 		preparedCircuit.addAll(mGates);
 		
-		String[] headers = circuitParser.getNewFairplayHeader(preparedCircuit);
+		String[] headers = getHeaders(preparedCircuit);
 		CommonUtilities.outputFairplayCircuit(preparedCircuit, 
 				outputFile, headers);
 	}
@@ -111,9 +110,6 @@ public class FairplayCircuitAugMultipleOutputs implements Runnable {
 	private List<Gate> getMGates(int startOfE, int startOfA, int startOfB, int m1,
 			int startOfMComputation, int startOfM){
 		List<Gate> res = new ArrayList<Gate>();
-		System.out.println("StartOfA: " + startOfA);
-		System.out.println("StartOfB: " + startOfB);
-		System.out.println("StartOfE: " + startOfE);
 		int currentOutputIndex = startOfMComputation;
 		//Construct all the AND gates
 		for(int j = 0; j < m1; j++){
@@ -161,27 +157,25 @@ public class FairplayCircuitAugMultipleOutputs implements Runnable {
 		}
 		return res;
 	}
+	
+	private String[] getHeaders(List<Gate> augCircuit){
+		String[] res = new String[2];
+		res[0] = augCircuit.size() + " " +  
+		circuitParser.getWireCountFromSingleList(augCircuit);
+		
+		String[] inputOutputInfo = 
+				circuitParser.getFairplayInputOutputHeader();
+		
+		int m1 = Integer.parseInt(inputOutputInfo[2]);
+		
+		int newP1OInput = Integer.parseInt(inputOutputInfo[0]) + 3 * m1;
+		int newP2OInput = Integer.parseInt(inputOutputInfo[1]);
+		int newP1Output = Integer.parseInt(inputOutputInfo[2]) + m1;
+		int newP2Output = Integer.parseInt(inputOutputInfo[3]);
 
-	//	private List<List<Gate>> getOriginalOutputGates(List<Gate> parsedGates, int p1Outputs, 
-	//			int p2Outputs) {
-	//		List<List<Gate>> res = new ArrayList<List<Gate>>();
-	//		List<Gate> p1OutputGates = new ArrayList<Gate>();
-	//		List<Gate> p2OutputGates = new ArrayList<Gate>();
-	//		int actualNumberOfWires = circuitParser.getParsedWireCount();
-	//		int totalOutputs = p1Outputs + p2Outputs;
-	//
-	//		for(Gate g: parsedGates){	
-	//			if (g.getOutputWireIndex() >= actualNumberOfWires - totalOutputs &&
-	//					g.getOutputWireIndex() < actualNumberOfWires - p2Outputs){
-	//				p1OutputGates.add(g);
-	//			}
-	//			else if(g.getOutputWireIndex() >= actualNumberOfWires - totalOutputs
-	//					&& g.getOutputWireIndex() >= actualNumberOfWires - p2Outputs){
-	//				p2OutputGates.add(g);
-	//			}
-	//		}
-	//		res.add(p1OutputGates);
-	//		res.add(p2OutputGates);
-	//		return res;
-	//	}
+		res[1] = newP1OInput + " " + newP2OInput + " " + newP1Output + " " +
+				newP2Output;
+		
+		return res;
+	}
 }

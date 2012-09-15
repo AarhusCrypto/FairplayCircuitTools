@@ -160,22 +160,8 @@ public class FairplayCircuitParser {
 
 	}
 
-	public String[] getNewFairplayHeader(List<Gate> augCircuit){
-		String[] res = new String[2];
-
-		int totalNumberOfWires = getWireCountFromSingleList(augCircuit);
-
-		res[0] = augCircuit.size() + " " +  totalNumberOfWires;
-
-		String[] inputOutputInfo = getHeaderArray(secondHeader);
-		int newAliceInput = Integer.parseInt(inputOutputInfo[0]) *2;
-		int newBobInput = Integer.parseInt(inputOutputInfo[1]) *2;
-		int newOutput = Integer.parseInt(inputOutputInfo[1]) *2;
-
-		res[1] = newAliceInput + " " + newBobInput + " " + inputOutputInfo[3] + " " +
-				newOutput;
-
-		return res;
+	public String[] getFairplayInputOutputHeader(){
+		return getHeaderArray(secondHeader);
 	}
 
 	public int getTotalNumberOfInputs(){

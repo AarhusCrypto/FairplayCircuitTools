@@ -35,8 +35,28 @@ public class FairplayCircuitAugChecksum implements Runnable {
 		augCircuit.addAll(incrementedGates);
 		augCircuit.addAll(augOutputGates);
 
-		String[] headers = circuitParser.getNewFairplayHeader(augCircuit);
+		String[] headers = getNewHeader(augCircuit);
+		
 		CommonUtilities.outputFairplayCircuit(augCircuit, outputFile, headers);
+	}
+
+	private String[] getNewHeader(List<Gate> augCircuit) {
+		String[] res = new String[2];
+		res[0] = augCircuit.size() + " " +  
+		circuitParser.getWireCountFromSingleList(augCircuit);
+		
+		String[] inputOutputInfo = 
+				circuitParser.getFairplayInputOutputHeader();
+		
+		int newP1OInput = Integer.parseInt(inputOutputInfo[0]) *2;
+		int newP2OInput = Integer.parseInt(inputOutputInfo[1]) *2;
+		int newP1Output = Integer.parseInt(inputOutputInfo[2]);
+		int newP2Output = Integer.parseInt(inputOutputInfo[3]) *2;
+
+		res[1] = newP1OInput + " " + newP2OInput + " " + newP1Output + " " +
+				newP2Output;
+		
+		return res;
 	}
 
 	private List<Gate> getAugGates(int numberOfStandardInputs) {
