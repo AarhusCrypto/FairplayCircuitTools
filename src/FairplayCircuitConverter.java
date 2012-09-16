@@ -204,11 +204,4 @@ public class FairplayCircuitConverter implements Runnable {
 
 		return layersOfGates;
 	}
-
-	/**
-	 * @param layersOfGates
-	 * Writes the given lists of lists to a file
-	 */
-	//private void writeOutput(List<List<Gate>> layersOfGates) {
-		
 }

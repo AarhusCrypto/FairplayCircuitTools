@@ -34,7 +34,6 @@ public class Driver {
 		}
 		//-ac circuitfile outputfile
 		else if (operation.equals(AUG_CHECKSUM) && checkArgs(args, 3)){
-			checkArgs(args, 3);
 			circuitFile = new File(args[1]);
 			outputFile = new File(args[2]);
 			
@@ -45,7 +44,6 @@ public class Driver {
 		}
 		//-am circuitfile outputfile
 		else if (operation.equals(AUG_MULTI_OUTPUT) && checkArgs(args, 3)){
-			checkArgs(args, 3);
 			circuitFile = new File(args[1]);
 			outputFile = new File(args[2]);
 			
@@ -94,7 +92,7 @@ public class Driver {
 					"use one of the following prefixes for your invoke:");
 			System.out.println(FAIRPLAY_CONVERT_TO_CUDA + ": Fairplay to CUDA format");
 			System.out.println(AUG_CHECKSUM + ": Fairplay checkum augmentation");
-			System.out.println(AUG_MULTI_OUTPUT + ": Fairplay multi output augmentation");
+			System.out.println(AUG_MULTI_OUTPUT + ": Fairplay multi-output augmentation");
 			System.out.println(FAIRPLAY_EVALUATOR + ": Fairplay evaluation");
 			System.out.println(CUDA_EVALUATOR + ": CUDA evaluation");
 		}

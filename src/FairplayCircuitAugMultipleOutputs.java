@@ -43,20 +43,21 @@ public class FairplayCircuitAugMultipleOutputs implements Runnable {
 		int startOfMComputation = newNumberOfWires - m2;
 		int startOfM = newNumberOfWires + totalGatesToBeAdded - m2 - m1;
 
-		List<Gate> preparedCircuit = 
+		List<Gate> multipleOutputCircuit = 
 				getPreparedCircuit(parsedGates, n1, addedInput, 
 						startOfF2, m2, totalGatesToBeAdded);
 
 		List<Gate> eGates = getEGates(startOfF1,
 				startOfEOutput, startOfCInput, m1);
+		
 		List<Gate> mGates = getMGates(startOfEOutput, 
 				startOfAInput, startOfBInput, m1, startOfMComputation, startOfM);
 
-		preparedCircuit.addAll(eGates);
-		preparedCircuit.addAll(mGates);
+		multipleOutputCircuit.addAll(eGates);
+		multipleOutputCircuit.addAll(mGates);
 
-		String[] headers = getHeaders(preparedCircuit);
-		CommonUtilities.outputFairplayCircuit(preparedCircuit, 
+		String[] headers = getHeaders(multipleOutputCircuit);
+		CommonUtilities.outputFairplayCircuit(multipleOutputCircuit, 
 				outputFile, headers);
 	}
 
@@ -116,9 +117,9 @@ public class FairplayCircuitAugMultipleOutputs implements Runnable {
 				int rightWire = startOfE + ((i + j) % m1);
 				index = m1 * j + i;
 				int outputWire = startOfMComputation + index;
-				Gate g = new Gate("2 1 "+ leftWire + " " + rightWire +
+				Gate andGate = new Gate("2 1 "+ leftWire + " " + rightWire +
 						" " + outputWire + " 0001");
-				res.add(g);
+				res.add(andGate);
 				/*****************************************************/
 				if(i == m1 - 1){
 					continue;
@@ -166,12 +167,12 @@ public class FairplayCircuitAugMultipleOutputs implements Runnable {
 
 		int m1 = Integer.parseInt(inputOutputInfo[2]);
 
-		int newP1OInput = Integer.parseInt(inputOutputInfo[0]) + 3 * m1;
-		int newP2OInput = Integer.parseInt(inputOutputInfo[1]);
+		int newP1Input = Integer.parseInt(inputOutputInfo[0]) + 3 * m1;
+		int newP2Input = Integer.parseInt(inputOutputInfo[1]);
 		int newP1Output = Integer.parseInt(inputOutputInfo[2]) + m1;
 		int newP2Output = Integer.parseInt(inputOutputInfo[3]);
 
-		res[1] = newP1OInput + " " + newP2OInput + " " + newP1Output + " " +
+		res[1] = newP1Input + " " + newP2Input + " " + newP1Output + " " +
 				newP2Output;
 
 		return res;
