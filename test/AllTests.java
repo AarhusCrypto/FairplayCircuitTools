@@ -8,6 +8,32 @@ import static org.junit.Assert.*;
 
 public class AllTests {
 
+	//@Test
+	public void assertAESCircuitAugMultipleOutput(){
+		File circuitFile = new File("test/data/aes_multiple_fairplay.txt");
+		File circuitOutputFile = new File("data/aug_multiple_aes_fairplay.txt");
+		
+		FairplayCircuitParser circuitParser = 
+				new FairplayCircuitParser(circuitFile);
+		FairplayCircuitAugMultipleOutputs am = 
+				new FairplayCircuitAugMultipleOutputs(circuitParser, circuitOutputFile);
+		am.run();
+		
+
+		circuitParser = 
+				new FairplayCircuitParser(circuitOutputFile);
+		
+		File convertedCircuit = new File("data/aug_multiple_aes_cuda.txt");
+		FairplayCircuitConverter circuitConverter = 
+				new FairplayCircuitConverter(circuitParser, 
+						convertedCircuit, false);
+		circuitConverter.run();
+		circuitOutputFile.delete();
+		
+		checkWithEvaluator(convertedCircuit, 
+				new File("test/data/aug_multiple_aes_input.bin"));
+	}
+	
 	@Test
 	public void assertCircuitEvaluator(){
 		File inputFile = new File("test/data/input0.bin");
@@ -54,7 +80,7 @@ public class AllTests {
 	public void assertAESCircuitAugChecksum(){
 
 		File circuitFile = new File("test/data/aes_fairplay.txt");
-		File circuitOutputFile = new File("data/aug_aes_fairplay.txt");
+		File circuitOutputFile = new File("data/aug_checksum_aes_fairplay.txt");
 		
 		FairplayCircuitParser circuitParser = 
 				new FairplayCircuitParser(circuitFile);
@@ -66,7 +92,7 @@ public class AllTests {
 		circuitParser = 
 				new FairplayCircuitParser(circuitOutputFile);
 		
-		File convertedCircuit = new File("data/aug_aes_cuda.txt");
+		File convertedCircuit = new File("data/aug_checksum_aes_cuda.txt");
 		FairplayCircuitConverter circuitConverter = 
 				new FairplayCircuitConverter(circuitParser, 
 						convertedCircuit, false);
@@ -74,7 +100,7 @@ public class AllTests {
 		circuitOutputFile.delete();
 		
 		checkWithEvaluator(convertedCircuit, 
-				new File("test/data/aug_aes_input.bin"));
+				new File("test/data/aug_checksum_aes_input.bin"));
 	}
 	
 	private void checkWithEvaluator(File circuitOutputFile){

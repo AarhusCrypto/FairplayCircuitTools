@@ -53,7 +53,7 @@ public class CircuitEvaluator implements Runnable {
 
 		byte[] bytesRead = getBytesFromFile();
 
-		BitSet bitset = bitsetToByteArray(bytesRead);
+		BitSet bitset = byteArrayToBitSet(bytesRead);
 
 		BitSet result = evalCircuit(layersOfGates, bitset);
 
@@ -83,13 +83,14 @@ public class CircuitEvaluator implements Runnable {
 	 * @param bytes
 	 * @return BitSet corresponding to the byte[], in little endian form
 	 */
-	public BitSet bitsetToByteArray(byte[] bytes) {
+	public BitSet byteArrayToBitSet(byte[] bytes) {
 		BitSet bits = new BitSet();
 		for (int i=0; i<bytes.length*8; i++) {
 			if ((bytes[bytes.length-i/8-1]&(1<<(i%8))) > 0) {
 				bits.set((bytes.length*8 - 1) - i);
 			}
 		}
+		
 		return bits;
 	}
 
@@ -201,7 +202,7 @@ public class CircuitEvaluator implements Runnable {
 	 */
 	public byte[] toByteArray(BitSet bits) {
 		byte[] bytes = new byte[bits.size()/8];
-		for (int i=0; i<bits.size(); i++) {
+		for (int i = 0; i < bits.size(); i++) {
 			if (bits.get(i)) {
 				bytes[bytes.length-i/8-1] |= 1<<(i%8);
 			}
