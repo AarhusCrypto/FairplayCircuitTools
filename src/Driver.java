@@ -71,7 +71,7 @@ public class Driver {
 			
 			CircuitEvaluator eval = 
 					new CircuitEvaluator(inputFile, outputFile, layersOfGates, 
-							circuitParser.getCUDAHeader(layersOfGates));
+							circuitConverter.getHeader(layersOfGates));
 			eval.run();
 		}
 		//-ce inputfile circuitfile outputfile

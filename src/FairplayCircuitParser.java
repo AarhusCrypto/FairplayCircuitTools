@@ -25,6 +25,7 @@ public class FairplayCircuitParser {
 	private int numberOfP2Outputs;
 	private int numberOfNonXORGates;
 	private int totalNumberOfInputs;
+	private int totalNumberOfOutputs;
 
 	private String secondHeader;
 
@@ -72,6 +73,7 @@ public class FairplayCircuitParser {
 					numberOfP2Outputs = Integer.parseInt(split[3]);
 					totalNumberOfInputs = numberOfP1Inputs +
 							numberOfP2Inputs;
+					totalNumberOfOutputs = numberOfP1Outputs + numberOfP2Outputs;
 					counter = false;
 					continue;
 				}
@@ -139,24 +141,8 @@ public class FairplayCircuitParser {
 		return res;
 	}
 
-	public String getCUDAHeader(List<List<Gate>> layersOfGates){
-		int totalNumberOfOutputs = totalNumberOfInputs/2;
-		int actualNumberOfWires = getWireCountFromMultipleLists(layersOfGates);
-		int numberOfLayers = layersOfGates.size();
-
-		int maxLayerWidth = 0;
-
-		/*
-		 * We have to figure out the max layer size before writing to the file.
-		 */
-		for(List<Gate> l: layersOfGates){
-			maxLayerWidth = Math.max(maxLayerWidth, l.size());
-		}
-
-		return totalNumberOfInputs + " " + totalNumberOfOutputs + " " +
-		actualNumberOfWires + " " + numberOfLayers + " " + maxLayerWidth + " " +
-		numberOfNonXORGates;
-
+	public int[] getCUDAHeaderInfo(){
+		return new int[]{totalNumberOfInputs, totalNumberOfOutputs, numberOfNonXORGates};
 
 	}
 

@@ -49,8 +49,31 @@ public class FairplayCircuitConverter implements Runnable {
 			layersOfGates = getXorSortedLayers(layersOfGates);
 		}
 
-		String header = circuitParser.getCUDAHeader(layersOfGates);
+		String header = getHeader(layersOfGates);
 		CommonUtilities.outputCUDACircuit(layersOfGates, outputFile, header);
+	}
+
+	public String getHeader(List<List<Gate>> layersOfGates) {
+		int actualNumberOfWires = circuitParser.getWireCountFromMultipleLists(layersOfGates);
+		int numberOfLayers = layersOfGates.size();
+
+		int maxLayerWidth = 0;
+
+		/*
+		 * We have to figure out the max layer size before writing to the file.
+		 */
+		for(List<Gate> l: layersOfGates){
+			maxLayerWidth = Math.max(maxLayerWidth, l.size());
+		}
+		int[] CUDAHeaderInfo = circuitParser.getCUDAHeaderInfo();
+		
+		int totalNumberOfInputs = CUDAHeaderInfo[0];
+		int totalNumberOfOutputs = CUDAHeaderInfo[1];
+		int numberOfNonXORGates = CUDAHeaderInfo[2];
+
+		return totalNumberOfInputs + " " + totalNumberOfOutputs + " " +
+		actualNumberOfWires + " " + numberOfLayers + " " + maxLayerWidth + " " +
+		numberOfNonXORGates;
 	}
 
 	/**
