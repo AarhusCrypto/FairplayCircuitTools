@@ -47,7 +47,8 @@ public class FairplayCircuitAugMultipleOutputs implements Runnable {
 				getPreparedCircuit(parsedGates, n1, addedInput, 
 						startOfF2, m2, totalGatesToBeAdded);
 
-		List<Gate> eGates = getEGates(startOfF1,
+		int newStartOfF1 = startOfF1 + addedInput;
+		List<Gate> eGates = getEGates(newStartOfF1,
 				startOfEOutput, startOfCInput, m1);
 		
 		List<Gate> mGates = getMGates(startOfEOutput, 
