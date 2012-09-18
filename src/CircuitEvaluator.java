@@ -3,7 +3,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.BitSet;
 import java.util.HashMap;
 import java.util.List;
 
@@ -53,9 +52,9 @@ public class CircuitEvaluator implements Runnable {
 
 		byte[] bytesRead = getBytesFromFile();
 
-		BitSet bitset = byteArrayToBitSet(bytesRead);
+		MyBitSet input = byteArrayToBitSet(bytesRead);
 
-		BitSet result = evalCircuit(layersOfGates, bitset);
+		MyBitSet result = evalCircuit(layersOfGates, input);
 
 		writeCircuitOutput(result);
 
@@ -83,11 +82,11 @@ public class CircuitEvaluator implements Runnable {
 	 * @param bytes
 	 * @return BitSet corresponding to the byte[], in little endian form
 	 */
-	public BitSet byteArrayToBitSet(byte[] bytes) {
-		BitSet bits = new BitSet();
-		for (int i=0; i<bytes.length*8; i++) {
-			if ((bytes[bytes.length-i/8-1]&(1<<(i%8))) > 0) {
-				bits.set((bytes.length*8 - 1) - i);
+	public MyBitSet byteArrayToBitSet(byte[] bytes) {
+		MyBitSet bits = new MyBitSet(bytes.length * 8);
+		for (int i = 0; i < bytes.length * 8; i++) {
+			if ((bytes[(bytes.length - i)/(8-1)]&(1<<(i%8))) > 0) {
+				bits.set((bytes.length * 8 - 1) - i);
 			}
 		}
 		
@@ -100,8 +99,8 @@ public class CircuitEvaluator implements Runnable {
 	 * @param inputs
 	 * @return the resulting output of the circuit on the given input
 	 */
-	public BitSet evalCircuit(List<List<Gate>> layersOfGates, BitSet inputs) {
-		BitSet result = new BitSet();
+	public MyBitSet evalCircuit(List<List<Gate>> layersOfGates, MyBitSet inputs) {
+		MyBitSet result = new MyBitSet(outputSize);
 
 		// Construct and fill up initial evaluation map with the inputs
 		HashMap<Integer, Boolean> evals = new HashMap<Integer, Boolean>();
@@ -169,7 +168,11 @@ public class CircuitEvaluator implements Runnable {
 			boolean res;
 			if (evals.containsKey(i)){
 				 res = evals.get(i);
-				 result.set(--outputCounter, res);
+				 System.out.println(res);
+				 if(res == true){
+					 result.set(outputCounter - 1);
+				 }
+				 outputCounter--;
 			}
 			else {
 				continue;
@@ -183,9 +186,11 @@ public class CircuitEvaluator implements Runnable {
 	 * Method for outputting the computed result to a file
 	 * @param result
 	 */
-	public void writeCircuitOutput(BitSet result) {
+	public void writeCircuitOutput(MyBitSet result) {
 		//Convert to big endian for correct output format
-		byte[] out = toByteArray(littleEndianToBigEndian(result));
+		MyBitSet bigEndianResult = littleEndianToBigEndian(result);
+		byte[] out = toByteArray(result);
+		
 		try {
 			FileOutputStream outputStream = new FileOutputStream(outputFile);
 			outputStream.write(out);
@@ -200,9 +205,9 @@ public class CircuitEvaluator implements Runnable {
 	 * @param bits
 	 * @return the corresponding byte[]
 	 */
-	public byte[] toByteArray(BitSet bits) {
-		byte[] bytes = new byte[bits.size()/8];
-		for (int i = 0; i < bits.size(); i++) {
+	public byte[] toByteArray(MyBitSet bits) {
+		byte[] bytes = new byte[bits.length()/8];
+		for (int i = 0; i < bits.length(); i++) {
 			if (bits.get(i)) {
 				bytes[bytes.length-i/8-1] |= 1<<(i%8);
 			}
@@ -215,10 +220,12 @@ public class CircuitEvaluator implements Runnable {
 	 * @param bitset
 	 * @return
 	 */
-	public BitSet littleEndianToBigEndian(BitSet bitset){
-		BitSet result = new BitSet(bitset.size());
-		for(int i = 0; i < bitset.size(); i++){
-			result.set((result.size() - 1) - i, bitset.get(i));
+	public MyBitSet littleEndianToBigEndian(MyBitSet bitset){
+		MyBitSet result = new MyBitSet(bitset.length());
+		for(int i = 0; i < bitset.length(); i++){
+			if(bitset.get(i) == true){
+				result.set((bitset.length() - 1) - i);
+			}
 		}
 		return result;
 	}
@@ -256,9 +263,9 @@ public class CircuitEvaluator implements Runnable {
 	 * @param bitset
 	 * @return a string corresponding to the given bitset
 	 */
-	public String bitsetToBitString(BitSet bitset) {
+	public String bitsetToBitString(MyBitSet bitset) {
 		String res = "";
-		for(int i = 0; i < bitset.size(); i++){
+		for(int i = 0; i < bitset.length(); i++){
 			if (i != 0 && i % 8 == 0){
 				res += " ";
 			}
