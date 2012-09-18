@@ -6,8 +6,6 @@ import java.io.RandomAccessFile;
 import java.util.HashMap;
 import java.util.List;
 
-import org.apache.commons.io.FileUtils;
-
 /**
  * @author Roberto Trifiletti
  *
@@ -52,9 +50,11 @@ public class CircuitEvaluator implements Runnable {
 
 		byte[] bytesRead = getBytesFromFile();
 
-		MyBitSet input = byteArrayToBitSet(bytesRead);
+		BitString input = byteArrayToBitSet(bytesRead);
 
-		MyBitSet result = evalCircuit(layersOfGates, input);
+		// The result returned is in big endian, the evaluator flips the
+		// ouput before returning
+		BitString result = evalCircuit(layersOfGates, input);
 
 		writeCircuitOutput(result);
 
@@ -78,14 +78,14 @@ public class CircuitEvaluator implements Runnable {
 	}
 
 	/**
-	 * Method for converting a byte[] to a BitSet
+	 * Method for converting a byte[] to a FairplayBitSet
 	 * @param bytes
-	 * @return BitSet corresponding to the byte[], in little endian form
+	 * @return FairplayBitSet corresponding to the byte[], in little endian form
 	 */
-	public MyBitSet byteArrayToBitSet(byte[] bytes) {
-		MyBitSet bits = new MyBitSet(bytes.length * 8);
+	public BitString byteArrayToBitSet(byte[] bytes) {
+		BitString bits = new BitString(bytes.length * 8);
 		for (int i = 0; i < bytes.length * 8; i++) {
-			if ((bytes[(bytes.length - i)/(8-1)]&(1<<(i%8))) > 0) {
+			if ((bytes[bytes.length - i/8-1]&(1<<(i%8))) > 0) {
 				bits.set((bytes.length * 8 - 1) - i);
 			}
 		}
@@ -99,8 +99,9 @@ public class CircuitEvaluator implements Runnable {
 	 * @param inputs
 	 * @return the resulting output of the circuit on the given input
 	 */
-	public MyBitSet evalCircuit(List<List<Gate>> layersOfGates, MyBitSet inputs) {
-		MyBitSet result = new MyBitSet(outputSize);
+	public BitString evalCircuit(List<List<Gate>> layersOfGates,
+			BitString inputs) {
+		BitString result = new BitString(outputSize);
 
 		// Construct and fill up initial evaluation map with the inputs
 		HashMap<Integer, Boolean> evals = new HashMap<Integer, Boolean>();
@@ -163,21 +164,16 @@ public class CircuitEvaluator implements Runnable {
 				}
 			}
 		}
-		int outputCounter = outputSize;
-		for(int i = numberOfWires - 1; outputCounter > 0; i--){
+		// Read output in little endian, but stores it in big endian
+		int currentBit = outputSize - 1;
+		for(int i = numberOfWires - outputSize; i < numberOfWires; i++){
 			boolean res;
-			if (evals.containsKey(i)){
 				 res = evals.get(i);
-				 System.out.println(res);
 				 if(res == true){
-					 result.set(outputCounter - 1);
+					 result.set(currentBit);
 				 }
-				 outputCounter--;
+				 currentBit--;
 			}
-			else {
-				continue;
-			}
-		}
 
 		return result;
 	}
@@ -186,9 +182,7 @@ public class CircuitEvaluator implements Runnable {
 	 * Method for outputting the computed result to a file
 	 * @param result
 	 */
-	public void writeCircuitOutput(MyBitSet result) {
-		//Convert to big endian for correct output format
-		MyBitSet bigEndianResult = littleEndianToBigEndian(result);
+	public void writeCircuitOutput(BitString result) {
 		byte[] out = toByteArray(result);
 		
 		try {
@@ -205,7 +199,7 @@ public class CircuitEvaluator implements Runnable {
 	 * @param bits
 	 * @return the corresponding byte[]
 	 */
-	public byte[] toByteArray(MyBitSet bits) {
+	public byte[] toByteArray(BitString bits) {
 		byte[] bytes = new byte[bits.length()/8];
 		for (int i = 0; i < bits.length(); i++) {
 			if (bits.get(i)) {
@@ -213,67 +207,5 @@ public class CircuitEvaluator implements Runnable {
 			}
 		}
 		return bytes;
-	}
-
-	/**
-	 * Method for converting a BitSet from little endian format to big endian
-	 * @param bitset
-	 * @return
-	 */
-	public MyBitSet littleEndianToBigEndian(MyBitSet bitset){
-		MyBitSet result = new MyBitSet(bitset.length());
-		for(int i = 0; i < bitset.length(); i++){
-			if(bitset.get(i) == true){
-				result.set((bitset.length() - 1) - i);
-			}
-		}
-		return result;
-	}
-
-	/**
-	 * Method for verifying the test vectors of AES from
-	 * http://www.inconteam.com/software-development/41-encryption/55-aes-test-vectors#aes-ecb-128
-	 */
-	public void verifyOutput() {
-		File expectedResultFile = null;
-		if(inputFile.getName().equals("input0.bin")){
-			expectedResultFile = new File("data/expected0.bin");
-		}
-		else if(inputFile.getName().equals("input1.bin")){
-			expectedResultFile = new File("data/expected1.bin");
-		}
-		else if(inputFile.getName().equals("input2.bin")){
-			expectedResultFile = new File("data/expected2.bin");
-		}
-		else if(inputFile.getName().equals("input3.bin")){
-			expectedResultFile = new File("data/expected3.bin");
-		}
-
-		try {
-			if(FileUtils.contentEquals(expectedResultFile, outputFile)){
-				System.out.println("Circuit evaluated correctly");
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * Method for visual representation of the given bitset
-	 * @param bitset
-	 * @return a string corresponding to the given bitset
-	 */
-	public String bitsetToBitString(MyBitSet bitset) {
-		String res = "";
-		for(int i = 0; i < bitset.length(); i++){
-			if (i != 0 && i % 8 == 0){
-				res += " ";
-			}
-			if(bitset.get(i)){
-				res += '1';
-			}
-			else res += '0';
-		}
-		return res;
 	}
 }

@@ -1,8 +1,12 @@
-
-public class MyBitSet {
+/**
+ * Small class for representing inputs and output as a bit string
+ * @author Roberto
+ *
+ */
+public class BitString {
 	private final boolean[] bitset;
 	
-	public MyBitSet(int size){
+	public BitString(int size){
 		bitset = new boolean[size];
 	}
 	
