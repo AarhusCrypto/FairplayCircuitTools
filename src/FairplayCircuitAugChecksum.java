@@ -23,13 +23,13 @@ public class FairplayCircuitAugChecksum implements Runnable {
 	@Override
 	public void run() {
 		List<Gate> parsedGates = circuitParser.getGates();
-		int numberOfInputs = circuitParser.getTotalNumberOfInputs();
+		int numberOfOriginalInputs = circuitParser.getTotalNumberOfInputs();
 		List<Gate> augGates = 
-				getAugGates(numberOfInputs);
+				getAugGates(numberOfOriginalInputs);
 		List<Gate> augCircuit = new ArrayList<Gate>();
 
 		List<Gate> incrementedGates = 
-				getIncrementedGates(parsedGates, augGates.size(), numberOfInputs);
+				getIncrementedGates(parsedGates, augGates.size(), numberOfOriginalInputs);
 		List<Gate> augOutputGates = getOutputGates();//Must be called after getIncrementedGates()
 		augCircuit.addAll(augGates);
 		augCircuit.addAll(incrementedGates);
@@ -42,18 +42,20 @@ public class FairplayCircuitAugChecksum implements Runnable {
 
 	private String[] getHeaders(List<Gate> augCircuit) {
 		String[] res = new String[2];
-		res[0] = augCircuit.size() + " " +  
-		circuitParser.getWireCountFromSingleList(augCircuit);
-		
 		String[] inputOutputInfo = 
 				circuitParser.getFairplayInputOutputHeader();
 		
-		int newP1OInput = Integer.parseInt(inputOutputInfo[0]) *2;
-		int newP2OInput = Integer.parseInt(inputOutputInfo[1]) *2;
+		int t_a = Integer.parseInt(inputOutputInfo[0]);
+		
+		res[0] = augCircuit.size() + " " + (circuitParser.getParsedWireCount() +
+				(t_a * t_a) + (t_a * t_a) + 2 * t_a);
+				
+		int newP1Input = Integer.parseInt(inputOutputInfo[0]) * 2;
+		int newP2Input = Integer.parseInt(inputOutputInfo[1]) + t_a;
 		int newP1Output = Integer.parseInt(inputOutputInfo[2]);
-		int newP2Output = Integer.parseInt(inputOutputInfo[3]) *2;
+		int newP2Output = Integer.parseInt(inputOutputInfo[3]) + t_a;
 
-		res[1] = newP1OInput + " " + newP2OInput + " " + newP1Output + " " +
+		res[1] = newP1Input + " " + newP2Input + " " + newP1Output + " " +
 				newP2Output;
 		
 		return res;
@@ -63,7 +65,7 @@ public class FairplayCircuitAugChecksum implements Runnable {
 
 		List<Gate> res = new ArrayList<Gate>();
 		int t_a = circuitParser.getNumberOfP1Inputs();
-		int totalInputSize = numberOfStandardInputs * 2;
+		int totalInputSize = numberOfStandardInputs + 2* t_a;
 		int gateNumber = 0;
 		int r = totalInputSize - t_a;
 		List<Gate> andGates = new ArrayList<Gate>();

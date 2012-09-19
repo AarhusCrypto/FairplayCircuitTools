@@ -29,7 +29,7 @@ public class FairplayCircuitAugMultipleOutputs implements Runnable {
 		int totalGatesToBeAdded = gatesToBeAddedForM + gatesToBeAddedForE;
 		
 		int originalNumberOfWires = 
-				circuitParser.getWireCountFromSingleList(parsedGates);
+				circuitParser.getParsedWireCount();
 		int newNumberOfWires = originalNumberOfWires + addedInput;
 
 		int startOfAInput = n1;
@@ -160,13 +160,12 @@ public class FairplayCircuitAugMultipleOutputs implements Runnable {
 
 	private String[] getHeaders(List<Gate> augCircuit){
 		String[] res = new String[2];
-		res[0] = augCircuit.size() + " " +  
-				circuitParser.getWireCountFromSingleList(augCircuit);
-
 		String[] inputOutputInfo = 
 				circuitParser.getFairplayInputOutputHeader();
 
 		int m1 = Integer.parseInt(inputOutputInfo[2]);
+		res[0] = augCircuit.size() + " " + (circuitParser.getParsedWireCount() + 
+				2*(m1 * m1) + 4 * m1);  
 
 		int newP1Input = Integer.parseInt(inputOutputInfo[0]) + 3 * m1;
 		int newP2Input = Integer.parseInt(inputOutputInfo[1]);

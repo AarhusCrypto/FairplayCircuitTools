@@ -24,6 +24,7 @@ public class FairplayCircuitParser {
 	private int numberOfP1Outputs;
 	private int numberOfP2Outputs;
 	private int numberOfNonXORGates;
+	private int numberOfWiresParsed;
 	private int totalNumberOfInputs;
 	private int totalNumberOfOutputs;
 
@@ -40,6 +41,11 @@ public class FairplayCircuitParser {
 	public List<Gate> getGates() {
 		boolean counter = false;
 		ArrayList<Gate> res = new ArrayList<Gate>();
+		MultiValueMap leftMap = new MultiValueMap();
+		MultiValueMap rightMap = new MultiValueMap();
+		HashMap<Integer, Gate> outputMap = new HashMap<Integer, Gate>();
+		HashSet<Integer> hs = new HashSet<Integer>();
+		
 		try {
 			BufferedReader fbr = new BufferedReader(new InputStreamReader(
 					new FileInputStream(circuitFile), Charset.defaultCharset()));
@@ -55,9 +61,11 @@ public class FairplayCircuitParser {
 				if(line.matches("[0-9]* [0-9]*")){
 					String[] sizeInfo = line.split(" ");
 					originalNumberOfWires = Integer.parseInt(sizeInfo[1]);
+					blankWires = new boolean[originalNumberOfWires];
 					counter = true;
 					continue;
 				}
+				
 
 				/*
 				 * Parse number of input bits
@@ -82,6 +90,20 @@ public class FairplayCircuitParser {
 				 * Parse each gate line and count numberOfNonXORGates
 				 */
 				Gate g = new Gate(line);
+				int leftIndex = g.getLeftWireIndex();
+				int rightIndex = g.getRightWireIndex();
+				int outputIndex = g.getOutputWireIndex();
+				
+				// Accumulate information for later usage
+				hs.add(leftIndex);
+				hs.add(rightIndex);
+				hs.add(outputIndex);
+				leftMap.put(leftIndex, g);
+				rightMap.put(rightIndex, g);
+				outputMap.put(g.getOutputWireIndex(), g);
+				blankWires[leftIndex] = true;
+				blankWires[rightIndex] = true;
+				blankWires[outputIndex] = true;	
 
 				if (!g.isXOR()){
 					g.setGateNumber(numberOfNonXORGates);
@@ -93,20 +115,8 @@ public class FairplayCircuitParser {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		MultiValueMap leftMap = new MultiValueMap();
-		MultiValueMap rightMap = new MultiValueMap();
-		HashMap<Integer, Gate> outputMap = new HashMap<Integer, Gate>();
-		blankWires = new boolean[originalNumberOfWires];
-
-		for(Gate g: res){
-			leftMap.put(g.getLeftWireIndex(), g);
-			rightMap.put(g.getRightWireIndex(), g);
-			outputMap.put(g.getOutputWireIndex(), g);
-			blankWires[g.getLeftWireIndex()] = true;
-			blankWires[g.getRightWireIndex()] = true;
-			blankWires[g.getOutputWireIndex()] = true;		
-		}
-
+		//This is the number of unique wires parsed
+		numberOfWiresParsed = hs.size();
 		// We now strip the blank wires
 		// false means blank
 		// Runs from top to bottom, decrementing the appropriate wires
@@ -173,7 +183,11 @@ public class FairplayCircuitParser {
 	public int getOriginalNumberOfWires(){
 		return originalNumberOfWires;
 	}
-
+	
+	public int getParsedWireCount(){
+		return numberOfWiresParsed;
+	}
+	
 	private String[] getHeaderArray(String line){
 		char[] lineArray = line.toCharArray();
 		String tmp = "";
@@ -204,31 +218,4 @@ public class FairplayCircuitParser {
 
 		return res;
 	}
-
-	/**
-	 * @param multiTimedGates
-	 * @return
-	 */
-	public int getWireCountFromSingleList(List<Gate> list) {
-		HashSet<Integer> hs = new HashSet<Integer>();
-		for(Gate g: list) {
-			hs.add(g.getLeftWireIndex());
-			hs.add(g.getRightWireIndex());
-			hs.add(g.getOutputWireIndex());
-		}
-		return hs.size();
-	}
-
-	public int getWireCountFromMultipleLists(List<List<Gate>> gates){
-		HashSet<Integer> hs = new HashSet<Integer>();
-		for(List<Gate> l: gates){
-			for(Gate g: l){
-				hs.add(g.getLeftWireIndex());
-				hs.add(g.getRightWireIndex());
-				hs.add(g.getOutputWireIndex());
-			}
-		}
-		return hs.size();
-	}
-
 }

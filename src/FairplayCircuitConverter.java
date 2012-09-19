@@ -1,4 +1,3 @@
-//TODO Check this and the evaluator, the problem must be here
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -54,14 +53,10 @@ public class FairplayCircuitConverter implements Runnable {
 	}
 
 	public String getHeader(List<List<Gate>> layersOfGates) {
-		int actualNumberOfWires = circuitParser.getWireCountFromMultipleLists(layersOfGates);
-		int numberOfLayers = layersOfGates.size();
+		int actualNumberOfWires = circuitParser.getParsedWireCount();
 
+		 //We have to figure out the max layer size before writing to the file.
 		int maxLayerWidth = 0;
-
-		/*
-		 * We have to figure out the max layer size before writing to the file.
-		 */
 		for(List<Gate> l: layersOfGates){
 			maxLayerWidth = Math.max(maxLayerWidth, l.size());
 		}
@@ -72,7 +67,7 @@ public class FairplayCircuitConverter implements Runnable {
 		int numberOfNonXORGates = CUDAHeaderInfo[2];
 
 		return totalNumberOfInputs + " " + totalNumberOfOutputs + " " +
-		actualNumberOfWires + " " + numberOfLayers + " " + maxLayerWidth + " " +
+		actualNumberOfWires + " " + layersOfGates.size() + " " + maxLayerWidth + " " +
 		numberOfNonXORGates;
 	}
 
@@ -89,7 +84,7 @@ public class FairplayCircuitConverter implements Runnable {
 		int totalNumberOfInputs = circuitParser.getTotalNumberOfInputs();
 		/*
 		 * Loop to run through each list in our MultiMap, first runs through all
-		 * gates with left input 0, 1, 2, ..., 255.
+		 * gates with left input 0, 1, 2, ..., #inputs.
 		 * For each of these "input" dependant gates, we visit them recursively
 		 * and set a timestamp on each of these.
 		 */
