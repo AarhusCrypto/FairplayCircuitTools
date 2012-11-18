@@ -160,7 +160,7 @@ public class FairplayCircuitParser {
 		return getHeaderArray(secondHeader);
 	}
 
-	public int getTotalNumberOfInputs(){
+	public int getNumberOfInputs(){
 		return totalNumberOfInputs;
 	}
 

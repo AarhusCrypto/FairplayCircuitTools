@@ -164,8 +164,7 @@ public class FairplayCircuitAugMultipleOutputs implements Runnable {
 				circuitParser.getFairplayInputOutputHeader();
 
 		int m1 = Integer.parseInt(inputOutputInfo[2]);
-		res[0] = augCircuit.size() + " " + (circuitParser.getParsedWireCount() + 
-				2*(m1 * m1) + 4 * m1);  
+		res[0] = augCircuit.size() + " " + CommonUtilities.getWireCount(augCircuit);
 
 		int newP1Input = Integer.parseInt(inputOutputInfo[0]) + 3 * m1;
 		int newP2Input = Integer.parseInt(inputOutputInfo[1]);

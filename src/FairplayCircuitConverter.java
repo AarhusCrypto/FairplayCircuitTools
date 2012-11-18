@@ -81,7 +81,7 @@ public class FairplayCircuitConverter implements Runnable {
 		List<List<Gate>> layersOfGates = new ArrayList<List<Gate>>();
 		initMaps(gates);
 
-		int totalNumberOfInputs = circuitParser.getTotalNumberOfInputs();
+		int totalNumberOfInputs = circuitParser.getNumberOfInputs();
 		/*
 		 * Loop to run through each list in our MultiMap, first runs through all
 		 * gates with left input 0, 1, 2, ..., #inputs.

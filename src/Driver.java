@@ -32,14 +32,15 @@ public class Driver {
 			circuitConverter.run();
 			
 		}
-		//-ac circuitfile outputfile
-		else if (operation.equals(AUG_CHECKSUM) && checkArgs(args, 3)){
+		//-ac circuitfile outputfile l (int)
+		else if (operation.equals(AUG_CHECKSUM) && checkArgs(args, 4)){
 			circuitFile = new File(args[1]);
 			outputFile = new File(args[2]);
+			int l = Integer.parseInt(args[3]);
 			
 			FairplayCircuitParser circuitParser = new FairplayCircuitParser(circuitFile);
 			FairplayCircuitAugChecksum ac = new FairplayCircuitAugChecksum(circuitParser, 
-					outputFile);
+					outputFile, l);
 			ac.run();
 		}
 		//-am circuitfile outputfile
