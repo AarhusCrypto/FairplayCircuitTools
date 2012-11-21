@@ -10,6 +10,7 @@ public class Driver {
 	private static final String AUG_MULTI_OUTPUT = "-am";
 	private static final String FAIRPLAY_EVALUATOR = "-fe";
 	private static final String CUDA_EVALUATOR = "-ce";
+	private static final String NIST_CONVERTER = "-nc";
 	
 	
 	/**
@@ -86,6 +87,14 @@ public class Driver {
 					inputFile, outputFile, circuitParser.getGates(), 
 					circuitParser.getCUDAHeader());
 			eval.run();
+		}
+		// nc circuitfile outputfile
+		else if (operation.equals(NIST_CONVERTER) && checkArgs(args, 3)) {
+			circuitFile = new File(args[1]);
+			outputFile = new File(args[2]);
+			NistToFairplayConverter nistConverter = 
+					new NistToFairplayConverter(circuitFile, outputFile);
+			nistConverter.run();
 		}
 		else {
 			System.out.println(

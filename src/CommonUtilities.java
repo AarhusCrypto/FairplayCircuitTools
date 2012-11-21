@@ -4,6 +4,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
@@ -78,11 +80,33 @@ public class CommonUtilities {
 	public static int getWireCount(List<Gate> gates) {
 		HashSet<Integer> hs = new HashSet<Integer>();
 		for(Gate g: gates){
-			hs.add(g.getLeftWireIndex());
-			hs.add(g.getRightWireIndex());
-			hs.add(g.getOutputWireIndex());
+			int leftIndex = g.getLeftWireIndex();
+			int rightIndex = g.getRightWireIndex();
+			int outputIndex = g.getOutputWireIndex();
+			if(leftIndex != Integer.MIN_VALUE) {
+				hs.add(g.getLeftWireIndex());
+			}
+			if (rightIndex != Integer.MIN_VALUE) {
+				hs.add(g.getRightWireIndex());
+			}
+			if (outputIndex != Integer.MIN_VALUE) {
+				hs.add(g.getOutputWireIndex());
+			}
 		}
-		return hs.size() + 1; //To account for 0 indexes
+		//Put in list, sort them and see of blank wires exists!
+//		List<Integer> l = new ArrayList<Integer>();
+//		for(Integer i: hs){
+//			l.add(i);
+//		}
+//		Collections.sort(l);
+//		for(int i = 56690; i < 57000; i ++) {
+//			if (i != l.get(i)) {
+//				System.out.println(l.get(i) + " vs " + i);
+//			}
+////			System.out.println(l.get(i));
+//		}
+		
+		return hs.size(); //To account for 0 indexes
 
 	}
 }

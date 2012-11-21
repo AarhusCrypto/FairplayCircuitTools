@@ -115,6 +115,14 @@ public class FairplayCircuitConverter implements Runnable {
 				layersOfGates = visitGate(g, 0, layersOfGates);
 			}
 		}
+//		for(Gate g: layersOfGates.get(5773)) {
+//			System.out.println(g.toFairPlayString());
+//		}
+//		for(List<Gate> lgates: layersOfGates) {
+//			for(Gate g: lgates ){
+//				
+//			}
+//		}
 		return layersOfGates;
 	}
 

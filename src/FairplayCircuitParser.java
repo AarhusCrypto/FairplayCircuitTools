@@ -40,7 +40,7 @@ public class FairplayCircuitParser {
 	@SuppressWarnings("unchecked")
 	public List<Gate> getGates() {
 		boolean counter = false;
-		ArrayList<Gate> res = new ArrayList<Gate>();
+		List<Gate> res = new ArrayList<Gate>();
 		MultiValueMap leftMap = new MultiValueMap();
 		MultiValueMap rightMap = new MultiValueMap();
 		HashMap<Integer, Gate> outputMap = new HashMap<Integer, Gate>();
@@ -54,7 +54,7 @@ public class FairplayCircuitParser {
 				if (line.isEmpty()){
 					continue;
 				}
-
+				
 				/*
 				 * Parse meta-data info
 				 */
