@@ -231,7 +231,6 @@ public class NistToFairplayConverter implements Runnable {
 		for(Gate g: res) {
 			maxOutputWire = Math.max(maxOutputWire, g.getOutputWireIndex());
 		}
-//		System.out.println(maxOutputWire);
 
 		return res;
 	}
