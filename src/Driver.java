@@ -10,7 +10,7 @@ public class Driver {
 	private static final String AUG_MULTI_OUTPUT = "-am";
 	private static final String FAIRPLAY_EVALUATOR = "-fe";
 	private static final String CUDA_EVALUATOR = "-ce";
-	private static final String NIST_CONVERTER = "-nc";
+	private static final String VERILOG_CONVERT_TO_FAIRPLAY = "-vc";
 	
 	
 	/**
@@ -89,11 +89,11 @@ public class Driver {
 			eval.run();
 		}
 		// nc circuitfile outputfile
-		else if (operation.equals(NIST_CONVERTER) && checkArgs(args, 3)) {
+		else if (operation.equals(VERILOG_CONVERT_TO_FAIRPLAY) && checkArgs(args, 3)) {
 			circuitFile = new File(args[1]);
 			outputFile = new File(args[2]);
-			NistToFairplayConverter nistConverter = 
-					new NistToFairplayConverter(circuitFile, outputFile);
+			VerilogToFairplayConverter nistConverter = 
+					new VerilogToFairplayConverter(circuitFile, outputFile);
 			nistConverter.run();
 		}
 		else {
@@ -105,6 +105,7 @@ public class Driver {
 			System.out.println(AUG_MULTI_OUTPUT + ": Fairplay multi-output augmentation");
 			System.out.println(FAIRPLAY_EVALUATOR + ": Fairplay evaluation");
 			System.out.println(CUDA_EVALUATOR + ": CUDA evaluation");
+			System.out.println(VERILOG_CONVERT_TO_FAIRPLAY + ": Verilog to Fairplay format");
 		}
 	}
 

@@ -13,7 +13,7 @@ import org.apache.commons.collections.map.MultiValueMap;
 import org.apache.commons.lang3.StringUtils;
 
 
-public class NistToFairplayConverter implements Runnable {
+public class VerilogToFairplayConverter implements Runnable {
 	private File circuitFile;
 	private File outputFile;
 	private int numberOfInputs;
@@ -25,7 +25,7 @@ public class NistToFairplayConverter implements Runnable {
 	List<Gate> outputGates;
 	int maxOutputWire;
 
-	public NistToFairplayConverter(File circuitFile, File outputFile){
+	public VerilogToFairplayConverter(File circuitFile, File outputFile){
 		this.circuitFile = circuitFile;
 		this.outputFile = outputFile;
 		leftOutputGates = new ArrayList<Gate>();
