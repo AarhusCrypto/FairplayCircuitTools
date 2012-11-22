@@ -111,30 +111,30 @@ public class CircuitEvaluator implements Runnable {
 
 		for(List<Gate> layer: layersOfGates){
 			for(Gate g: layer){
-				String gate = g.getGate();
-				char[] gateArray = gate.toCharArray();
+				String boolTable = g.getBoolTable();
+				char[] boolTableArray = boolTable.toCharArray();
 
 				boolean leftInput = evals.get(g.getLeftWireIndex());
 				boolean rightInput = evals.get(g.getRightWireIndex());
 
 				if (leftInput == false &&
 						rightInput == false){
-					if(gateArray.length < 4){
+					if(boolTableArray.length < 4){
 						evals.put(g.getOutputWireIndex(), false);
 						continue;
 					}
-					if (gateArray[gateArray.length - 4] == '1'){
+					if (boolTableArray[boolTableArray.length - 4] == '1'){
 						evals.put(g.getOutputWireIndex(), true);
 					}
 					else evals.put(g.getOutputWireIndex(), false);
 				}
 				if(leftInput == false
 						&& rightInput == true){
-					if(gateArray.length < 3){
+					if(boolTableArray.length < 3){
 						evals.put(g.getOutputWireIndex(), false);
 						continue;
 					}
-					if (gateArray[gateArray.length - 3] == '1'){
+					if (boolTableArray[boolTableArray.length - 3] == '1'){
 						evals.put(g.getOutputWireIndex(), true);
 					}
 					else evals.put(g.getOutputWireIndex(), false);
@@ -142,22 +142,22 @@ public class CircuitEvaluator implements Runnable {
 				}
 				if(leftInput == true &&
 						rightInput == false){
-					if(gateArray.length < 2){
+					if(boolTableArray.length < 2){
 						evals.put(g.getOutputWireIndex(), false);
 						continue;
 					}
-					if (gateArray[gateArray.length - 2] == '1'){
+					if (boolTableArray[boolTableArray.length - 2] == '1'){
 						evals.put(g.getOutputWireIndex(), true);
 					}
 					else evals.put(g.getOutputWireIndex(), false);
 				}
 				if(leftInput == true &&
 						rightInput == true){
-					if(gateArray.length < 1){
+					if(boolTableArray.length < 1){
 						evals.put(g.getOutputWireIndex(), false);
 						continue;
 					}
-					if (gateArray[gateArray.length - 1] == '1'){
+					if (boolTableArray[boolTableArray.length - 1] == '1'){
 						evals.put(g.getOutputWireIndex(), true);
 					}
 					else evals.put(g.getOutputWireIndex(), false);

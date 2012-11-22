@@ -9,7 +9,7 @@ public class WireReuseCounter {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		File circuitFile = new File("test/data/aes_fairplay.txt");
+		File circuitFile = new File("test/data/md5_fairplay.txt");
 		FairplayCircuitParser circuitParser = new FairplayCircuitParser(circuitFile);
 		List<Gate> gates = circuitParser.getGates();
 		

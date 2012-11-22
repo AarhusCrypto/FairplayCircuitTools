@@ -48,7 +48,6 @@ public class VerilogToFairplayConverter implements Runnable {
 
 	private void incrementeGates(List<Gate> res) {
 		int incNumber = maxOutputWire + 1;
-		System.out.println(maxOutputWire);
 
 		for (Gate g: leftOutputGates) {
 			g.setLeftWireIndex(g.getLeftWireIndex() + incNumber);
@@ -79,7 +78,7 @@ public class VerilogToFairplayConverter implements Runnable {
 						|| line.startsWith("endmodule")){
 					continue;
 				}
-				if (line.contains("input [")) {
+				if (line.startsWith("input [")) {
 					String[] split = line.split(" ");
 					String inputInfo = split[1];
 					String inputNumber = 
@@ -87,7 +86,7 @@ public class VerilogToFairplayConverter implements Runnable {
 					numberOfInputs = Integer.parseInt(inputNumber) + 1;
 					continue;
 				}
-				if (line.contains("output [")) {
+				if (line.startsWith("output [")) {
 					String[] split = line.split(" ");
 					String outputInfo = split[1];
 					String outputNumber = 
@@ -95,7 +94,19 @@ public class VerilogToFairplayConverter implements Runnable {
 					numberOfOutputs = Integer.parseInt(outputNumber) + 1;
 					continue;
 				}
-
+				
+				//Constructs the constant 1 at wire 513
+				if(first) {
+					String nAND1 = "2 1 0 0 512 1110";
+					String nAND2 = "2 1 0 512 513 1110";
+					Gate g1 = new Gate(nAND1);
+					Gate g2 = new Gate(nAND2);
+					res.add(g1);
+					res.add(g2);
+					first = false;
+				}
+				
+				//Parsing of gates begins here
 				String[] split = line.split(" ");
 
 				String inputs;
@@ -117,17 +128,15 @@ public class VerilogToFairplayConverter implements Runnable {
 					boolTable = "0001";
 				}
 				if (split[0].equals("INV1S")) {
+					inputs = "2";
 					boolTable = "0110";
+					leftWire = getWire(split[2]);
 					rightWire = Integer.toString(numberOfInputs + 1);
-				}
-
-				if (!split[0].equals("INV1S")){
+					outputWire = getOutputWire(split[4]);
+				} else {
 					leftWire = getWire(split[2]);
 					rightWire = getWire(split[4]);
 					outputWire = getOutputWire(split[6]);
-				} else {
-					leftWire = getWire(split[2]);
-					outputWire = getOutputWire(split[4]);
 				}
 
 				boolean leftOutputFlag = false;
@@ -145,17 +154,6 @@ public class VerilogToFairplayConverter implements Runnable {
 				if (outputWire.startsWith("o")) {
 					outputWire = outputWire.substring(1);
 					outputFlag = true;
-				}
-				
-				//Constructs the constant 1 at wire 513
-				if(first) {
-					String nAND1 = "2 1 0 0 512 1110";
-					String nAND2 = "2 1 0 512 513 1110";
-					Gate g1 = new Gate(nAND1);
-					Gate g2 = new Gate(nAND2);
-					res.add(g1);
-					res.add(g2);
-					first = false;
 				}
 
 				String gateString = inputs + " " + outputs + " " + leftWire +
@@ -193,14 +191,8 @@ public class VerilogToFairplayConverter implements Runnable {
 			blankWires[rightIndex] = true;
 			blankWires[outputIndex] = true;	
 		}
-//		for(int i = 0; i < blankWires.length; i++) {
-//			if(!blankWires[i]) {
-//				System.out.println(i - 1);
-//			}
-//		}
 
 		//Strip blank wires
-		System.out.println(CommonUtilities.getWireCount(res));
 		for(int i =  maxOutputWire; i >= 0; i--){
 			boolean b = blankWires[i];
 			if(!b){
@@ -226,7 +218,6 @@ public class VerilogToFairplayConverter implements Runnable {
 				}
 			}
 		}
-		System.out.println(CommonUtilities.getWireCount(res));
 		maxOutputWire = 0;
 		for(Gate g: res) {
 			maxOutputWire = Math.max(maxOutputWire, g.getOutputWireIndex());
@@ -240,7 +231,6 @@ public class VerilogToFairplayConverter implements Runnable {
 			return "o" + s.substring(10, s.length() - 4);
 		} else {
 			int i = Integer.parseInt(s.substring(3, s.length() - 3));
-
 			return Integer.toString(i + numberOfInputs + 2);
 		}
 	}
@@ -252,7 +242,6 @@ public class VerilogToFairplayConverter implements Runnable {
 			return "o" + s.substring(10, s.length() - 3);
 		} else {
 			int i = Integer.parseInt(s.substring(3, s.length() - 2));
-
 			return Integer.toString(i + numberOfInputs + 2);
 		}
 	}
