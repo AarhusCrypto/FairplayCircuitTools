@@ -37,12 +37,54 @@ public class VerilogToFairplayConverter implements Runnable {
 
 	@Override
 	public void run() {
-		List<Gate> res = getGates();
+		List<String> gateStrings = analyzeCircuit();
+		List<Gate> res = getGates(gateStrings);
 		incrementeGates(res);
 		firstHeader = res.size() + " " + CommonUtilities.getWireCount(res);
 		secondHeader = 0 + " " + numberOfInputs + " " + "0" + " " + numberOfOutputs;
 		String[] headers = {firstHeader, secondHeader};
 		CommonUtilities.outputFairplayCircuit(res, outputFile, headers);
+
+	}
+
+	private List<String> analyzeCircuit() {
+		List<String> res = new ArrayList<String>();
+		try {
+			BufferedReader fbr = new BufferedReader(new InputStreamReader(
+					new FileInputStream(circuitFile), Charset.defaultCharset()));
+			String line = "";
+			while ((line = fbr.readLine()) != null) {
+				line = StringUtils.trim(line);
+				if (line.isEmpty() || line.startsWith("//") || line.startsWith("module")
+						|| line.startsWith("endmodule")){
+					continue;
+				} else if (line.startsWith("input [")) {
+					String[] split = line.split(" ");
+					String inputInfo = split[1];
+					String inputNumber = 
+							inputInfo.substring(3, inputInfo.length() - 1);
+					numberOfInputs = Integer.parseInt(inputNumber) + 1;
+					continue;
+				} else if (line.startsWith("output [")) {
+					String[] split = line.split(" ");
+					String outputInfo = split[1];
+					String outputNumber = 
+							outputInfo.substring(3, outputInfo.length() - 1);
+					numberOfOutputs = Integer.parseInt(outputNumber) + 1;
+					continue;
+				} else {
+					//TODO Analysis of the circuit, max outputgate, etc
+					
+					res.add(line);
+				}
+			}
+			fbr.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return res;
+
 
 	}
 
@@ -60,7 +102,7 @@ public class VerilogToFairplayConverter implements Runnable {
 		}
 	}
 
-	public List<Gate> getGates() {
+	public List<Gate> getGates(List<String> gates) {
 		List<Gate> res = new ArrayList<Gate>();
 		boolean[] blankWires;
 		MultiValueMap leftMap = new MultiValueMap();
@@ -68,159 +110,132 @@ public class VerilogToFairplayConverter implements Runnable {
 		HashMap<Integer, Gate> outputMap = new HashMap<Integer, Gate>();
 		boolean first = true;
 
-		try {
-			BufferedReader fbr = new BufferedReader(new InputStreamReader(
-					new FileInputStream(circuitFile), Charset.defaultCharset()));
-			String line = "";
-			while ((line = fbr.readLine()) != null) {
-				line = StringUtils.trim(line);
-				if (line.isEmpty() || line.startsWith("//") || line.startsWith("module")
-						|| line.startsWith("endmodule")){
-					continue;
-				}
-				if (line.startsWith("input [")) {
-					String[] split = line.split(" ");
-					String inputInfo = split[1];
-					String inputNumber = 
-							inputInfo.substring(3, inputInfo.length() - 1);
-					numberOfInputs = Integer.parseInt(inputNumber) + 1;
-					continue;
-				}
-				if (line.startsWith("output [")) {
-					String[] split = line.split(" ");
-					String outputInfo = split[1];
-					String outputNumber = 
-							outputInfo.substring(3, outputInfo.length() - 1);
-					numberOfOutputs = Integer.parseInt(outputNumber) + 1;
-					continue;
-				}
-				
-				//Constructs the constant 1 at wire 513
-				if(first) {
-					String nAND1 = "2 1 0 0 512 1110";
-					String nAND2 = "2 1 0 512 513 1110";
-					Gate g1 = new Gate(nAND1);
-					Gate g2 = new Gate(nAND2);
-					res.add(g1);
-					res.add(g2);
-					first = false;
-				}
-				
-				//Parsing of gates begins here
-				String[] split = line.split(" ");
 
-				String inputs;
-				String outputs = "1";
-				if (split[1].endsWith("I")) {
-					inputs = "1";
-				} else {
-					inputs = "2";
-				}
-				
-				String leftWire = "";
-				String rightWire = "";
-				String outputWire = "";
-				String boolTable = "";
-				if(split[0].equals("XOR2HS")) {
-					boolTable = "0110";
-				}
-				if (split[0].equals("AN2")) {
-					boolTable = "0001";
-				}
-				if (split[0].equals("INV1S")) {
-					inputs = "2";
-					boolTable = "0110";
-					leftWire = getWire(split[2]);
-					rightWire = Integer.toString(numberOfInputs + 1);
-					outputWire = getOutputWire(split[4]);
-				} else {
-					leftWire = getWire(split[2]);
-					rightWire = getWire(split[4]);
-					outputWire = getOutputWire(split[6]);
-				}
+		//Constructs the constant 1 at first wire after input
+		if(first) {
+			String nAND1 = "2 1 0 0 " + numberOfInputs + " 1110";
+			String nAND2 = "2 1 0 " + numberOfInputs + " " + (numberOfInputs + 1) + " 1110";
+			Gate g1 = new Gate(nAND1);
+			Gate g2 = new Gate(nAND2);
+			res.add(g1);
+			res.add(g2);
+			first = false;
+		}
+		for(String line: gates){
 
-				boolean leftOutputFlag = false;
-				boolean rightOutputFlag = false;
-				boolean outputFlag = false;
 
-				if (leftWire.startsWith("o")) {
-					leftWire = leftWire.substring(1);
-					leftOutputFlag = true;
-				}
-				if (rightWire.startsWith("o")) {
-					rightWire = rightWire.substring(1);
-					rightOutputFlag = true;
-				}
-				if (outputWire.startsWith("o")) {
-					outputWire = outputWire.substring(1);
-					outputFlag = true;
-				}
+			//Parsing of gates begins here
+			String[] split = line.split(" ");
 
-				String gateString = inputs + " " + outputs + " " + leftWire +
-						" " + rightWire + " " + outputWire + " " + boolTable;
-
-				Gate g = new Gate(gateString);
-
-				maxOutputWire = Math.max(maxOutputWire, g.getOutputWireIndex());
-				
-				res.add(g);
-				if (leftOutputFlag) {
-					leftOutputGates.add(g);
-				}
-				if (rightOutputFlag) {
-					rightOutputGates.add(g);
-				}
-				if (outputFlag) {
-					outputGates.add(g);
-				}
+			String inputs;
+			String outputs = "1";
+			if (split[1].endsWith("I")) {
+				inputs = "1";
+			} else {
+				inputs = "2";
 			}
-			fbr.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		blankWires = new boolean[maxOutputWire + 1];
-		for(Gate g: res) {
-			int leftIndex = g.getLeftWireIndex();
-			int rightIndex = g.getRightWireIndex();
-			int outputIndex = g.getOutputWireIndex();
-			
-			leftMap.put(leftIndex, g);
-			rightMap.put(rightIndex, g);
-			outputMap.put(g.getOutputWireIndex(), g);
-			blankWires[leftIndex] = true;
-			blankWires[rightIndex] = true;
-			blankWires[outputIndex] = true;	
-		}
 
-		//Strip blank wires
-		for(int i =  maxOutputWire; i >= 0; i--){
-			boolean b = blankWires[i];
-			if(!b){
-				for(int j = i; j <= maxOutputWire; j++){
-					Gate outputG = outputMap.get(j);
-					if (outputG != null){
-						outputG.setOutputWireIndex(outputG.getOutputWireIndex() - 1);
-					}
-
-					Collection<Gate> leftWires = leftMap.getCollection(j);
-					if (leftWires != null){
-						for(Gate leftG: leftWires){
-							leftG.setLeftWireIndex(leftG.getLeftWireIndex() - 1);
-						}
-					}
-
-					Collection<Gate> rightWires = rightMap.getCollection(j);
-					if (rightWires != null){
-						for(Gate rightG: rightWires){
-							rightG.setRightWireIndex(rightG.getRightWireIndex() - 1);
-						}
-					}
-				}
+			String leftWire = "";
+			String rightWire = "";
+			String outputWire = "";
+			String boolTable = "";
+			if(split[0].equals("XOR2HS")) {
+				boolTable = "0110";
 			}
-		}
-		maxOutputWire = 0;
-		for(Gate g: res) {
+			if (split[0].equals("AN2")) {
+				boolTable = "0001";
+			}
+			if (split[0].equals("INV1S")) {
+				inputs = "2";
+				boolTable = "0110";
+				leftWire = getWire(split[2]);
+				rightWire = Integer.toString(numberOfInputs + 1);
+				outputWire = getOutputWire(split[4]);
+			} else {
+				leftWire = getWire(split[2]);
+				rightWire = getWire(split[4]);
+				outputWire = getOutputWire(split[6]);
+			}
+
+			boolean leftOutputFlag = false;
+			boolean rightOutputFlag = false;
+			boolean outputFlag = false;
+
+			if (leftWire.startsWith("o")) {
+				leftWire = leftWire.substring(1);
+				leftOutputFlag = true;
+			}
+			if (rightWire.startsWith("o")) {
+				rightWire = rightWire.substring(1);
+				rightOutputFlag = true;
+			}
+			if (outputWire.startsWith("o")) {
+				outputWire = outputWire.substring(1);
+				outputFlag = true;
+			}
+
+			String gateString = inputs + " " + outputs + " " + leftWire +
+					" " + rightWire + " " + outputWire + " " + boolTable;
+
+			Gate g = new Gate(gateString);
+
 			maxOutputWire = Math.max(maxOutputWire, g.getOutputWireIndex());
+
+			res.add(g);
+			if (leftOutputFlag) {
+				leftOutputGates.add(g);
+			}
+			if (rightOutputFlag) {
+				rightOutputGates.add(g);
+			}
+			if (outputFlag) {
+				outputGates.add(g);
+			}
+
+			blankWires = new boolean[maxOutputWire + 1];
+			for(Gate g0: res) {
+				int leftIndex = g0.getLeftWireIndex();
+				int rightIndex = g0.getRightWireIndex();
+				int outputIndex = g0.getOutputWireIndex();
+
+				leftMap.put(leftIndex, g0);
+				rightMap.put(rightIndex, g0);
+				outputMap.put(g0.getOutputWireIndex(), g0);
+				blankWires[leftIndex] = true;
+				blankWires[rightIndex] = true;
+				blankWires[outputIndex] = true;	
+			}
+
+			//Strip blank wires
+			for(int i =  maxOutputWire; i >= 0; i--){
+				boolean b = blankWires[i];
+				if(!b){
+					for(int j = i; j <= maxOutputWire; j++){
+						Gate outputG = outputMap.get(j);
+						if (outputG != null){
+							outputG.setOutputWireIndex(outputG.getOutputWireIndex() - 1);
+						}
+
+						Collection<Gate> leftWires = leftMap.getCollection(j);
+						if (leftWires != null){
+							for(Gate leftG: leftWires){
+								leftG.setLeftWireIndex(leftG.getLeftWireIndex() - 1);
+							}
+						}
+
+						Collection<Gate> rightWires = rightMap.getCollection(j);
+						if (rightWires != null){
+							for(Gate rightG: rightWires){
+								rightG.setRightWireIndex(rightG.getRightWireIndex() - 1);
+							}
+						}
+					}
+				}
+			}
+			maxOutputWire = 0;
+			for(Gate g2: res) {
+				maxOutputWire = Math.max(maxOutputWire, g2.getOutputWireIndex());
+			}
 		}
 
 		return res;
