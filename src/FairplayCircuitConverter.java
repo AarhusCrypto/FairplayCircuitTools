@@ -215,7 +215,7 @@ public class FairplayCircuitConverter implements Runnable {
 
 	/**
 	 * @param g
-	 * @param gates
+	 * @param res
 	 * @return A List of lists where the given gate has been added to the
 	 * correct sublists depending on it's timestamp
 	 */
