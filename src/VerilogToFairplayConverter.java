@@ -20,6 +20,10 @@ public class VerilogToFairplayConverter implements Runnable {
 	private int numberOfOutputs;
 	private String firstHeader;
 	private String secondHeader;
+	private HashMap<String, Integer> stateMap;
+	private HashMap<String, Integer> roundMap;
+	private int stateValue;
+	private int roundValue;
 
 	List<Gate> leftOutputGates;
 	List<Gate> rightOutputGates;
@@ -38,6 +42,8 @@ public class VerilogToFairplayConverter implements Runnable {
 	public VerilogToFairplayConverter(File circuitFile, File outputFile){
 		this.circuitFile = circuitFile;
 		this.outputFile = outputFile;
+		stateMap = new HashMap<String, Integer>();
+		roundMap = new HashMap<String, Integer>();
 
 		leftOutputGates = new ArrayList<Gate>();
 		rightOutputGates = new ArrayList<Gate>();
@@ -81,7 +87,7 @@ public class VerilogToFairplayConverter implements Runnable {
 			while ((line = fbr.readLine()) != null) {
 				line = StringUtils.trim(line);
 				if (line.isEmpty() || line.startsWith("//") || line.startsWith("module")
-						|| line.startsWith("endmodule")){
+						|| line.startsWith("endmodule") || line.startsWith("wire")){
 					continue;
 				} else if (line.startsWith("input [")) {
 					String[] split = line.split(" ");
@@ -135,7 +141,8 @@ public class VerilogToFairplayConverter implements Runnable {
 						boolTable = "0110";
 						leftWire = getWire(split[2]);
 						rightWire = Integer.toString(numberOfInputs + 1);
-						outputWire = getOutputWire(split[4]);
+						System.out.println(line);
+						outputWire = getOutputWire(split[5]);
 					} else {
 						leftWire = getWire(split[2]);
 						rightWire = getWire(split[4]);
@@ -296,6 +303,8 @@ public class VerilogToFairplayConverter implements Runnable {
 
 	public List<Gate> getGates(List<Gate> gates) {
 		List<Gate> res = new ArrayList<Gate>();
+		HashMap<String, Integer> gateMap = new HashMap<String, Integer>();
+		System.out.println(roundMap.size());
 		
 		// TODO run through the special lists and add the correct wire numbers. Should
 		// start with maxOutputWire + 1. Use a HashMap<Integer,String> to keep track
@@ -309,19 +318,25 @@ public class VerilogToFairplayConverter implements Runnable {
 	}
 
 	private String getOutputWire(String s) {
-		if (s.startsWith("(output_o")) {
+//		System.out.println(s);
+		if (s.startsWith("(\\round_data")){
+			return "r" + putInRoundMap(s);
+		} else if (s.startsWith("(\\next_state")) {
+			return "s" + putInStateMap(s);
+		} else if (s.startsWith("(output_o")) {
 			return "o" + s.substring(10, s.length() - 4);
 		} else {
+			System.out.println(s);
 			int i = Integer.parseInt(s.substring(3, s.length() - 3));
 			return Integer.toString(i + numberOfInputs + 2);
 		}
 	}
 
 	private String getWire(String s) {
-		if (s.startsWith("(\round_data")){
-			return "r" + Integer.MIN_VALUE;
-		} else if (s.startsWith("(\next_state")) {
-			return "s" + Integer.MIN_VALUE;
+		if (s.startsWith("(\\round_data")){
+			return "r" + putInRoundMap(s);
+		} else if (s.startsWith("(\\next_state")) {
+			return "s" + putInStateMap(s);
 		} else if (s.startsWith("(input_i")) {
 			return s.substring(9, s.length() - 3);
 		} else if (s.startsWith("(output_o")) {
@@ -330,5 +345,25 @@ public class VerilogToFairplayConverter implements Runnable {
 			int i = Integer.parseInt(s.substring(3, s.length() - 2));
 			return Integer.toString(i + numberOfInputs + 2);
 		}
+	}
+	
+	private int putInStateMap(String s) {
+		if(stateMap.get(s) != null) {
+			return stateMap.get(s);
+		} else {
+			stateMap.put(s, stateValue++);
+			return stateValue - 1;
+		}
+		
+	}
+	
+	private int putInRoundMap(String s) {
+		if(roundMap.get(s) != null) {
+			return roundMap.get(s);
+		} else {
+			roundMap.put(s, roundValue++);
+			return roundValue - 1;
+		}
+		
 	}
 }
