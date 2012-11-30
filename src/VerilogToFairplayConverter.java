@@ -7,6 +7,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import org.apache.commons.collections.map.MultiValueMap;
@@ -69,7 +70,7 @@ public class VerilogToFairplayConverter implements Runnable {
 		firstHeader = res.size() + " " + CommonUtilities.getWireCount(res);
 		secondHeader = 0 + " " + numberOfInputs + " " + "0" + " " + numberOfOutputs;
 		String[] headers = {firstHeader, secondHeader};
-		CommonUtilities.outputFairplayCircuit(res, outputFile, headers);
+		//CommonUtilities.outputFairplayCircuit(res, outputFile, headers);
 
 	}
 
@@ -84,8 +85,11 @@ public class VerilogToFairplayConverter implements Runnable {
 			BufferedReader fbr = new BufferedReader(new InputStreamReader(
 					new FileInputStream(circuitFile), Charset.defaultCharset()));
 			String line = "";
+			String lastLine = "";
+			HashSet<String> hs = new HashSet<String>();
 			while ((line = fbr.readLine()) != null) {
 				line = StringUtils.trim(line);
+				
 				if (line.isEmpty() || line.startsWith("//") || line.startsWith("module")
 						|| line.startsWith("endmodule") || line.startsWith("wire")){
 					continue;
@@ -104,6 +108,17 @@ public class VerilogToFairplayConverter implements Runnable {
 					numberOfOutputs = Integer.parseInt(outputNumber) + 1;
 					continue;
 				} else {
+					if (!line.endsWith(";")) {
+						lastLine = lastLine + " " + line;
+						continue;
+					} else {
+						line = lastLine + " " + line;
+						line = StringUtils.trim(line);
+						line = line.replace(" )", ")");
+						line = line.replace("] [", "][");
+						lastLine = "";
+					}
+					
 					//Constructs the constant 1 at first wire after input
 					if(first) {
 						String nAND1 = "2 1 0 0 " + numberOfInputs + " 1110";
@@ -114,7 +129,6 @@ public class VerilogToFairplayConverter implements Runnable {
 						res.add(g2);
 						first = false;
 					}
-
 					//Parsing of gates begins here
 					String[] split = line.split(" ");
 
@@ -141,12 +155,37 @@ public class VerilogToFairplayConverter implements Runnable {
 						boolTable = "0110";
 						leftWire = getWire(split[2]);
 						rightWire = Integer.toString(numberOfInputs + 1);
-						System.out.println(line);
-						outputWire = getOutputWire(split[5]);
+						
+						outputWire = getOutputWire(split[4]);
+						if (split[2].contains("\\round_data")) {
+							hs.add(split[2]);
+						}
+						if (split[4].contains("\\round_data")) {
+							hs.add(split[4]);
+						}
 					} else {
 						leftWire = getWire(split[2]);
 						rightWire = getWire(split[4]);
 						outputWire = getOutputWire(split[6]);
+						
+						if (split[2].contains("\\round_data")) {
+							hs.add(split[2]);
+						}
+						if (split[4].contains("\\round_data")) {
+							hs.add(split[4]);
+						}
+						if (split[6].contains("\\round_data")) {
+							hs.add(split[6]);
+						}
+					}
+					if (split[2].contains("\\round_data")) {
+						hs.add(split[2]);
+					}
+					if (split[4].contains("\\round_data")) {
+						hs.add(split[4]);
+					}
+					if (split[4].contains("\\round_data")) {
+						hs.add(split[4]);
 					}
 
 					boolean leftOutputFlag = false;
@@ -235,10 +274,12 @@ public class VerilogToFairplayConverter implements Runnable {
 					}
 				}
 			}
+			System.out.println(hs.size());
 			fbr.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
 
 		blankWires = new boolean[maxOutputWire + 1];
 		for(Gate g0: res) {
@@ -318,7 +359,6 @@ public class VerilogToFairplayConverter implements Runnable {
 	}
 
 	private String getOutputWire(String s) {
-//		System.out.println(s);
 		if (s.startsWith("(\\round_data")){
 			return "r" + putInRoundMap(s);
 		} else if (s.startsWith("(\\next_state")) {
@@ -326,7 +366,6 @@ public class VerilogToFairplayConverter implements Runnable {
 		} else if (s.startsWith("(output_o")) {
 			return "o" + s.substring(10, s.length() - 4);
 		} else {
-			System.out.println(s);
 			int i = Integer.parseInt(s.substring(3, s.length() - 3));
 			return Integer.toString(i + numberOfInputs + 2);
 		}
