@@ -7,6 +7,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -19,6 +20,7 @@ public class VerilogToFairplayConverter implements Runnable {
 	private String firstHeader;
 	private String secondHeader;
 	private HashMap<String, Integer> stringMap;
+	private HashMap<String, Integer> inputMap;
 	private int wireCount;
 
 	List<Gate> leftOutputGates;
@@ -31,6 +33,7 @@ public class VerilogToFairplayConverter implements Runnable {
 		this.circuitFile = circuitFile;
 		this.outputFile = outputFile;
 		stringMap = new HashMap<String, Integer>();
+		inputMap = new HashMap<String, Integer>();
 
 		leftOutputGates = new ArrayList<Gate>();
 		rightOutputGates = new ArrayList<Gate>();
@@ -46,6 +49,7 @@ public class VerilogToFairplayConverter implements Runnable {
 		List<Gate> res = getGates(gateStrings);
 		incrementGates(res);
 		firstHeader = res.size() + " " + CommonUtilities.getWireCount(res);
+		//TODO: Must be based on input wires!!!!
 		secondHeader = 0 + " " + numberOfInputs + " " + "0" + " " + numberOfOutputs;
 		String[] headers = {firstHeader, secondHeader};
 		CommonUtilities.outputFairplayCircuit(res, outputFile, headers);
@@ -60,6 +64,7 @@ public class VerilogToFairplayConverter implements Runnable {
 					new FileInputStream(circuitFile), Charset.defaultCharset()));
 			String line = "";
 			String lastLine = "";
+			int inputIncNumber = 0;
 			while ((line = fbr.readLine()) != null) {
 				line = StringUtils.trim(line);
 
@@ -69,34 +74,33 @@ public class VerilogToFairplayConverter implements Runnable {
 				} else if (line.startsWith("input [")) {
 					String[] split = line.split(" ");
 					String inputInfo = split[1];
-					String inputNumber = 
-							inputInfo.substring(3, inputInfo.length() - 1);
-					numberOfInputs = Integer.parseInt(inputNumber) + 1;
+					for (int i = 2; i < split.length; i ++) {
+						inputMap.put(split[i].substring(0, split[i].length() -1), inputIncNumber);
+						int inputNumber = getInputOutputNumber(inputInfo);
+						inputIncNumber += inputNumber + 1;
+					}
 					continue;
 				} else if (line.startsWith("output [")) {
 					String[] split = line.split(" ");
 					String outputInfo = split[1];
-					String outputNumber = 
-							outputInfo.substring(3, outputInfo.length() - 1);
-					numberOfOutputs = Integer.parseInt(outputNumber) + 1;
+					int outputNumber = getInputOutputNumber(outputInfo);
+					numberOfOutputs = outputNumber + 1;
 					continue;
 				} else {
 					if(!line.endsWith(";")) {
-						if(lastLine.equals("")) {
-							lastLine = line;
-						} else {
-							lastLine = lastLine + " "  + line;
-						}
+						lastLine = lastLine + " " + line;
 						continue;
 					} else {
-						if(!lastLine.equals("")) {
-							line = lastLine + " " + line;
-							lastLine = "";
-						} 
+						line = lastLine + " " + line;
+						line = StringUtils.trim(line);
+						lastLine = "";
 					}
+					line = line.replace(" )", ")");
+					line = line.replace("] [", "][");
 					res.add(line);
 				}
 			}
+			numberOfInputs = inputIncNumber;
 			fbr.close();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -104,39 +108,17 @@ public class VerilogToFairplayConverter implements Runnable {
 		return res;
 	}
 
-	private void incrementGates(List<Gate> res) {
-		int incNumber = maxOutputWire + 1;
-
-		for (Gate g: leftOutputGates) {
-			g.setLeftWireIndex(g.getLeftWireIndex() + incNumber);
-		}
-		for (Gate g: rightOutputGates) {
-			g.setRightWireIndex(g.getRightWireIndex() + incNumber);
-		}
-		for (Gate g: outputGates) {
-			g.setOutputWireIndex(g.getOutputWireIndex() + incNumber);
-		}
-	}
-
-	public List<Gate> getGates(List<String> gates) {
+	private List<Gate> getGates(List<String> gates) {
 		List<Gate> res = new ArrayList<Gate>();
-
-		//Constructs the constant 1 at first wire after input
+		//Constructs the constant 1 wire at second first wire after input
 		String nAND1 = "2 1 0 0 " + numberOfInputs + " 1110";
 		String nAND2 = "2 1 0 " + numberOfInputs + " " + (numberOfInputs + 1) + " 1110";
 		Gate g1 = new Gate(nAND1);
 		Gate g2 = new Gate(nAND2);
 		res.add(g1);
 		res.add(g2);
+		
 		//Parsing of gates begins here
-		/*
-		 * TODO: Just use the HashMap to map the wire strings to numbers,
-		 * this way it will not matter if it is of the form n_0011, \next_state or
-		 * \next_round - as long as they get the same number all is fine.
-		 * Will need to still remember the output wires though, as
-		 * these are to be incremented at the end. A two pass run through could
-		 * change this.
-		 */
 		for (String line: gates) {
 
 			String[] split = line.split(" ");
@@ -208,23 +190,52 @@ public class VerilogToFairplayConverter implements Runnable {
 			}
 		}
 
-		System.out.println(maxOutputWire);
-		System.out.println(wireCount);
-		System.out.println(maxOutputWire);
-
 		return res;
+	}
+	
+	private void incrementGates(List<Gate> res) {
+		int incNumber = maxOutputWire + 1;
+
+		for (Gate g: leftOutputGates) {
+			g.setLeftWireIndex(g.getLeftWireIndex() + incNumber);
+		}
+		for (Gate g: rightOutputGates) {
+			g.setRightWireIndex(g.getRightWireIndex() + incNumber);
+		}
+		for (Gate g: outputGates) {
+			g.setOutputWireIndex(g.getOutputWireIndex() + incNumber);
+		}
+	}
+	
+	//Cases [31:0] or [0:511]
+	private int getInputOutputNumber(String s) {
+		String res;
+		String[] split = s.split(":");
+		if (split[0].equals("[0")) {
+			res = split[1].substring(0, split[1].length() - 1);
+		} else {
+			res = split[0].substring(1);
+		}
+		return Integer.parseInt(res);
 	}
 
 	private String getWire(String s) {
 		s = s.replace(",", "");
 		s = s.replace(");", "");
+		for (Map.Entry<String, Integer> entry: inputMap.entrySet()) {
+			String inputID = "(" + entry.getKey();
+			int incNumber = entry.getValue();
+			if (s.startsWith(inputID)) {
+				int i = Integer.parseInt(s.substring(inputID.length() + 1, s.length() - 2));
+				i += incNumber;
+				return Integer.toString(i);
+			}
+		}
 		if (s.startsWith("(input_i")) {
 			return s.substring(9, s.length() - 2);
 		} else if (s.startsWith("(output_o")) {
-			System.out.println(s);
 			return "o" + s.substring(10, s.length() - 2);
 		} else {
-			System.out.println(s);
 			return Integer.toString(getWireNumber(s) + numberOfInputs + 2);
 		}
 	}

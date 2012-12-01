@@ -4,8 +4,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
@@ -93,20 +91,8 @@ public class CommonUtilities {
 				hs.add(g.getOutputWireIndex());
 			}
 		}
-		//Put in list, sort them and see of blank wires exists!
-//		List<Integer> l = new ArrayList<Integer>();
-//		for(Integer i: hs){
-//			l.add(i);
-//		}
-//		Collections.sort(l);
-//		for(int i = 56690; i < 57000; i ++) {
-//			if (i != l.get(i)) {
-//				System.out.println(l.get(i) + " vs " + i);
-//			}
-////			System.out.println(l.get(i));
-//		}
 		
-		return hs.size(); //To account for 0 indexes
+		return hs.size();
 
 	}
 }
