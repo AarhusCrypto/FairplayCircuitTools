@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -21,7 +23,10 @@ public class VerilogToFairplayConverter implements Runnable {
 	private String secondHeader;
 	private HashMap<String, Integer> stringMap;
 	private HashMap<String, Integer> inputMap;
+	private String outputChannelName;
 	private int wireCount;
+
+	Pattern pattern;
 
 	List<Gate> leftOutputGates;
 	List<Gate> rightOutputGates;
@@ -34,6 +39,9 @@ public class VerilogToFairplayConverter implements Runnable {
 		this.outputFile = outputFile;
 		stringMap = new HashMap<String, Integer>();
 		inputMap = new HashMap<String, Integer>();
+		wireCount = 0;
+
+		pattern = Pattern.compile("\\[\\d+\\]");
 
 		leftOutputGates = new ArrayList<Gate>();
 		rightOutputGates = new ArrayList<Gate>();
@@ -49,11 +57,16 @@ public class VerilogToFairplayConverter implements Runnable {
 		List<Gate> res = getGates(gateStrings);
 		incrementGates(res);
 		firstHeader = res.size() + " " + CommonUtilities.getWireCount(res);
-		//TODO: Must be based on input wires!!!!
-		secondHeader = 0 + " " + numberOfInputs + " " + "0" + " " + numberOfOutputs;
+
+		if (inputMap.size() > 1) {
+			secondHeader = numberOfInputs/2 + " " + numberOfInputs/2 + " " +
+					"0" + " " + numberOfOutputs;
+		} else {
+			secondHeader = "0" + " " + numberOfInputs + " " + "0" + " " + numberOfOutputs;
+		}
+
 		String[] headers = {firstHeader, secondHeader};
 		CommonUtilities.outputFairplayCircuit(res, outputFile, headers);
-
 	}
 
 	private List<String> getAnalyzedCircuit() {
@@ -77,12 +90,15 @@ public class VerilogToFairplayConverter implements Runnable {
 					for (int i = 2; i < split.length; i ++) {
 						inputMap.put(split[i].substring(0, split[i].length() -1), inputIncNumber);
 						int inputNumber = getInputOutputNumber(inputInfo);
+
 						inputIncNumber += inputNumber + 1;
 					}
 					continue;
 				} else if (line.startsWith("output [")) {
 					String[] split = line.split(" ");
 					String outputInfo = split[1];
+
+					outputChannelName = split[2].substring(0, split[2].length() -1);
 					int outputNumber = getInputOutputNumber(outputInfo);
 					numberOfOutputs = outputNumber + 1;
 					continue;
@@ -117,7 +133,7 @@ public class VerilogToFairplayConverter implements Runnable {
 		Gate g2 = new Gate(nAND2);
 		res.add(g1);
 		res.add(g2);
-		
+
 		//Parsing of gates begins here
 		for (String line: gates) {
 
@@ -192,7 +208,7 @@ public class VerilogToFairplayConverter implements Runnable {
 
 		return res;
 	}
-	
+
 	private void incrementGates(List<Gate> res) {
 		int incNumber = maxOutputWire + 1;
 
@@ -206,7 +222,7 @@ public class VerilogToFairplayConverter implements Runnable {
 			g.setOutputWireIndex(g.getOutputWireIndex() + incNumber);
 		}
 	}
-	
+
 	//Cases [31:0] or [0:511]
 	private int getInputOutputNumber(String s) {
 		String res;
@@ -220,21 +236,22 @@ public class VerilogToFairplayConverter implements Runnable {
 	}
 
 	private String getWire(String s) {
+		//First check if s is inputChannel
 		s = s.replace(",", "");
 		s = s.replace(");", "");
 		for (Map.Entry<String, Integer> entry: inputMap.entrySet()) {
 			String inputID = "(" + entry.getKey();
 			int incNumber = entry.getValue();
 			if (s.startsWith(inputID)) {
-				int i = Integer.parseInt(s.substring(inputID.length() + 1, s.length() - 2));
+				int i = Integer.parseInt(getChannelIndex(s));
 				i += incNumber;
 				return Integer.toString(i);
 			}
 		}
-		if (s.startsWith("(input_i")) {
-			return s.substring(9, s.length() - 2);
-		} else if (s.startsWith("(output_o")) {
-			return "o" + s.substring(10, s.length() - 2);
+		//Then if it is outputChannel, else it is just normal
+		String outputID = "(" + outputChannelName;
+		if (s.startsWith(outputID)) {
+			return "o" + getChannelIndex(s);
 		} else {
 			return Integer.toString(getWireNumber(s) + numberOfInputs + 2);
 		}
@@ -244,8 +261,17 @@ public class VerilogToFairplayConverter implements Runnable {
 		if(stringMap.get(s) != null) {
 			return stringMap.get(s);
 		} else {
-			stringMap.put(s, wireCount++);
-			return wireCount - 1;
+			stringMap.put(s, wireCount);
+			return wireCount++;
 		}
+	}
+
+	private String getChannelIndex(String s) {
+		Matcher matcher = pattern.matcher(s);
+		String res = "";
+		if (matcher.find()) {
+			res = matcher.group();
+		}
+		return res.substring(1, res.length() - 1);
 	}
 }

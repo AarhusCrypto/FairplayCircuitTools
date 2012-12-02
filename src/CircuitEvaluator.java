@@ -32,7 +32,7 @@ public class CircuitEvaluator implements Runnable {
 		this.inputFile = inputFile;
 		this.outputFile = outputFile;
 		this.layersOfGates = layersOfGates;
-		
+
 		String[] split = header.split(" ");
 
 		inputSize = Integer.parseInt(split[0]);
@@ -43,7 +43,6 @@ public class CircuitEvaluator implements Runnable {
 	@Override
 	public void run() {
 		if(inputFile.length() != inputSize/BYTESIZE){
-			
 			System.out.println("Input mismatch, check inputfile");
 			return;
 		}
@@ -89,7 +88,7 @@ public class CircuitEvaluator implements Runnable {
 				bits.set((bytes.length * 8 - 1) - i);
 			}
 		}
-		
+
 		return bits;
 	}
 
@@ -101,7 +100,6 @@ public class CircuitEvaluator implements Runnable {
 	 */
 	public BitString evalCircuit(List<List<Gate>> layersOfGates,
 			BitString inputs) {
-		BitString result = new BitString(outputSize);
 
 		// Construct and fill up initial evaluation map with the inputs
 		HashMap<Integer, Boolean> evals = new HashMap<Integer, Boolean>();
@@ -166,14 +164,16 @@ public class CircuitEvaluator implements Runnable {
 		}
 		// Read output in little endian, but stores it in big endian
 		int currentBit = outputSize - 1;
+
+		BitString result = new BitString(outputSize);
 		for(int i = numberOfWires - outputSize; i < numberOfWires; i++){
 			boolean res;
-				 res = evals.get(i);
-				 if(res == true){
-					 result.set(currentBit);
-				 }
-				 currentBit--;
+			res = evals.get(i);
+			if(res == true){
+				result.set(currentBit);
 			}
+			currentBit--;
+		}
 
 		return result;
 	}
@@ -184,7 +184,7 @@ public class CircuitEvaluator implements Runnable {
 	 */
 	public void writeCircuitOutput(BitString result) {
 		byte[] out = toByteArray(result);
-		
+
 		try {
 			FileOutputStream outputStream = new FileOutputStream(outputFile);
 			outputStream.write(out);
@@ -200,7 +200,12 @@ public class CircuitEvaluator implements Runnable {
 	 * @return the corresponding byte[]
 	 */
 	public byte[] toByteArray(BitString bits) {
-		byte[] bytes = new byte[bits.length()/8];
+		byte[] bytes;
+		if (bits.length() % 8 == 0) {
+			bytes = new byte[bits.length()/8];
+		} else {
+			bytes = new byte[bits.length()/8 + 1];
+		}
 		for (int i = 0; i < bits.length(); i++) {
 			if (bits.get(i)) {
 				bytes[bytes.length-i/8-1] |= 1<<(i%8);
