@@ -105,7 +105,7 @@ public class CircuitEvaluator implements Runnable {
 
 		// Construct and fill up initial evaluation map with the inputs
 		HashMap<Integer, Boolean> evals = new HashMap<Integer, Boolean>();
-		for(int i = 0; i < inputSize; i++){
+		for (int i = 0; i < inputSize; i++) {
 			evals.put(i, inputs.get(i));
 		}
 
@@ -145,13 +145,11 @@ public class CircuitEvaluator implements Runnable {
 		for(int i = numberOfWires - outputSize; i < numberOfWires; i++){
 			boolean res;
 			res = evals.get(i);
-			System.out.println(res);
 			if(res == true){
 				result.set(currentBit);
 			}
 			currentBit--;
 		}
-		//TODO: Go through original adder for output gate res[1], check if true/false
 
 		return result;
 	}

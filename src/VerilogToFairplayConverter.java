@@ -39,7 +39,6 @@ public class VerilogToFairplayConverter implements Runnable {
 		this.outputFile = outputFile;
 		stringMap = new HashMap<String, Integer>();
 		inputMap = new HashMap<String, Integer>();
-		wireCount = 0;
 
 		pattern = Pattern.compile("\\[\\d+\\]");
 
@@ -117,6 +116,7 @@ public class VerilogToFairplayConverter implements Runnable {
 				}
 			}
 			numberOfInputs = inputIncNumber;
+			wireCount = inputIncNumber + 2;
 			fbr.close();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -249,6 +249,8 @@ public class VerilogToFairplayConverter implements Runnable {
 		s = s.replace(");", "");
 		for (Map.Entry<String, Integer> entry: inputMap.entrySet()) {
 			String inputID = "(" + entry.getKey();
+			//TODO Need to switch the input bits around, adding numbers are not the same as
+			// adding bits. For instance 1 + 1 is "80 00 00 00 80 00 00 00" as bit string. 
 			int incNumber = entry.getValue();
 			if (s.startsWith(inputID)) {
 				int i = Integer.parseInt(getChannelIndex(s));
@@ -261,12 +263,12 @@ public class VerilogToFairplayConverter implements Runnable {
 		if (s.startsWith(outputID)) {
 			return "o" + getChannelIndex(s);
 		} else {
-			return Integer.toString(getWireNumber(s) + numberOfInputs + 2);
+			return Integer.toString(getWireNumber(s));
 		}
 	}
 
 	private int getWireNumber(String s) {
-		if(stringMap.get(s) != null) {
+		if (stringMap.get(s) != null) {
 			return stringMap.get(s);
 		} else {
 			stringMap.put(s, wireCount);
