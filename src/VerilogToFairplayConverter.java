@@ -54,8 +54,8 @@ public class VerilogToFairplayConverter implements Runnable {
 	@Override
 	public void run() {
 		List<String> gateStrings = getAnalyzedCircuit();
-		List<Gate> res = getGates(gateStrings);
-		incrementGates(res);
+		List<Gate> gates = getGates(gateStrings);
+		List<Gate> res = getIncrementedGates(gates);
 		firstHeader = res.size() + " " + CommonUtilities.getWireCount(res);
 
 		if (inputMap.size() > 1) {
@@ -194,7 +194,7 @@ public class VerilogToFairplayConverter implements Runnable {
 			Gate g = new Gate(gateString);
 			maxOutputWire = Math.max(maxOutputWire, g.getOutputWireIndex());
 
-			res.add(g);
+			
 			if (leftOutputFlag) {
 				leftOutputGates.add(g);
 			}
@@ -203,24 +203,32 @@ public class VerilogToFairplayConverter implements Runnable {
 			}
 			if (outputFlag) {
 				outputGates.add(g);
+			} 
+			
+			if (!leftOutputFlag && !rightOutputFlag && !outputFlag) {
+				res.add(g);
 			}
 		}
 
 		return res;
 	}
 
-	private void incrementGates(List<Gate> res) {
+	private List<Gate> getIncrementedGates(List<Gate> res) {
 		int incNumber = maxOutputWire + 1;
 
 		for (Gate g: leftOutputGates) {
 			g.setLeftWireIndex(g.getLeftWireIndex() + incNumber);
+			res.add(g);
 		}
 		for (Gate g: rightOutputGates) {
 			g.setRightWireIndex(g.getRightWireIndex() + incNumber);
+			res.add(g);
 		}
 		for (Gate g: outputGates) {
 			g.setOutputWireIndex(g.getOutputWireIndex() + incNumber);
+			res.add(g);
 		}
+		return res;
 	}
 
 	//Cases [31:0] or [0:511]
