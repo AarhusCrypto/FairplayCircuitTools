@@ -50,6 +50,7 @@ public class CircuitEvaluator implements Runnable {
 		byte[] bytesRead = getBytesFromFile();
 
 		BitString input = byteArrayToBitSet(bytesRead);
+		System.out.println(input);
 
 		// The result returned is in big endian, the evaluator flips the
 		// ouput before returning
@@ -140,16 +141,17 @@ public class CircuitEvaluator implements Runnable {
 		}
 		// Read output in little endian, but stores it in big endian
 		int currentBit = outputSize - 1;
-
 		BitString result = new BitString(outputSize);
 		for(int i = numberOfWires - outputSize; i < numberOfWires; i++){
 			boolean res;
 			res = evals.get(i);
+			System.out.println(res);
 			if(res == true){
 				result.set(currentBit);
 			}
 			currentBit--;
 		}
+		//TODO: Go through original adder for output gate res[1], check if true/false
 
 		return result;
 	}
@@ -176,12 +178,7 @@ public class CircuitEvaluator implements Runnable {
 	 * @return the corresponding byte[]
 	 */
 	public byte[] toByteArray(BitString bits) {
-		byte[] bytes;
-		if (bits.length() % 8 == 0) {
-			bytes = new byte[bits.length()/8];
-		} else {
-			bytes = new byte[bits.length()/8 + 1];
-		}
+		byte[] bytes = new byte[(bits.length() + 7) / 8];
 		for (int i = 0; i < bits.length(); i++) {
 			if (bits.get(i)) {
 				bytes[bytes.length-i/8-1] |= 1<<(i%8);

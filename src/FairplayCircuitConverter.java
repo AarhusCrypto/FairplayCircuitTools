@@ -102,7 +102,7 @@ public class FairplayCircuitConverter implements Runnable {
 		 * Now that we've visited all gates which depends on a left input, we
 		 * do the same for the right input and recursively visit them again.
 		 * When we visit a gate which has already been visited we set a
-		 * timestamp again to be the max og the current time and the timestamp
+		 * time stamp again to be the max of the current time and the time stamp
 		 * of the gate. This value determines which layer the gate is to be
 		 * placed in. 
 		 */
@@ -115,14 +115,6 @@ public class FairplayCircuitConverter implements Runnable {
 				layersOfGates = visitGate(g, 0, layersOfGates);
 			}
 		}
-//		for(Gate g: layersOfGates.get(5773)) {
-//			System.out.println(g.toFairPlayString());
-//		}
-//		for(List<Gate> lgates: layersOfGates) {
-//			for(Gate g: lgates ){
-//				
-//			}
-//		}
 		return layersOfGates;
 	}
 
@@ -149,11 +141,10 @@ public class FairplayCircuitConverter implements Runnable {
 	private List<List<Gate>> visitGate(Gate g, int time, List<List<Gate>> layersOfGates) {
 		g.decCounter();
 		g.setTime(time);
-		if (g.getCounter() == 0){
-			g.setTime(time);
+		if (g.getCounter() == 0){	
 			addToSublist(g, layersOfGates);
-			for(Gate outputGate: getOutputGates(g)){
-				visitGate(outputGate, g.getTime() + 1, layersOfGates);
+			for(Gate dependingGate: getDependingGates(g)){
+				visitGate(dependingGate, g.getTime() + 1, layersOfGates);
 			}
 		}
 		return layersOfGates;
@@ -164,7 +155,7 @@ public class FairplayCircuitConverter implements Runnable {
 	 * @return A list of all gates depending directly on the given gate
 	 */
 	@SuppressWarnings("unchecked")
-	private List<Gate> getOutputGates(Gate g){
+	private List<Gate> getDependingGates(Gate g){
 		List<Gate> res = new ArrayList<Gate>();
 		int inputIndex = g.getOutputWireIndex();
 		Collection<Gate> leftList = leftMap.getCollection(inputIndex);
