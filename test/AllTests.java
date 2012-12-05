@@ -18,7 +18,7 @@ public class AllTests {
 				new CUDACircuitParser(circuitFile);
 		CircuitEvaluator eval = new CircuitEvaluator(
 				inputFile, outputFile, cudaCircuitParser.getGates(), 
-				cudaCircuitParser.getCUDAHeader());
+				cudaCircuitParser.getCUDAHeader(), false);
 		eval.run();
 
 		File expectedResultFile = new File("test/data/expected0.bin");
@@ -60,7 +60,7 @@ public class AllTests {
 					new CUDACircuitParser(circuitOutputFile);
 			CircuitEvaluator eval = new CircuitEvaluator(
 					inputFile, outputFile, cudaCircuitParser.getGates(), 
-					cudaCircuitParser.getCUDAHeader());
+					cudaCircuitParser.getCUDAHeader(), false);
 			eval.run();
 
 			File expectedResultFile = new File("test/data/expected" + i +

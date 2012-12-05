@@ -9,6 +9,7 @@ public class Driver {
 	private static final String AUG_CHECKSUM = "-ac";
 	private static final String AUG_MULTI_OUTPUT = "-am";
 	private static final String FAIRPLAY_EVALUATOR = "-fe";
+	private static final String FAIRPLAY_EVALUATOR_IA32 = "-fe32";
 	private static final String CUDA_EVALUATOR = "-ce";
 	private static final String VERILOG_CONVERT_TO_FAIRPLAY = "-vc";
 	
@@ -56,7 +57,8 @@ public class Driver {
 		}
 		
 		//-fe inputfile circuitfile outputfile
-		else if (operation.equals(FAIRPLAY_EVALUATOR) && checkArgs(args, 4)){
+		else if ((operation.equals(FAIRPLAY_EVALUATOR) || operation.equals(FAIRPLAY_EVALUATOR_IA32))
+				&& checkArgs(args, 4)){
 			
 			inputFile = new File(args[1]);
 			circuitFile = new File(args[2]);
@@ -71,9 +73,15 @@ public class Driver {
 			List<List<Gate>> layersOfGates = 
 					circuitConverter.getLayersOfGates(gates);
 			
-			CircuitEvaluator eval = 
-					new CircuitEvaluator(inputFile, outputFile, layersOfGates, 
-							circuitConverter.getHeader(layersOfGates));
+			CircuitEvaluator eval;
+			if (operation.equals(FAIRPLAY_EVALUATOR)) {
+				eval = new CircuitEvaluator(inputFile, outputFile, layersOfGates, 
+						circuitConverter.getHeader(layersOfGates), false);
+			} else {
+				eval = new CircuitEvaluator(inputFile, outputFile, layersOfGates, 
+						circuitConverter.getHeader(layersOfGates), true);
+			}
+					
 			eval.run();
 		}
 		//-ce inputfile circuitfile outputfile
@@ -85,7 +93,7 @@ public class Driver {
 			CUDACircuitParser circuitParser = new CUDACircuitParser(circuitFile);
 			CircuitEvaluator eval = new CircuitEvaluator(
 					inputFile, outputFile, circuitParser.getGates(), 
-					circuitParser.getCUDAHeader());
+					circuitParser.getCUDAHeader(), false);
 			eval.run();
 		}
 		// nc circuitfile outputfile

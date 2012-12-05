@@ -16,6 +16,7 @@ public class CircuitEvaluator implements Runnable {
 	private File inputFile;
 	private File outputFile;
 	private List<List<Gate>> layersOfGates;
+	boolean IA32;
 
 	private int inputSize;
 	private int outputSize;
@@ -28,10 +29,11 @@ public class CircuitEvaluator implements Runnable {
 	 * @param parseStrategy
 	 */
 	public CircuitEvaluator(File inputFile, File outputFile,
-			List<List<Gate>> layersOfGates, String header){
+			List<List<Gate>> layersOfGates, String header, boolean IA32){
 		this.inputFile = inputFile;
 		this.outputFile = outputFile;
 		this.layersOfGates = layersOfGates;
+		this.IA32 = IA32;
 
 		String[] split = header.split(" ");
 
@@ -50,12 +52,14 @@ public class CircuitEvaluator implements Runnable {
 		byte[] bytesRead = getBytesFromFile();
 
 		BitString input = byteArrayToBitSet(bytesRead);
-		System.out.println(input);
+		if (IA32) {
+			input = getIA32BitString(input);
+		}
+
 
 		// The result returned is in big endian, the evaluator flips the
 		// ouput before returning
 		BitString result = evalCircuit(layersOfGates, input);
-		System.out.println(result);
 
 		writeCircuitOutput(result);
 
@@ -70,11 +74,13 @@ public class CircuitEvaluator implements Runnable {
 		try {
 			RandomAccessFile f = new RandomAccessFile(inputFile, "r");
 			bytesRead = new byte[(int)f.length()];
+
 			f.read(bytesRead);
 			f.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+
 		return bytesRead;
 	}
 
@@ -183,5 +189,21 @@ public class CircuitEvaluator implements Runnable {
 			}
 		}
 		return bytes;
+	}
+	
+	private BitString getIA32BitString(BitString bString) {
+		BitString res = new BitString(bString.length());
+		
+		int m = BYTESIZE - 1;
+		for (int i = 0; i < bString.length(); i++) {
+			int offset = i % BYTESIZE;
+			if (offset == 0 && i != 0) {
+				m += BYTESIZE;
+			}
+			if (bString.get(i)) {
+				res.set(m - offset);
+			}
+		}
+		return res;
 	}
 }

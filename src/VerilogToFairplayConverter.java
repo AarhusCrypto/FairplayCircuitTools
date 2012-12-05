@@ -249,12 +249,11 @@ public class VerilogToFairplayConverter implements Runnable {
 		s = s.replace(");", "");
 		for (Map.Entry<String, Integer> entry: inputMap.entrySet()) {
 			String inputID = "(" + entry.getKey();
-			//TODO Need to switch the input bits around, adding numbers are not the same as
-			// adding bits. For instance 1 + 1 is "80 00 00 00 80 00 00 00" as bit string. 
 			int incNumber = entry.getValue();
 			if (s.startsWith(inputID)) {
 				int i = Integer.parseInt(getChannelIndex(s));
 				i += incNumber;
+				
 				return Integer.toString(i);
 			}
 		}
