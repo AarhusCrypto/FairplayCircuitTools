@@ -53,7 +53,7 @@ public class FairplayCircuitConverter implements Runnable {
 	}
 
 	public String getHeader(List<List<Gate>> layersOfGates) {
-		int actualNumberOfWires = circuitParser.getParsedWireCount();
+		int actualNumberOfWires = circuitParser.getNumberOfWiresParsed();
 
 		 //We have to figure out the max layer size before writing to the file.
 		int maxLayerWidth = 0;

@@ -8,7 +8,6 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 
 import org.apache.commons.collections.map.MultiValueMap;
@@ -18,34 +17,40 @@ public class FairplayCircuitParser {
 
 	private File circuitFile;
 	private int originalNumberOfWires;
-	private boolean[] blankWires;
+	private int numberOfWiresParsed;
+
 	private int numberOfP1Inputs;
 	private int numberOfP2Inputs;
 	private int numberOfP1Outputs;
 	private int numberOfP2Outputs;
 	private int numberOfNonXORGates;
-	private int numberOfWiresParsed;
 	private int totalNumberOfInputs;
 	private int totalNumberOfOutputs;
 
+	private boolean[] blankWires;
+	MultiValueMap leftMap;
+	MultiValueMap rightMap;
+	HashMap<Integer, Gate> outputMap;
+
 	private String secondHeader;
+	private int addedWires;
 
 	public FairplayCircuitParser(File circuitFile){
 		this.circuitFile = circuitFile;
+		this.addedWires = 0;
+		this.leftMap = new MultiValueMap();
+		this.rightMap = new MultiValueMap();
+		this.outputMap = new HashMap<Integer, Gate>();
 	}
 
 	/**
 	 * @return A list of gates in the given circuitFile
 	 */
-	@SuppressWarnings("unchecked")
 	public List<Gate> getGates() {
-		boolean counter = false;
+		boolean secondLine = false;
+		boolean constantGateCounter = false;
 		List<Gate> res = new ArrayList<Gate>();
-		MultiValueMap leftMap = new MultiValueMap();
-		MultiValueMap rightMap = new MultiValueMap();
-		HashMap<Integer, Gate> outputMap = new HashMap<Integer, Gate>();
-		HashSet<Integer> hs = new HashSet<Integer>();
-		
+
 		try {
 			BufferedReader fbr = new BufferedReader(new InputStreamReader(
 					new FileInputStream(circuitFile), Charset.defaultCharset()));
@@ -54,7 +59,7 @@ public class FairplayCircuitParser {
 				if (line.isEmpty()){
 					continue;
 				}
-				
+
 				/*
 				 * Parse meta-data info
 				 */
@@ -62,48 +67,74 @@ public class FairplayCircuitParser {
 					String[] sizeInfo = line.split(" ");
 					originalNumberOfWires = Integer.parseInt(sizeInfo[1]);
 					blankWires = new boolean[originalNumberOfWires];
-					counter = true;
+					secondLine = true;
+
 					continue;
 				}
-				
 
 				/*
 				 * Parse number of input bits
 				 */
-				if (counter == true){
+				if (secondLine){
 					secondHeader = line;
 
 					String[] split = getHeaderArray(line);
 
 					numberOfP1Inputs = Integer.parseInt(split[0]);
 					numberOfP2Inputs = Integer.parseInt(split[1]);
-					numberOfP1Outputs = Integer.parseInt(split[2]);
-					numberOfP2Outputs = Integer.parseInt(split[3]);
-					totalNumberOfInputs = numberOfP1Inputs +
-							numberOfP2Inputs;
+					if (split.length < 4) {
+						numberOfP1Outputs = 0;
+						numberOfP2Outputs = Integer.parseInt(split[2]);
+					} else {
+						numberOfP1Outputs = Integer.parseInt(split[2]);
+						numberOfP2Outputs = Integer.parseInt(split[3]);
+					}
+
+					totalNumberOfInputs = numberOfP1Inputs + numberOfP2Inputs;
 					totalNumberOfOutputs = numberOfP1Outputs + numberOfP2Outputs;
-					counter = false;
+					secondLine = false;
 					continue;
+				}
+
+				if (!constantGateCounter && (line.endsWith("INV") || 
+						line.endsWith("XOR") || line.endsWith("AND"))) {
+
+					//Constructs the constant 1 wire at second first wire after input
+					String nAND1 = "2 1 0 0 " + totalNumberOfInputs + " 1110";
+					String nAND2 = "2 1 0 " + totalNumberOfInputs + " " + (totalNumberOfInputs + 1) + " 1110";
+					Gate g1 = new Gate(nAND1);
+					Gate g2 = new Gate(nAND2);
+
+					res.add(g1);
+					res.add(g2);
+					addedWires = 2;
+					originalNumberOfWires += addedWires;
+					
+					// blankWires must be overwritten before adding g1 and g2
+					blankWires = new boolean[originalNumberOfWires];
+					addToWireInfo(g1);
+					addToWireInfo(g2);
+					constantGateCounter = true;
+				}
+
+				String[] split = line.split(" ");
+				if (line.endsWith("INV")) {
+					line = "2 " + split[1] + " " + getWire(split[2]) + " " + 
+							(totalNumberOfInputs + 1) + " " + getWire(split[3]) + " " + "0110";
+				} else if (line.endsWith("XOR")) {
+					line = split[0] + " " + split[1] + " " + getWire(split[2]) + " " + 
+							getWire(split[3]) + " " + getWire(split[4]) + " " + "0110";
+				} else if (line.endsWith("AND")) {
+					line = split[0] + " " + split[1] + " " + getWire(split[2]) + " " + 
+							getWire(split[3]) + " " + getWire(split[4]) + " " + "0001";
 				}
 
 				/*
 				 * Parse each gate line and count numberOfNonXORGates
 				 */
 				Gate g = new Gate(line);
-				int leftIndex = g.getLeftWireIndex();
-				int rightIndex = g.getRightWireIndex();
-				int outputIndex = g.getOutputWireIndex();
-				
-				// Accumulate information for later usage
-				hs.add(leftIndex);
-				hs.add(rightIndex);
-				hs.add(outputIndex);
-				leftMap.put(leftIndex, g);
-				rightMap.put(rightIndex, g);
-				outputMap.put(g.getOutputWireIndex(), g);
-				blankWires[leftIndex] = true;
-				blankWires[rightIndex] = true;
-				blankWires[outputIndex] = true;	
+				addToWireInfo(g);
+
 
 				if (!g.isXOR()){
 					g.setGateNumber(numberOfNonXORGates);
@@ -115,17 +146,50 @@ public class FairplayCircuitParser {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
 		//This is the number of unique wires parsed
-		numberOfWiresParsed = hs.size();
+		numberOfWiresParsed = CommonUtilities.getWireCount(res);
+		stripBlankWires(res);	
+
+		return res;
+	}
+	
+	private int getWire(String s) {
+		int wire = Integer.parseInt(s);
+		if (wire < totalNumberOfInputs) {
+			return wire;
+		} else {
+			return wire + addedWires;
+		}
+	}
+
+	private void addToWireInfo(Gate g) {
+		int leftIndex = g.getLeftWireIndex();
+		int rightIndex = g.getRightWireIndex();
+		int outputIndex = g.getOutputWireIndex();
+
+		// Accumulate information for later usage
+		leftMap.put(leftIndex, g);
+		rightMap.put(rightIndex, g);
+		outputMap.put(outputIndex, g);
+		blankWires[leftIndex] = true;
+		blankWires[rightIndex] = true;
+		blankWires[outputIndex] = true;	
+
+	}
+
+	@SuppressWarnings("unchecked")
+	private void stripBlankWires(List<Gate> res) {
+
 		// We now strip the blank wires
 		// false means blank
 		// Runs from top to bottom, decrementing the appropriate wires
 		// Is a bit funky since we cannot guarantee the input circuit
 		// is sorted by output wires
-		for(int i =  originalNumberOfWires - 1; i >= 0; i--){
+		for (int i =  originalNumberOfWires - 1; i >= 0; i--) {
 			boolean b = blankWires[i];
 			if(!b){
-				for(int j = i; j <= originalNumberOfWires; j++){
+				for (int j = i; j <= originalNumberOfWires; j++) {
 					Gate outputG = outputMap.get(j);
 					if (outputG != null){
 						outputG.setOutputWireIndex(outputG.getOutputWireIndex() - 1);
@@ -147,8 +211,6 @@ public class FairplayCircuitParser {
 				}
 			}
 		}
-
-		return res;
 	}
 
 	public int[] getCUDAHeaderInfo(){
@@ -183,11 +245,11 @@ public class FairplayCircuitParser {
 	public int getOriginalNumberOfWires(){
 		return originalNumberOfWires;
 	}
-	
-	public int getParsedWireCount(){
+
+	public int getNumberOfWiresParsed() {
 		return numberOfWiresParsed;
 	}
-	
+
 	private String[] getHeaderArray(String line){
 		char[] lineArray = line.toCharArray();
 		String tmp = "";

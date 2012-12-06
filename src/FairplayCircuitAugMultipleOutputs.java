@@ -29,7 +29,7 @@ public class FairplayCircuitAugMultipleOutputs implements Runnable {
 		int totalGatesToBeAdded = gatesToBeAddedForM + gatesToBeAddedForE;
 		
 		int originalNumberOfWires = 
-				circuitParser.getParsedWireCount();
+				circuitParser.getNumberOfWiresParsed();
 		int newNumberOfWires = originalNumberOfWires + addedInput;
 
 		int startOfAInput = n1;
