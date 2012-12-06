@@ -40,7 +40,7 @@ public class FairplayCircuitAugChecksum implements Runnable {
 		augCircuit.addAll(augGates);
 		augCircuit.addAll(incrementedGates);
 		augCircuit.addAll(augOutputGates);
-
+		
 		String[] headers = getHeaders(augCircuit);
 
 		CommonUtilities.outputFairplayCircuit(augCircuit, outputFile, headers);
@@ -77,12 +77,11 @@ public class FairplayCircuitAugChecksum implements Runnable {
 		/**
 		 * Add all the AND gates. We assume r is the 3rd input
 		 */
-		for(int i = 0; i < l; i++){
+		for(int i = 0; i <= l; i++){
 			for(int j = 0; j < t_a; j++){
 				int leftWire = r + i + j;
 				int rightWire = j;
 				int outputWire = newNumberOfInputs + i * t_a + j;
-
 				Gate g = new Gate("2 1 "+ leftWire + " " + rightWire +
 						" " + outputWire + " 0001");
 				g.setGateNumber(gateNumber++);
@@ -115,6 +114,7 @@ public class FairplayCircuitAugChecksum implements Runnable {
 					leftWire = priorOutputWire;
 					rightWire = newNumberOfInputs + t_a * i + x;
 				}
+
 				int outputWire = xorGateStart + (x - 1) + i * (t_a - 1);
 				priorOutputWire = outputWire;
 
