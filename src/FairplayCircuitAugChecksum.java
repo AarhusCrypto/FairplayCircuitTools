@@ -101,7 +101,6 @@ public class FairplayCircuitAugChecksum implements Runnable {
 		int xorGateStart = res.size() + newNumberOfInputs;
 
 		for (int i = 0; i < l; i++){
-			//int multCounter = s - t_a;
 			int priorOutputWire = 0;
 			for (int x = 1; x < t_a; x++){
 				int leftWire;
