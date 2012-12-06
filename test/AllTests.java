@@ -10,8 +10,8 @@ public class AllTests {
 	
 	@Test
 	public void assertCircuitEvaluator(){
-		File inputFile = new File("test/data/input0.bin");
-		File outputFile = new File("test/data/out.bin");
+		File inputFile = new File("test/data/input/input0.bin");
+		File outputFile = new File("test/data/out/out.bin");
 		File circuitFile = new File("test/data/aes_cuda.txt");
 
 		CUDACircuitParser cudaCircuitParser = 
@@ -21,7 +21,7 @@ public class AllTests {
 				cudaCircuitParser.getCUDAHeader(), false);
 		eval.run();
 
-		File expectedResultFile = new File("test/data/expected0.bin");
+		File expectedResultFile = new File("test/data/input/expected0.bin");
 
 		boolean res = false;
 		try {
@@ -54,8 +54,8 @@ public class AllTests {
 		//Checks that the converted circuit is correct
 		boolean res = true;
 		for(int i = 0; i < 4; i++){
-			File inputFile = new File("test/data/input" + i + ".bin");
-			File outputFile = new File("test/data/out.bin");
+			File inputFile = new File("test/data/input/input" + i + ".bin");
+			File outputFile = new File("test/data/out/out.bin");
 			CUDACircuitParser cudaCircuitParser = 
 					new CUDACircuitParser(circuitOutputFile);
 			CircuitEvaluator eval = new CircuitEvaluator(
@@ -63,7 +63,7 @@ public class AllTests {
 					cudaCircuitParser.getCUDAHeader(), false);
 			eval.run();
 
-			File expectedResultFile = new File("test/data/expected" + i +
+			File expectedResultFile = new File("test/data/input/expected" + i +
 					".bin");
 			try {
 				res = res && FileUtils.contentEquals(expectedResultFile, 
