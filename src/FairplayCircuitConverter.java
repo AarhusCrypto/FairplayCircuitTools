@@ -44,7 +44,7 @@ public class FairplayCircuitConverter implements Runnable {
 
 		List<List<Gate>> layersOfGates = getLayersOfGates(gates);
 
-		if(sorted){
+		if (sorted) {
 			layersOfGates = getXorSortedLayers(layersOfGates);
 		}
 
@@ -55,13 +55,13 @@ public class FairplayCircuitConverter implements Runnable {
 	public String getHeader(List<List<Gate>> layersOfGates) {
 		int actualNumberOfWires = circuitParser.getNumberOfWiresParsed();
 
-		 //We have to figure out the max layer size before writing to the file.
+		//We have to figure out the max layer size before writing to the file.
 		int maxLayerWidth = 0;
-		for(List<Gate> l: layersOfGates){
+		for (List<Gate> l: layersOfGates) {
 			maxLayerWidth = Math.max(maxLayerWidth, l.size());
 		}
 		int[] CUDAHeaderInfo = circuitParser.getCUDAHeaderInfo();
-		
+
 		int totalNumberOfInputs = CUDAHeaderInfo[0];
 		int totalNumberOfOutputs = CUDAHeaderInfo[1];
 		int numberOfNonXORGates = CUDAHeaderInfo[2];
@@ -88,12 +88,12 @@ public class FairplayCircuitConverter implements Runnable {
 		 * For each of these "input" dependant gates, we visit them recursively
 		 * and set a timestamp on each of these.
 		 */
-		for(int i = 0; i < totalNumberOfInputs; i++){
+		for (int i = 0; i < totalNumberOfInputs; i++) {
 			Collection<Gate> leftList = leftMap.getCollection(i);
 			if(leftList == null){
 				continue;
 			}
-			for(Gate g: leftList){
+			for (Gate g: leftList) {
 				visitGate(g, 0, layersOfGates);
 			}
 		}
@@ -106,12 +106,12 @@ public class FairplayCircuitConverter implements Runnable {
 		 * of the gate. This value determines which layer the gate is to be
 		 * placed in. 
 		 */
-		for(int i = 0; i < totalNumberOfInputs; i++){
+		for (int i = 0; i < totalNumberOfInputs; i++) {
 			Collection<Gate> rightList = rightMap.getCollection(i);
-			if(rightList == null){
+			if (rightList == null) {
 				continue;
 			}
-			for(Gate g: rightList){
+			for (Gate g: rightList) {
 				layersOfGates = visitGate(g, 0, layersOfGates);
 			}
 		}
@@ -124,8 +124,8 @@ public class FairplayCircuitConverter implements Runnable {
 	 * elements have the same key a list is created to hold each value associated to this
 	 * key.
 	 */
-	private void initMaps(List<Gate> gates){
-		for(Gate g: gates){
+	private void initMaps(List<Gate> gates) {
+		for (Gate g: gates) {
 			leftMap.put(g.getLeftWireIndex(), g);
 			rightMap.put(g.getRightWireIndex(), g);
 			outputMap.put(g.getOutputWireIndex(), g);
@@ -141,9 +141,9 @@ public class FairplayCircuitConverter implements Runnable {
 	private List<List<Gate>> visitGate(Gate g, int time, List<List<Gate>> layersOfGates) {
 		g.decCounter();
 		g.setTime(time);
-		if (g.getCounter() == 0){	
+		if (g.getCounter() == 0) {	
 			addToSublist(g, layersOfGates);
-			for(Gate dependingGate: getDependingGates(g)){
+			for (Gate dependingGate: getDependingGates(g)) {
 				visitGate(dependingGate, g.getTime() + 1, layersOfGates);
 			}
 		}
@@ -155,7 +155,7 @@ public class FairplayCircuitConverter implements Runnable {
 	 * @return A list of all gates depending directly on the given gate
 	 */
 	@SuppressWarnings("unchecked")
-	private List<Gate> getDependingGates(Gate g){
+	private List<Gate> getDependingGates(Gate g) {
 		List<Gate> res = new ArrayList<Gate>();
 		int inputIndex = g.getOutputWireIndex();
 		Collection<Gate> leftList = leftMap.getCollection(inputIndex);
@@ -180,14 +180,15 @@ public class FairplayCircuitConverter implements Runnable {
 	 */
 	private List<List<Gate>> getXorSortedLayers(List<List<Gate>> layersOfGates) {
 		List<List<Gate>> res = new ArrayList<List<Gate>>();
-		for(List<Gate> l: layersOfGates){
+		for (List<Gate> l: layersOfGates) {
 			List<Gate> xorLayer = new ArrayList<Gate>();
 			List<Gate> nonXorLayer = new ArrayList<Gate>();
-			for(Gate g: l){
-				if(g.isXOR()){
+			for (Gate g: l) {
+				if (g.isXOR()) {
 					xorLayer.add(g);
+				} else {
+					nonXorLayer.add(g);
 				}
-				else nonXorLayer.add(g);
 			}
 			res.add(xorLayer);
 			/**
@@ -195,11 +196,11 @@ public class FairplayCircuitConverter implements Runnable {
 			 * justify creating a new layer
 			 */
 
-			if(nonXorLayer.size() > NEW_LAYER_THRESHOLD){
+			if (nonXorLayer.size() > NEW_LAYER_THRESHOLD) {
 				res.add(nonXorLayer);
+			} else {
+				xorLayer.addAll(nonXorLayer);
 			}
-			else xorLayer.addAll(nonXorLayer);
-
 		}
 		return res;
 	}
@@ -210,9 +211,9 @@ public class FairplayCircuitConverter implements Runnable {
 	 * @return A List of lists where the given gate has been added to the
 	 * correct sublists depending on it's timestamp
 	 */
-	private List<List<Gate>> addToSublist(Gate g, List<List<Gate>> layersOfGates){
+	private List<List<Gate>> addToSublist(Gate g, List<List<Gate>> layersOfGates) {
 
-		while(layersOfGates.size() <= g.getTime()){
+		while (layersOfGates.size() <= g.getTime()) {
 			layersOfGates.add(new ArrayList<Gate>());
 		}
 

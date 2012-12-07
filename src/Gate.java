@@ -14,7 +14,7 @@ public class Gate {
 	private int numberOfInputWires;
 	private int numberOfOutputWires;
 
-	public Gate(String s){
+	public Gate(String s) {
 
 		//Example string: 2 1 96 99 256 0110
 		String[] split = s.split(" ");
@@ -30,66 +30,69 @@ public class Gate {
 		gateNumber = -1;
 	}
 
-	public int getLeftWireIndex(){
+	public int getLeftWireIndex()  {
 		return leftWireIndex;
 	}
 
-	public int getRightWireIndex(){
+	public int getRightWireIndex() {
 		return rightWireIndex;
 	}
 
-	public int getOutputWireIndex(){
+	public int getOutputWireIndex() {
 		return outputWireIndex;
 	}
 
-	public int getCounter(){
+	public int getCounter() {
 		return counter;
 	}
 
-	public void decCounter(){
+	public void decCounter() {
 		counter--;
 	}
 
-	public int getTime(){
+	public int getTime() {
 		return time;
 	}
 
-	public void setTime(int time){
+	public void setTime(int time) {
 		this.time = Math.max(this.time, time);
 	}
 
-	public String getBoolTable(){
+	public String getBoolTable() {
 		return boolTable;
 	}
 
-	public String toFairPlayString(){
+	public String toFairPlayString() {
 		return numberOfInputWires + " " +  numberOfOutputWires + " " + getLeftWireIndex() + " " + getRightWireIndex() +
 				" " + getOutputWireIndex() + " " + getBoolTable();
 	}
-	
-	public String toCUDAString(){
+
+	public String toCUDAString() {
 		return getGateNumber() + " " + getLeftWireIndex() + " " + getRightWireIndex() +
 				" " + getOutputWireIndex() + " " + getBoolTable();
 	}
 
-	public boolean isXOR(){
-		if (boolTable.matches("110")){
-			return true;
-		}
-		else return false;
+	public String toString() {
+		return toFairPlayString();
 	}
 
-	public void setGateNumber(int gateNumber){
+	public boolean isXOR() {
+		if (boolTable.matches("110")) {
+			return true;
+		} else return false;
+	}
+
+	public void setGateNumber(int gateNumber) {
 		this.gateNumber = gateNumber;
 	}
 
-	public int getGateNumber(){
+	public int getGateNumber() {
 		return gateNumber;
 	}
 
 	public void setLeftWireIndex(int index) {
 		leftWireIndex = index;
-		
+
 	}
 
 	public void setRightWireIndex(int index) {
@@ -98,6 +101,6 @@ public class Gate {
 
 	public void setOutputWireIndex(int index) {
 		outputWireIndex = index;
-		
+
 	}
 }

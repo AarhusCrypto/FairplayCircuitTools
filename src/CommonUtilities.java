@@ -10,7 +10,7 @@ import java.util.List;
 
 public class CommonUtilities {
 	public static void outputFairplayCircuit(List<Gate> circuit, File outputFile,
-			String[] headers){
+			String[] headers) {
 		BufferedWriter fbw = null;
 		try {
 			fbw = new BufferedWriter(new OutputStreamWriter(
@@ -21,7 +21,7 @@ public class CommonUtilities {
 			fbw.newLine();
 			fbw.newLine();
 
-			for(Gate g: circuit){
+			for(Gate g: circuit) {
 				fbw.write(g.toFairPlayString());
 				fbw.newLine();
 			}
@@ -50,13 +50,13 @@ public class CommonUtilities {
 			/*
 			 * Write the gates the the file, one layer at a time
 			 */
-			for(List<Gate> l: layersOfGates){
+			for (List<Gate> l: layersOfGates) {
 				// Write the size of the current layer
 				fbw.write("*" + l.size()); 
 				fbw.newLine();
 
 				// Write the gates in this layer
-				for(Gate g: l){
+				for (Gate g: l) {
 					String gateString = layersOfGates.indexOf(l) + " " + 
 							g.toCUDAString();
 					fbw.write(gateString);
@@ -77,11 +77,11 @@ public class CommonUtilities {
 
 	public static int getWireCount(List<Gate> gates) {
 		HashSet<Integer> hs = new HashSet<Integer>();
-		for(Gate g: gates){
+		for (Gate g: gates) {
 			int leftIndex = g.getLeftWireIndex();
 			int rightIndex = g.getRightWireIndex();
 			int outputIndex = g.getOutputWireIndex();
-			if(leftIndex != Integer.MIN_VALUE) {
+			if (leftIndex != Integer.MIN_VALUE) {
 				hs.add(g.getLeftWireIndex());
 			}
 			if (rightIndex != Integer.MIN_VALUE) {
@@ -91,8 +91,6 @@ public class CommonUtilities {
 				hs.add(g.getOutputWireIndex());
 			}
 		}
-		
 		return hs.size();
-
 	}
 }

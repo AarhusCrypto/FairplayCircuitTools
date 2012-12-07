@@ -24,8 +24,8 @@ public class Driver {
 		boolean sorted = false;
 		
 		String operation = args[0];
-		//-fc circuitfile outputfile
-		if (operation.equals(FAIRPLAY_CONVERT_TO_CUDA) && checkArgs(args, 3)){
+		// -fc circuitfile outputfile
+		if (operation.equals(FAIRPLAY_CONVERT_TO_CUDA) && checkArgs(args, 3)) {
 			circuitFile = new File(args[1]);
 			outputFile = new File(args[2]);
 			FairplayCircuitParser circuitParser = new FairplayCircuitParser(circuitFile);
@@ -34,8 +34,8 @@ public class Driver {
 			circuitConverter.run();
 			
 		}
-		//-ac circuitfile outputfile l (int)
-		else if (operation.equals(AUG_CHECKSUM) && checkArgs(args, 4)){
+		// -ac circuitfile outputfile l (int)
+		else if (operation.equals(AUG_CHECKSUM) && checkArgs(args, 4)) {
 			circuitFile = new File(args[1]);
 			outputFile = new File(args[2]);
 			int l = Integer.parseInt(args[3]);
@@ -45,8 +45,8 @@ public class Driver {
 					outputFile, l);
 			ac.run();
 		}
-		//-am circuitfile outputfile
-		else if (operation.equals(AUG_MULTI_OUTPUT) && checkArgs(args, 3)){
+		// -am circuitfile outputfile
+		else if (operation.equals(AUG_MULTI_OUTPUT) && checkArgs(args, 3)) {
 			circuitFile = new File(args[1]);
 			outputFile = new File(args[2]);
 			
@@ -56,10 +56,9 @@ public class Driver {
 			am.run();
 		}
 		
-		//-fe inputfile circuitfile outputfile
-		else if ((operation.equals(FAIRPLAY_EVALUATOR) || operation.equals(FAIRPLAY_EVALUATOR_IA32))
-				&& checkArgs(args, 4)){
-			
+		// -fe inputfile circuitfile outputfile
+		else if ((operation.equals(FAIRPLAY_EVALUATOR) || 
+				operation.equals(FAIRPLAY_EVALUATOR_IA32)) && checkArgs(args, 4)) {	
 			inputFile = new File(args[1]);
 			circuitFile = new File(args[2]);
 			outputFile = new File(args[3]);
@@ -84,8 +83,8 @@ public class Driver {
 					
 			eval.run();
 		}
-		//-ce inputfile circuitfile outputfile
-		else if (operation.equals(CUDA_EVALUATOR) && checkArgs(args, 4)){
+		// -ce inputfile circuitfile outputfile
+		else if (operation.equals(CUDA_EVALUATOR) && checkArgs(args, 4)) {
 			
 			inputFile = new File(args[1]);
 			circuitFile = new File(args[2]);
@@ -96,13 +95,13 @@ public class Driver {
 					circuitParser.getCUDAHeader(), false);
 			eval.run();
 		}
-		// nc circuitfile outputfile
+		// -vc circuitfile outputfile
 		else if (operation.equals(VERILOG_CONVERT_TO_FAIRPLAY) && checkArgs(args, 3)) {
 			circuitFile = new File(args[1]);
 			outputFile = new File(args[2]);
-			VerilogToFairplayConverter nistConverter = 
+			VerilogToFairplayConverter verilogConverter = 
 					new VerilogToFairplayConverter(circuitFile, outputFile);
-			nistConverter.run();
+			verilogConverter.run();
 		}
 		else {
 			System.out.println(

@@ -9,7 +9,7 @@ public class FairplayCircuitAugMultipleOutputs implements Runnable {
 	private File outputFile;
 
 	public FairplayCircuitAugMultipleOutputs(FairplayCircuitParser circuitParser,
-			File outputFile){
+			File outputFile) {
 		this.circuitParser = circuitParser;
 		this.outputFile = outputFile; 
 	}
@@ -23,7 +23,7 @@ public class FairplayCircuitAugMultipleOutputs implements Runnable {
 		int m1 = circuitParser.getNumberOfP1Outputs();
 		int m2 = circuitParser.getNumberOfP2Outputs();
 		
-		int addedInput = 3 *m1;
+		int addedInput = 3 * m1;
 		int gatesToBeAddedForM = (m1 * m1) + (m1 * m1);
 		int gatesToBeAddedForE = m1;
 		int totalGatesToBeAdded = gatesToBeAddedForM + gatesToBeAddedForE;
@@ -64,24 +64,24 @@ public class FairplayCircuitAugMultipleOutputs implements Runnable {
 
 	private List<Gate> getPreparedCircuit(List<Gate> gates, int n1, 
 			int addedInputs, int startOfP2Output, int m2, int gatesToBeAdded) {
-		for(Gate g: gates){
+		for (Gate g: gates) {
 			int leftIndex = g.getLeftWireIndex();
 			int rightIndex = g.getRightWireIndex();
 			int outputIndex = g.getOutputWireIndex();
 
-			if(outputIndex >= startOfP2Output){
+			if (outputIndex >= startOfP2Output) {
 				g.setOutputWireIndex(outputIndex + gatesToBeAdded);
 			}
 
 			outputIndex = g.getOutputWireIndex();
 
-			if(leftIndex >= n1){
+			if (leftIndex >= n1) {
 				g.setLeftWireIndex(leftIndex + addedInputs);
 			}
-			if(rightIndex >= n1){
+			if (rightIndex >= n1) {
 				g.setRightWireIndex(rightIndex + addedInputs);
 			}
-			if(outputIndex >= n1){
+			if (outputIndex >= n1) {
 				g.setOutputWireIndex(outputIndex + addedInputs);
 			}
 		}
@@ -91,7 +91,7 @@ public class FairplayCircuitAugMultipleOutputs implements Runnable {
 	private List<Gate> getEGates(int startOfP1Outputs, int startOfE, int startOfC, int m1) {
 		List<Gate> res = new ArrayList<Gate>();
 
-		for(int i = 0; i < m1; i++){
+		for (int i = 0; i < m1; i++) {
 			int leftWire = startOfP1Outputs + i;
 			int rightWire = startOfC + i;
 			int outputWire = startOfE + i;
@@ -104,16 +104,16 @@ public class FairplayCircuitAugMultipleOutputs implements Runnable {
 	}
 
 	private List<Gate> getMGates(int startOfE, int startOfA, int startOfB, int m1,
-			int startOfMComputation, int startOfM){
+			int startOfMComputation, int startOfM) {
 		List<Gate> res = new ArrayList<Gate>();
 
 		//Construct the AND and XOR gates
 		int priorOutput = 0;
 		int m1Squared = m1 * m1;
 		int[] aConvolutedE = new int[m1];
-		for(int j = 0; j < m1; j++){
+		for (int j = 0; j < m1; j++) {
 			int index = 0;
-			for(int i = 0; i < m1; i++){
+			for (int i = 0; i < m1; i++) {
 				int leftWire = startOfA + i;
 				int rightWire = startOfE + ((i + j) % m1);
 				index = m1 * j + i;
@@ -122,15 +122,14 @@ public class FairplayCircuitAugMultipleOutputs implements Runnable {
 						" " + outputWire + " 0001");
 				res.add(andGate);
 				/*****************************************************/
-				if(i == m1 - 1){
+				if (i == m1 - 1) {
 					continue;
 				}
 				index = j * m1 + i;
-				if(i == 0){
+				if (i == 0) {
 					leftWire = startOfMComputation + index;
 					rightWire = startOfMComputation + index + 1;
-				}
-				else{
+				} else {
 					leftWire = startOfMComputation + index + 1;
 					rightWire = priorOutput;
 				}
@@ -147,7 +146,7 @@ public class FairplayCircuitAugMultipleOutputs implements Runnable {
 		}
 		
 		//Construct final XOR gates 
-		for(int i = 0; i < m1; i++){
+		for (int i = 0; i < m1; i++) {
 			int leftWire = aConvolutedE[i];
 			int rightWire = startOfB + i;
 			int outputWire = startOfM + i;
@@ -158,7 +157,7 @@ public class FairplayCircuitAugMultipleOutputs implements Runnable {
 		return res;
 	}
 
-	private String[] getHeaders(List<Gate> augCircuit){
+	private String[] getHeaders(List<Gate> augCircuit) {
 		String[] res = new String[2];
 		String[] inputOutputInfo = 
 				circuitParser.getFairplayInputOutputHeader();

@@ -13,7 +13,7 @@ public class CUDACircuitParser {
 
 	private File circuitFile;
 
-	public CUDACircuitParser(File circuitFile){
+	public CUDACircuitParser(File circuitFile) {
 		this.circuitFile = circuitFile;
 	}
 
@@ -37,9 +37,7 @@ public class CUDACircuitParser {
 					continue;
 				}
 
-				/*
-				 * Parse each gate line and count numberOfNonXORGates
-				 */
+				// Parse each gate line and count numberOfNonXORGates
 				Gate g = new Gate(line);
 				currentLayer.add(g);
 			}
@@ -62,9 +60,7 @@ public class CUDACircuitParser {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
 		return line;
-
 	}
 
 }
