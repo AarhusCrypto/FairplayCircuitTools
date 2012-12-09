@@ -44,8 +44,8 @@ public class CircuitEvaluator implements Runnable {
 
 	@Override
 	public void run() {
-		if(inputFile.length() != inputSize/BYTESIZE){
-			System.out.println("Input mismatch, check inputfile");
+		if(inputFile.length() < inputSize/BYTESIZE){
+			System.out.println("Input too short, check inputfile");
 			return;
 		}
 
