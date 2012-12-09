@@ -93,4 +93,18 @@ public class CommonUtilities {
 		}
 		return hs.size();
 	}
+	
+	public static void showBlankWires(List<Gate> gates, int size) {
+		boolean[] wires = new boolean[size];
+		for (Gate g: gates) {
+			wires[g.getLeftWireIndex()] =  true;
+			wires[g.getRightWireIndex()] =  true;
+			wires[g.getOutputWireIndex()] =  true;
+		}
+		for (int i = 0; i < wires.length; i++){
+			if (!wires[i]) {
+				System.out.println(i);
+			}
+		}
+	}
 }
