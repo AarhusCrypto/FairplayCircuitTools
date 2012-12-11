@@ -11,7 +11,7 @@ public class AllTests {
 	@Test
 	public void assertCircuitEvaluator(){
 		File inputFile = new File("test/data/input/input0.bin");
-		File outputFile = new File("test/data/out/out.bin");
+		File outputFile = new File("test/data/out.bin");
 		File circuitFile = new File("test/data/aes_cuda.txt");
 
 		CUDACircuitParser cudaCircuitParser = 
@@ -55,7 +55,7 @@ public class AllTests {
 		boolean res = true;
 		for(int i = 0; i < 4; i++){
 			File inputFile = new File("test/data/input/input" + i + ".bin");
-			File outputFile = new File("test/data/out/out.bin");
+			File outputFile = new File("test/data/out.bin");
 			CUDACircuitParser cudaCircuitParser = 
 					new CUDACircuitParser(circuitOutputFile);
 			CircuitEvaluator eval = new CircuitEvaluator(
