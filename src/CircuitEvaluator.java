@@ -52,10 +52,11 @@ public class CircuitEvaluator implements Runnable {
 		byte[] bytesRead = getBytesFromFile();
 
 		BitString input = byteArrayToBitSet(bytesRead);
+		
 		if (IA32) {
 			input = getIA32BitString(input);
+			//input = getMirroredBitString(input);
 		}
-
 
 		// The result returned is in big endian, the evaluator flips the
 		// ouput before returning
@@ -202,6 +203,19 @@ public class CircuitEvaluator implements Runnable {
 			}
 			if (bString.get(i)) {
 				res.set(m - offset);
+			}
+		}
+		return res;
+	}
+	
+	private BitString getMirroredBitString(BitString bString) {
+		BitString res = new BitString(bString.length());
+		
+	
+		for (int i = 0; i < bString.length(); i++) {
+			boolean b = bString.get(bString.length() - 1 - i);
+			if (b) {
+				res.set(i);
 			}
 		}
 		return res;
