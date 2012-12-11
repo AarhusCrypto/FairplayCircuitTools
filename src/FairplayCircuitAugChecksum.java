@@ -80,8 +80,6 @@ public class FairplayCircuitAugChecksum implements Runnable {
 			andGates.clear();
 		}
 
-		// TODO Spoerg Tore ang. om der er l eller l + 1 indre produkter, og om
-		// det sidste input aldrig skal bruges..
 		/**
 		 * Add all the XOR gates (both for inner product and final xor).
 		 */
