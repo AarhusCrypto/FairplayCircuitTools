@@ -16,7 +16,7 @@ public class CircuitEvaluator implements Runnable {
 	private File inputFile;
 	private File outputFile;
 	private List<List<Gate>> layersOfGates;
-	boolean IA32;
+	String mode;
 
 	private int inputSize;
 	private int outputSize;
@@ -29,11 +29,11 @@ public class CircuitEvaluator implements Runnable {
 	 * @param parseStrategy
 	 */
 	public CircuitEvaluator(File inputFile, File outputFile,
-			List<List<Gate>> layersOfGates, String header, boolean IA32){
+			List<List<Gate>> layersOfGates, String header, String mode){
 		this.inputFile = inputFile;
 		this.outputFile = outputFile;
 		this.layersOfGates = layersOfGates;
-		this.IA32 = IA32;
+		this.mode = mode;
 
 		String[] split = header.split(" ");
 
@@ -52,17 +52,19 @@ public class CircuitEvaluator implements Runnable {
 		byte[] bytesRead = getBytesFromFile();
 
 		BitString input = byteArrayToBitSet(bytesRead);
-		
-		if (IA32) {
-			input = getIA32BitString(input);
-			//input = getMirroredBitString(input);
+		if (mode.equals(Driver.FAIRPLAY_EVALUATOR_IA32)) {
+			input = input.getIA32BitString();
+		} else if (mode.equals(Driver.FAIRPLAY_EVALUATOR_MIRRORED)) {
+			input = input.getMirroredBitString();
+		} else if (mode.equals(Driver.FAIRPLAY_EVALUATOR_REVERSED)) {
+			input = input.getReverseOrder();
 		}
 
 		// The result returned is in big endian, the evaluator flips the
 		// ouput before returning
-		BitString result = evalCircuit(layersOfGates, input);
+		BitString output = evalCircuit(layersOfGates, input);
 
-		writeCircuitOutput(result);
+		writeCircuitOutput(output);
 
 	}
 
@@ -190,34 +192,5 @@ public class CircuitEvaluator implements Runnable {
 			}
 		}
 		return bytes;
-	}
-	
-	private BitString getIA32BitString(BitString bString) {
-		BitString res = new BitString(bString.length());
-		
-		int m = BYTESIZE - 1;
-		for (int i = 0; i < bString.length(); i++) {
-			int offset = i % BYTESIZE;
-			if (offset == 0 && i != 0) {
-				m += BYTESIZE;
-			}
-			if (bString.get(i)) {
-				res.set(m - offset);
-			}
-		}
-		return res;
-	}
-	
-	private BitString getMirroredBitString(BitString bString) {
-		BitString res = new BitString(bString.length());
-		
-	
-		for (int i = 0; i < bString.length(); i++) {
-			boolean b = bString.get(bString.length() - 1 - i);
-			if (b) {
-				res.set(i);
-			}
-		}
-		return res;
 	}
 }
