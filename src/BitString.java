@@ -50,4 +50,44 @@ public class BitString {
 		}
 		return res;
 	}
+	
+	public BitString getIA32BitString() {
+		BitString res = new BitString(bitset.length);
+		int BYTESIZE = 8;
+		int m = BYTESIZE - 1;
+		for (int i = 0; i < bitset.length; i++) {
+			int offset = i % BYTESIZE;
+			if (offset == 0 && i != 0) {
+				m += BYTESIZE;
+			}
+			if (bitset[i]) {
+				res.set(m - offset);
+			}
+		}
+		return res;
+	}
+	
+	public BitString getMirroredBitString() {
+		BitString res = new BitString(bitset.length);
+		
+		for (int i = 0; i < bitset.length; i++) {
+			boolean b = bitset[bitset.length - 1 - i];
+			if (b) {
+				res.set(i);
+			}
+		}
+		return res;
+	}
+	
+	public BitString getReverseOrder() {
+		BitString res = new BitString(bitset.length);
+		
+		for (int i = 0; i < bitset.length; i++) {
+			if (bitset[(bitset.length/2 + i) % bitset.length]) {
+				res.set(i);
+			}
+		}
+		
+		return res;
+	}
 }
