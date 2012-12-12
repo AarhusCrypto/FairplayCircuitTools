@@ -18,7 +18,7 @@ public class AllTests {
 				new CUDACircuitParser(circuitFile);
 		CircuitEvaluator eval = new CircuitEvaluator(
 				inputFile, outputFile, cudaCircuitParser.getGates(), 
-				cudaCircuitParser.getCUDAHeader(), false);
+				cudaCircuitParser.getCUDAHeader(), Driver.FAIRPLAY_EVALUATOR);
 		eval.run();
 
 		File expectedResultFile = new File("test/data/input/expected0.bin");
@@ -60,7 +60,7 @@ public class AllTests {
 					new CUDACircuitParser(circuitOutputFile);
 			CircuitEvaluator eval = new CircuitEvaluator(
 					inputFile, outputFile, cudaCircuitParser.getGates(), 
-					cudaCircuitParser.getCUDAHeader(), false);
+					cudaCircuitParser.getCUDAHeader(), Driver.FAIRPLAY_EVALUATOR);
 			eval.run();
 
 			File expectedResultFile = new File("test/data/input/expected" + i +

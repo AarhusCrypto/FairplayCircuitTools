@@ -5,15 +5,17 @@ import java.util.List;
 
 public class Driver {
 
-	private static final String FAIRPLAY_CONVERT_TO_CUDA = "-fc";
-	private static final String AUG_CHECKSUM = "-ac";
-	private static final String AUG_MULTI_OUTPUT = "-am";
-	private static final String FAIRPLAY_EVALUATOR = "-fe";
-	private static final String FAIRPLAY_EVALUATOR_IA32 = "-fe32";
-	private static final String CUDA_EVALUATOR = "-ce";
-	private static final String VERILOG_CONVERT_TO_FAIRPLAY = "-vc";
-	
-	
+	public static final String FAIRPLAY_CONVERT_TO_CUDA = "-fc";
+	public static final String AUG_CHECKSUM = "-ac";
+	public static final String AUG_MULTI_OUTPUT = "-am";
+	public static final String FAIRPLAY_EVALUATOR = "-fe";
+	public static final String FAIRPLAY_EVALUATOR_IA32 = "-fe32";
+	public static final String FAIRPLAY_EVALUATOR_MIRRORED = "-feMI";
+	public static final String FAIRPLAY_EVALUATOR_REVERSED = "-feRE";
+	public static final String CUDA_EVALUATOR = "-ce";
+	public static final String VERILOG_CONVERT_TO_FAIRPLAY = "-vc";
+
+
 	/**
 	 * @param args
 	 */
@@ -22,47 +24,49 @@ public class Driver {
 		File circuitFile = null;
 		File outputFile = null;
 		boolean sorted = false;
-		
-		String operation = args[0];
+
+		String mode = args[0];
 		// -fc circuitfile outputfile
-		if (operation.equals(FAIRPLAY_CONVERT_TO_CUDA) && checkArgs(args, 3)) {
+		if (mode.equals(FAIRPLAY_CONVERT_TO_CUDA) && checkArgs(args, 3)) {
 			circuitFile = new File(args[1]);
 			outputFile = new File(args[2]);
 			FairplayCircuitParser circuitParser = new FairplayCircuitParser(circuitFile);
 			FairplayCircuitConverter circuitConverter = new FairplayCircuitConverter(
 					circuitParser, outputFile, sorted);
 			circuitConverter.run();
-			
+
 		}
 		// -ac circuitfile outputfile l (int)
-		else if (operation.equals(AUG_CHECKSUM) && checkArgs(args, 4)) {
+		else if (mode.equals(AUG_CHECKSUM) && checkArgs(args, 4)) {
 			circuitFile = new File(args[1]);
 			outputFile = new File(args[2]);
 			int l = Integer.parseInt(args[3]);
-			
+
 			FairplayCircuitParser circuitParser = new FairplayCircuitParser(circuitFile);
 			FairplayCircuitAugChecksum ac = new FairplayCircuitAugChecksum(circuitParser, 
 					outputFile, l);
 			ac.run();
 		}
 		// -am circuitfile outputfile
-		else if (operation.equals(AUG_MULTI_OUTPUT) && checkArgs(args, 3)) {
+		else if (mode.equals(AUG_MULTI_OUTPUT) && checkArgs(args, 3)) {
 			circuitFile = new File(args[1]);
 			outputFile = new File(args[2]);
-			
+
 			FairplayCircuitParser circuitParser = new FairplayCircuitParser(circuitFile);
 			FairplayCircuitAugMultipleOutputs am = 
 					new FairplayCircuitAugMultipleOutputs(circuitParser, outputFile);
 			am.run();
 		}
-		
-		// -fe inputfile circuitfile outputfile
-		else if ((operation.equals(FAIRPLAY_EVALUATOR) || 
-				operation.equals(FAIRPLAY_EVALUATOR_IA32)) && checkArgs(args, 4)) {	
+
+		// -fe, -fe32, -feMI, -feRE inputfile circuitfile outputfile
+		else if ((mode.equals(FAIRPLAY_EVALUATOR) || 
+				mode.equals(FAIRPLAY_EVALUATOR_IA32) || 
+				mode.equals(FAIRPLAY_EVALUATOR_MIRRORED) || 
+				mode.equals(FAIRPLAY_EVALUATOR_REVERSED)) && checkArgs(args, 4)) {	
 			inputFile = new File(args[1]);
 			circuitFile = new File(args[2]);
 			outputFile = new File(args[3]);
-			
+
 			FairplayCircuitParser circuitParser = 
 					new FairplayCircuitParser(circuitFile);
 			FairplayCircuitConverter circuitConverter = 
@@ -71,32 +75,27 @@ public class Driver {
 			List<Gate> gates = circuitParser.getGates();
 			List<List<Gate>> layersOfGates = 
 					circuitConverter.getLayersOfGates(gates);
-			
+
 			CircuitEvaluator eval;
-			if (operation.equals(FAIRPLAY_EVALUATOR)) {
-				eval = new CircuitEvaluator(inputFile, outputFile, layersOfGates, 
-						circuitConverter.getHeader(layersOfGates), false);
-			} else {
-				eval = new CircuitEvaluator(inputFile, outputFile, layersOfGates, 
-						circuitConverter.getHeader(layersOfGates), true);
-			}
-					
+			eval = new CircuitEvaluator(inputFile, outputFile, layersOfGates, 
+					circuitConverter.getHeader(layersOfGates), mode);
+
 			eval.run();
 		}
 		// -ce inputfile circuitfile outputfile
-		else if (operation.equals(CUDA_EVALUATOR) && checkArgs(args, 4)) {
-			
+		else if (mode.equals(CUDA_EVALUATOR) && checkArgs(args, 4)) {
+
 			inputFile = new File(args[1]);
 			circuitFile = new File(args[2]);
 			outputFile = new File(args[3]);
 			CUDACircuitParser circuitParser = new CUDACircuitParser(circuitFile);
 			CircuitEvaluator eval = new CircuitEvaluator(
 					inputFile, outputFile, circuitParser.getGates(), 
-					circuitParser.getCUDAHeader(), false);
+					circuitParser.getCUDAHeader(), mode);
 			eval.run();
 		}
 		// -vc circuitfile outputfile
-		else if (operation.equals(VERILOG_CONVERT_TO_FAIRPLAY) && checkArgs(args, 3)) {
+		else if (mode.equals(VERILOG_CONVERT_TO_FAIRPLAY) && checkArgs(args, 3)) {
 			circuitFile = new File(args[1]);
 			outputFile = new File(args[2]);
 			VerilogToFairplayConverter verilogConverter = 
@@ -120,10 +119,10 @@ public class Driver {
 	private static boolean checkArgs(String[] args, int expectedNumberOfArgs) {
 		if(args.length != expectedNumberOfArgs){
 			System.out.println("Incorrect number of argumens, expected: " + 
-		expectedNumberOfArgs);
+					expectedNumberOfArgs);
 			return false;
 		}
 		else return true;
-		
+
 	}
 }
