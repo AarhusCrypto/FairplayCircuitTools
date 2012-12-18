@@ -36,8 +36,8 @@ public class FairplayCircuitAugChecksum implements Runnable {
 		// Must be set after call to circuitParser
 		numberOfOriginalInputs = circuitParser.getNumberOfInputs();
 		t_a = circuitParser.getNumberOfP1Inputs();
-		numberOfNewInputs = numberOfOriginalInputs + t_a + 2 * l - 1;
-		r = numberOfNewInputs - t_a - (l - 1);
+		numberOfNewInputs = numberOfOriginalInputs + t_a + 2 * l;
+		r = numberOfNewInputs - t_a - l;
 
 		List<Gate> augGates = getAugGates();
 		List<Gate> incrementedGates = 
@@ -175,10 +175,10 @@ public class FairplayCircuitAugChecksum implements Runnable {
 	private String[] getHeaders(List<Gate> augCircuit) {
 		String[] res = new String[2];
 
-		res[0] = augCircuit.size() + " " + CommonUtilities.getWireCount(augCircuit);
+		res[0] = augCircuit.size() + " " + (CommonUtilities.getWireCount(augCircuit) + 1);
 
 		int newP1Input = circuitParser.getNumberOfP1Inputs() + l;
-		int newP2Input = circuitParser.getNumberOfP2Inputs() + t_a + l - 1;
+		int newP2Input = circuitParser.getNumberOfP2Inputs() + t_a + l;
 		int newP1Output = circuitParser.getNumberOfP1Outputs();
 		int newP2Output = circuitParser.getNumberOfP2Outputs() + l;
 
