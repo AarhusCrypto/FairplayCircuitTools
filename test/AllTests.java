@@ -40,7 +40,7 @@ public class AllTests {
 		File circuitOutputFile = new File("test/data/aes_cuda_tmp.txt");
 
 		FairplayCircuitParser circuitParser = 
-				new FairplayCircuitParser(circuitFile);
+				new FairplayCircuitParser(circuitFile, true);
 		FairplayCircuitConverter circuitConverter = 
 				new FairplayCircuitConverter(circuitParser, 
 						circuitOutputFile, false);
