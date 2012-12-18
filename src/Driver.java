@@ -24,35 +24,45 @@ public class Driver {
 		File circuitFile = null;
 		File outputFile = null;
 		boolean sorted = false;
+		boolean stripWires = false;
 
 		String mode = args[0];
-		// -fc circuitfile outputfile
-		if (mode.equals(FAIRPLAY_CONVERT_TO_CUDA) && checkArgs(args, 3)) {
+		// -fc circuitfile outputfile strip
+		if (mode.equals(FAIRPLAY_CONVERT_TO_CUDA) && checkArgs(args, 4)) {
 			circuitFile = new File(args[1]);
 			outputFile = new File(args[2]);
-			FairplayCircuitParser circuitParser = new FairplayCircuitParser(circuitFile);
+			if (args[3].equals("strip")) {
+				stripWires = true;
+			}
+			FairplayCircuitParser circuitParser = new FairplayCircuitParser(circuitFile, stripWires);
 			FairplayCircuitConverter circuitConverter = new FairplayCircuitConverter(
 					circuitParser, outputFile, sorted);
 			circuitConverter.run();
 
 		}
-		// -ac circuitfile outputfile l (int)
-		else if (mode.equals(AUG_CHECKSUM) && checkArgs(args, 4)) {
+		// -ac circuitfile outputfile l (int) strip
+		else if (mode.equals(AUG_CHECKSUM) && checkArgs(args, 5)) {
 			circuitFile = new File(args[1]);
 			outputFile = new File(args[2]);
 			int l = Integer.parseInt(args[3]);
+			if (args[4].equals("strip")) {
+				stripWires = true;
+			}
 
-			FairplayCircuitParser circuitParser = new FairplayCircuitParser(circuitFile);
+			FairplayCircuitParser circuitParser = new FairplayCircuitParser(circuitFile, stripWires);
 			FairplayCircuitAugChecksum ac = new FairplayCircuitAugChecksum(circuitParser, 
 					outputFile, l);
 			ac.run();
 		}
 		// -am circuitfile outputfile
-		else if (mode.equals(AUG_MULTI_OUTPUT) && checkArgs(args, 3)) {
+		else if (mode.equals(AUG_MULTI_OUTPUT) && checkArgs(args, 4)) {
 			circuitFile = new File(args[1]);
 			outputFile = new File(args[2]);
+			if (args[3].equals("strip")) {
+				stripWires = true;
+			}
 
-			FairplayCircuitParser circuitParser = new FairplayCircuitParser(circuitFile);
+			FairplayCircuitParser circuitParser = new FairplayCircuitParser(circuitFile, stripWires);
 			FairplayCircuitAugMultipleOutputs am = 
 					new FairplayCircuitAugMultipleOutputs(circuitParser, outputFile);
 			am.run();
@@ -62,13 +72,16 @@ public class Driver {
 		else if ((mode.equals(FAIRPLAY_EVALUATOR) || 
 				mode.equals(FAIRPLAY_EVALUATOR_IA32) || 
 				mode.equals(FAIRPLAY_EVALUATOR_MIRRORED) || 
-				mode.equals(FAIRPLAY_EVALUATOR_REVERSED)) && checkArgs(args, 4)) {	
+				mode.equals(FAIRPLAY_EVALUATOR_REVERSED)) && checkArgs(args, 5)) {	
 			inputFile = new File(args[1]);
 			circuitFile = new File(args[2]);
 			outputFile = new File(args[3]);
+			if (args[4].equals("strip")) {
+				stripWires = true;
+			}
 
 			FairplayCircuitParser circuitParser = 
-					new FairplayCircuitParser(circuitFile);
+					new FairplayCircuitParser(circuitFile, stripWires);
 			FairplayCircuitConverter circuitConverter = 
 					new FairplayCircuitConverter(circuitParser, outputFile, 
 							false);

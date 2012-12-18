@@ -34,9 +34,11 @@ public class FairplayCircuitParser {
 
 	private String secondHeader;
 	private int addedWires;
+	private boolean stripWires;
 
-	public FairplayCircuitParser(File circuitFile){
+	public FairplayCircuitParser(File circuitFile, boolean stripWires){
 		this.circuitFile = circuitFile;
+		this.stripWires = stripWires;
 		this.addedWires = 0;
 		this.leftMap = new MultiValueMap();
 		this.rightMap = new MultiValueMap();
@@ -149,7 +151,17 @@ public class FairplayCircuitParser {
 		
 		//This is the number of unique wires parsed
 		numberOfWiresParsed = CommonUtilities.getWireCount(res);
-		stripBlankWires(res);	
+		if (stripWires) {
+			stripBlankWires(res);
+		} else {
+			int nonStrippedWires = 0;
+			for (boolean b: blankWires) {
+				if (!b) {
+					nonStrippedWires++;
+				}
+			}
+			numberOfWiresParsed += nonStrippedWires;
+		}	
 
 		return res;
 	}
