@@ -133,17 +133,19 @@ public class Driver {
 		else if (mode.equals(FAIRPLAY_TO_SPACL) && checkArgs(args, 3)) {
 			circuitFile = new File(args[1]);
 			outputFile = new File(args[2]);
+			String circuitName = outputFile.getName();
 			FairplayCircuitParser circuitParser = 
 					new FairplayCircuitParser(circuitFile, true);
 			FairplayCircuitConverter circuitConverter =
 					new FairplayCircuitConverter(circuitParser, true);
-			FairplayCircuitToSPACL spaclCircuitConverter = 
-					new FairplayCircuitToSPACL(circuitConverter);
-			List<List<Gate>> gates = spaclCircuitConverter.getGates();
-			String[] headers = spaclCircuitConverter.getHeaders();
-			
-			//This circuit needs to be evaluated using FAIRPLAY_EVALUATOR_REVERSED
-			CommonUtilities.outputCUDACircuit(gates, outputFile, headers[0]);
+			FairplayCircuitToSPACL fairplaytoSpacl = 
+					new FairplayCircuitToSPACL(circuitConverter, outputFile, circuitName);
+			fairplaytoSpacl.run();
+//			List<List<Gate>> gates = spaclCircuitConverter.getGates();
+//			String[] headers = spaclCircuitConverter.getHeaders();
+//			
+//			//This circuit needs to be evaluated using FAIRPLAY_EVALUATOR_REVERSED
+//			CommonUtilities.outputCUDACircuit(gates, outputFile, headers[0]);
 		}
 		else {
 			System.out.println(
