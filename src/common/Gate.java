@@ -82,6 +82,12 @@ public class Gate {
 			return true;
 		} else return false;
 	}
+	
+	public boolean isAND() {
+		if (boolTable.matches("1")) {
+			return true;
+		} else return false;
+	}
 
 	public void setGateNumber(int gateNumber) {
 		this.gateNumber = gateNumber;
