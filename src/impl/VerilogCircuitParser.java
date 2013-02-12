@@ -1,3 +1,4 @@
+package impl;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -10,6 +11,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import common.CircuitParser;
+import common.CommonUtilities;
+import common.Gate;
 
 import org.apache.commons.lang3.StringUtils;
 

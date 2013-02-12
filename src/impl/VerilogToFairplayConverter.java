@@ -1,4 +1,8 @@
+package impl;
 import java.io.File;
+
+import common.CircuitParser;
+import common.CommonUtilities;
 
 public class VerilogToFairplayConverter implements Runnable {
 	private CircuitParser circuitParser;

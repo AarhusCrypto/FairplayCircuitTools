@@ -1,5 +1,6 @@
-import java.util.List;
+package common;
 
+import java.util.List;
 
 public interface CircuitParser {
 	public List<Gate> getGates();

@@ -1,8 +1,18 @@
+import impl.CUDACircuitParser;
+import impl.CircuitEvaluator;
+import impl.Driver;
+import impl.FairplayCircuitConverter;
+import impl.FairplayCircuitParser;
+
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.*;
+
+import common.CommonUtilities;
+import common.Gate;
 
 import static org.junit.Assert.*;
 
@@ -42,9 +52,10 @@ public class AllTests {
 		FairplayCircuitParser circuitParser = 
 				new FairplayCircuitParser(circuitFile, true);
 		FairplayCircuitConverter circuitConverter = 
-				new FairplayCircuitConverter(circuitParser, 
-						circuitOutputFile, false);
-		circuitConverter.run();
+				new FairplayCircuitConverter(circuitParser, false);
+		List<List<Gate>> layersOfGates = circuitConverter.getGates();
+		String header[] = circuitConverter.getHeaders();
+		CommonUtilities.outputCUDACircuit(layersOfGates, circuitOutputFile, header[0]);
 		
 		checkWithEvaluator(circuitOutputFile);
 

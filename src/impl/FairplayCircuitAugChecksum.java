@@ -1,26 +1,27 @@
+package impl;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import common.CircuitConverter;
+import common.CommonUtilities;
+import common.Gate;
 
-public class FairplayCircuitAugChecksum implements Runnable {
+public class FairplayCircuitAugChecksum implements CircuitConverter<Gate> {
 
-	private File outputFile;
 	private FairplayCircuitParser circuitParser;
 	private int numberOfNonXORGatesAdded;
 	private int largestOutputWire;
 	private int largestAugOutputWire;
 	private int l;
+	private List<Gate> augCircuit;
 	private List<Gate> outputGates;
 	private int numberOfOriginalInputs;
 	private int t_a;
 	private int numberOfNewInputs;
 	private int r;
 
-	public FairplayCircuitAugChecksum(FairplayCircuitParser circuitParser,
-			File outputFile, int l){
-		this.outputFile = outputFile;
+	public FairplayCircuitAugChecksum(FairplayCircuitParser circuitParser, int l) {
 		this.circuitParser = circuitParser;
 		this.l = l;
 		
@@ -28,9 +29,8 @@ public class FairplayCircuitAugChecksum implements Runnable {
 		numberOfNonXORGatesAdded = 0;
 		largestOutputWire = 0;
 	}
-
-	@Override
-	public void run() {
+	
+	public List<Gate> getGates() {
 		List<Gate> parsedGates = circuitParser.getGates();
 		
 		// Must be set after call to circuitParser
@@ -44,14 +44,28 @@ public class FairplayCircuitAugChecksum implements Runnable {
 				getIncrementedGates(parsedGates);
 		List<Gate> augOutputGates = getAugOutputGates(); //Must be called after getIncrementedGates()
 
-		List<Gate> augCircuit = new ArrayList<Gate>();
+		augCircuit = new ArrayList<Gate>();
 		augCircuit.addAll(augGates);
 		augCircuit.addAll(incrementedGates);
 		augCircuit.addAll(augOutputGates);
+		
+		return augCircuit;
+	}
+	
+	public String[] getHeaders() {
+		String[] res = new String[2];
 
-		String[] headers = getHeaders(augCircuit);
+		res[0] = augCircuit.size() + " " + (CommonUtilities.getWireCount(augCircuit) + 1);
 
-		CommonUtilities.outputFairplayCircuit(augCircuit, outputFile, headers);
+		int newP1Input = circuitParser.getNumberOfP1Inputs() + l;
+		int newP2Input = circuitParser.getNumberOfP2Inputs() + t_a + l;
+		int newP1Output = circuitParser.getNumberOfP1Outputs();
+		int newP2Output = circuitParser.getNumberOfP2Outputs() + l;
+
+		res[1] = newP1Input + " " + newP2Input + " " + newP1Output + " " +
+				newP2Output;
+
+		return res;
 	}
 
 	private List<Gate> getAugGates() {
@@ -170,22 +184,6 @@ public class FairplayCircuitAugChecksum implements Runnable {
 			g.setOutputWireIndex(g.getOutputWireIndex() + incNumber);
 		}
 		return outputGates;
-	}
-
-	private String[] getHeaders(List<Gate> augCircuit) {
-		String[] res = new String[2];
-
-		res[0] = augCircuit.size() + " " + (CommonUtilities.getWireCount(augCircuit) + 1);
-
-		int newP1Input = circuitParser.getNumberOfP1Inputs() + l;
-		int newP2Input = circuitParser.getNumberOfP2Inputs() + t_a + l;
-		int newP1Output = circuitParser.getNumberOfP1Outputs();
-		int newP2Output = circuitParser.getNumberOfP2Outputs() + l;
-
-		res[1] = newP1Input + " " + newP2Input + " " + newP1Output + " " +
-				newP2Output;
-
-		return res;
 	}
 }
 

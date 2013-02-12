@@ -1,3 +1,4 @@
+package impl;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -9,6 +10,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+
+import common.CircuitParser;
+import common.CommonUtilities;
+import common.Gate;
 
 import org.apache.commons.collections.map.MultiValueMap;
 
@@ -98,6 +103,7 @@ public class FairplayCircuitParser implements CircuitParser {
 					continue;
 				}
 
+				// If format
 				if (!constantGateCounter && (line.endsWith("INV") || 
 						line.endsWith("XOR") || line.endsWith("AND"))) {
 
@@ -119,6 +125,8 @@ public class FairplayCircuitParser implements CircuitParser {
 					constantGateCounter = true;
 				}
 
+				// Transforms format from http://www.cs.bris.ac.uk/Research/CryptographySecurity/MPC/
+				// to standard Fairplay.
 				String[] split = line.split(" ");
 				if (line.endsWith("INV")) {
 					line = "2 " + split[1] + " " + getWire(split[2]) + " " + 

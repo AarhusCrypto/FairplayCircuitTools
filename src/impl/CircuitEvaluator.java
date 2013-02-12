@@ -1,3 +1,4 @@
+package impl;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -5,6 +6,9 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.HashMap;
 import java.util.List;
+
+import common.BitString;
+import common.Gate;
 
 /**
  * @author Roberto Trifiletti

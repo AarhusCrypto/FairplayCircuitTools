@@ -1,8 +1,11 @@
-import java.io.File;
+package impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+
+import common.CircuitConverter;
+import common.Gate;
 
 import org.apache.commons.collections.map.MultiValueMap;
 
@@ -10,15 +13,15 @@ import org.apache.commons.collections.map.MultiValueMap;
  * @author Roberto Trifiletti
  *
  */
-public class FairplayCircuitConverter implements Runnable {
+public class FairplayCircuitConverter implements CircuitConverter<List<Gate>> {
 
 	private static final int NEW_LAYER_THRESHOLD = 0;
 
-	private File outputFile;
 	private boolean sorted;
 
 	private MultiValueMap leftMap;
 	private MultiValueMap rightMap;
+	private List<List<Gate>> layersOfGates;
 	private HashMap<Integer, Gate> outputMap;
 
 	private FairplayCircuitParser circuitParser;
@@ -27,9 +30,8 @@ public class FairplayCircuitConverter implements Runnable {
 	 * @param circuitFile
 	 * @param outputFile
 	 */
-	public FairplayCircuitConverter(FairplayCircuitParser circuitParser, File outputFile,
+	public FairplayCircuitConverter(FairplayCircuitParser circuitParser, 
 			boolean sorted) {
-		this.outputFile = outputFile;
 		this.sorted = sorted;
 		this.circuitParser = circuitParser;
 
@@ -37,22 +39,20 @@ public class FairplayCircuitConverter implements Runnable {
 		rightMap = new MultiValueMap();
 		outputMap = new HashMap<Integer, Gate>();
 	}
-
-	@Override
-	public void run() {
+	
+	public List<List<Gate>> getGates() {
 		List<Gate> gates = circuitParser.getGates();
 
-		List<List<Gate>> layersOfGates = getLayersOfGates(gates);
+		layersOfGates = getLayersOfGates(gates);
 
 		if (sorted) {
 			layersOfGates = getXorSortedLayers(layersOfGates);
 		}
-
-		String header = getHeader(layersOfGates);
-		CommonUtilities.outputCUDACircuit(layersOfGates, outputFile, header);
+		
+		return layersOfGates;
 	}
 
-	public String getHeader(List<List<Gate>> layersOfGates) {
+	public String[] getHeaders() {
 		int actualNumberOfWires = circuitParser.getNumberOfWiresParsed();
 
 		//We have to figure out the max layer size before writing to the file.
@@ -65,9 +65,9 @@ public class FairplayCircuitConverter implements Runnable {
 		int totalNumberOfOutputs = circuitParser.getNumberOfOutputs();
 		int numberOfNonXORGates = circuitParser.getNumberOfNonXORGates();
 
-		return totalNumberOfInputs + " " + totalNumberOfOutputs + " " +
+		return new String[]{totalNumberOfInputs + " " + totalNumberOfOutputs + " " +
 		actualNumberOfWires + " " + layersOfGates.size() + " " + maxLayerWidth + " " +
-		numberOfNonXORGates;
+		numberOfNonXORGates};
 	}
 
 	/**
@@ -76,7 +76,7 @@ public class FairplayCircuitConverter implements Runnable {
 	 * the converted circuit
 	 */
 	@SuppressWarnings("unchecked")
-	public List<List<Gate>> getLayersOfGates(List<Gate> gates) {
+	private List<List<Gate>> getLayersOfGates(List<Gate> gates) {
 		List<List<Gate>> layersOfGates = new ArrayList<List<Gate>>();
 		initMaps(gates);
 

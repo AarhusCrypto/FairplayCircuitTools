@@ -1,3 +1,4 @@
+package common;
 /**
  * Small class for representing inputs and output as a bit string
  * @author Roberto

@@ -1,21 +1,23 @@
-import java.io.File;
+package impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import common.CircuitConverter;
+import common.CommonUtilities;
+import common.Gate;
 
-public class FairplayCircuitAugMultipleOutputs implements Runnable {
+
+public class FairplayCircuitAugMultipleOutputs implements CircuitConverter<Gate> {
 
 	private FairplayCircuitParser circuitParser;
-	private File outputFile;
+	private List<Gate> multipleOutputCircuit;
 
-	public FairplayCircuitAugMultipleOutputs(FairplayCircuitParser circuitParser,
-			File outputFile) {
+	public FairplayCircuitAugMultipleOutputs(FairplayCircuitParser circuitParser) {
 		this.circuitParser = circuitParser;
-		this.outputFile = outputFile; 
 	}
-
+	
 	@Override
-	public void run() {
+	public List<Gate> getGates() {
 		List<Gate> parsedGates = circuitParser.getGates();
 
 		int n1 = circuitParser.getNumberOfP1Inputs();
@@ -43,7 +45,7 @@ public class FairplayCircuitAugMultipleOutputs implements Runnable {
 		int startOfMComputation = newNumberOfWires - m2;
 		int startOfM = newNumberOfWires + totalGatesToBeAdded - m2 - m1;
 
-		List<Gate> multipleOutputCircuit = 
+		multipleOutputCircuit = 
 				getPreparedCircuit(parsedGates, n1, addedInput, 
 						startOfF2, m2, totalGatesToBeAdded);
 
@@ -56,10 +58,28 @@ public class FairplayCircuitAugMultipleOutputs implements Runnable {
 
 		multipleOutputCircuit.addAll(eGates);
 		multipleOutputCircuit.addAll(mGates);
+		
+		return multipleOutputCircuit;
+	}
 
-		String[] headers = getHeaders(multipleOutputCircuit);
-		CommonUtilities.outputFairplayCircuit(multipleOutputCircuit, 
-				outputFile, headers);
+	@Override
+	public String[] getHeaders() {
+		String[] res = new String[2];
+		String[] inputOutputInfo = 
+				circuitParser.getHeaders();
+
+		int m1 = Integer.parseInt(inputOutputInfo[2]);
+		res[0] = multipleOutputCircuit.size() + " " + CommonUtilities.getWireCount(multipleOutputCircuit);
+
+		int newP1Input = Integer.parseInt(inputOutputInfo[0]) + 3 * m1;
+		int newP2Input = Integer.parseInt(inputOutputInfo[1]);
+		int newP1Output = Integer.parseInt(inputOutputInfo[2]) + m1;
+		int newP2Output = Integer.parseInt(inputOutputInfo[3]);
+
+		res[1] = newP1Input + " " + newP2Input + " " + newP1Output + " " +
+				newP2Output;
+
+		return res;
 	}
 
 	private List<Gate> getPreparedCircuit(List<Gate> gates, int n1, 
@@ -154,25 +174,6 @@ public class FairplayCircuitAugMultipleOutputs implements Runnable {
 					" " + outputWire + " 0110");
 			res.add(g);
 		}
-		return res;
-	}
-
-	private String[] getHeaders(List<Gate> augCircuit) {
-		String[] res = new String[2];
-		String[] inputOutputInfo = 
-				circuitParser.getHeaders();
-
-		int m1 = Integer.parseInt(inputOutputInfo[2]);
-		res[0] = augCircuit.size() + " " + CommonUtilities.getWireCount(augCircuit);
-
-		int newP1Input = Integer.parseInt(inputOutputInfo[0]) + 3 * m1;
-		int newP2Input = Integer.parseInt(inputOutputInfo[1]);
-		int newP1Output = Integer.parseInt(inputOutputInfo[2]) + m1;
-		int newP2Output = Integer.parseInt(inputOutputInfo[3]);
-
-		res[1] = newP1Input + " " + newP2Input + " " + newP1Output + " " +
-				newP2Output;
-
 		return res;
 	}
 }
