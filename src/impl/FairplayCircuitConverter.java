@@ -69,6 +69,10 @@ public class FairplayCircuitConverter implements CircuitConverter<List<Gate>> {
 		actualNumberOfWires + " " + layersOfGates.size() + " " + maxLayerWidth + " " +
 		numberOfNonXORGates};
 	}
+	
+	public FairplayCircuitParser getParser() {
+		return circuitParser;
+	}
 
 	/**
 	 * @param gates
