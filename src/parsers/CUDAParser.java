@@ -1,4 +1,4 @@
-package impl;
+package parsers;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -12,11 +12,11 @@ import java.util.List;
 import common.Gate;
 
 
-public class CUDACircuitParser {
+public class CUDAParser {
 
 	private File circuitFile;
 
-	public CUDACircuitParser(File circuitFile) {
+	public CUDAParser(File circuitFile) {
 		this.circuitFile = circuitFile;
 	}
 

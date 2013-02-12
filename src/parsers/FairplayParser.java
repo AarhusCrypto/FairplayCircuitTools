@@ -1,4 +1,4 @@
-package impl;
+package parsers;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -18,7 +18,7 @@ import common.Gate;
 import org.apache.commons.collections.map.MultiValueMap;
 
 
-public class FairplayCircuitParser implements CircuitParser {
+public class FairplayParser implements CircuitParser {
 
 	private File circuitFile;
 	private int originalNumberOfWires;
@@ -41,7 +41,7 @@ public class FairplayCircuitParser implements CircuitParser {
 	private int addedWires;
 	private boolean stripWires;
 
-	public FairplayCircuitParser(File circuitFile, boolean stripWires){
+	public FairplayParser(File circuitFile, boolean stripWires){
 		this.circuitFile = circuitFile;
 		this.stripWires = stripWires;
 		this.addedWires = 0;

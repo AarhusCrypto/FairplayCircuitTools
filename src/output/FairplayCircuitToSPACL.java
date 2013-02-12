@@ -1,4 +1,4 @@
-package impl;
+package output;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -7,15 +7,18 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.util.List;
 
+import parsers.FairplayParser;
+
 import common.Gate;
+import converters.FairplayToCUDAConverter;
 
 public class FairplayCircuitToSPACL implements Runnable {
 
-	private FairplayCircuitConverter circuitConverter;
+	private FairplayToCUDAConverter circuitConverter;
 	private File outputFile;
 	private String circuitName;
 
-	public FairplayCircuitToSPACL(FairplayCircuitConverter circuitConverter, 
+	public FairplayCircuitToSPACL(FairplayToCUDAConverter circuitConverter, 
 			File outputFile, String circuitName) {
 		this.circuitConverter = circuitConverter;
 		this.outputFile = outputFile;
@@ -25,7 +28,7 @@ public class FairplayCircuitToSPACL implements Runnable {
 
 	public void run() {
 		List<List<Gate>> gates = circuitConverter.getGates();
-		FairplayCircuitParser circuitParser = circuitConverter.getParser();
+		FairplayParser circuitParser = circuitConverter.getParser();
 
 		int sizeOfKey = circuitParser.getNumberOfP1Inputs();
 		int sizeOfPlaintext = circuitParser.getNumberOfP2Inputs();

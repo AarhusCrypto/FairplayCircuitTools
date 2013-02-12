@@ -1,8 +1,3 @@
-import impl.CUDACircuitParser;
-import impl.CircuitEvaluator;
-import impl.Driver;
-import impl.FairplayCircuitConverter;
-import impl.FairplayCircuitParser;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,8 +6,15 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.junit.*;
 
+import output.CircuitEvaluator;
+
+import parsers.CUDAParser;
+import parsers.FairplayParser;
+
 import common.CommonUtilities;
+import common.Driver;
 import common.Gate;
+import converters.FairplayToCUDAConverter;
 
 import static org.junit.Assert.*;
 
@@ -24,8 +26,8 @@ public class AllTests {
 		File outputFile = new File("test/data/out.bin");
 		File circuitFile = new File("test/data/aes_cuda.txt");
 
-		CUDACircuitParser cudaCircuitParser = 
-				new CUDACircuitParser(circuitFile);
+		CUDAParser cudaCircuitParser = 
+				new CUDAParser(circuitFile);
 		CircuitEvaluator eval = new CircuitEvaluator(
 				inputFile, outputFile, cudaCircuitParser.getGates(), 
 				cudaCircuitParser.getCUDAHeader(), Driver.FAIRPLAY_EVALUATOR);
@@ -49,10 +51,10 @@ public class AllTests {
 		File circuitFile = new File("test/data/aes_fairplay.txt");
 		File circuitOutputFile = new File("test/data/aes_cuda_tmp.txt");
 
-		FairplayCircuitParser circuitParser = 
-				new FairplayCircuitParser(circuitFile, true);
-		FairplayCircuitConverter circuitConverter = 
-				new FairplayCircuitConverter(circuitParser, false);
+		FairplayParser circuitParser = 
+				new FairplayParser(circuitFile, true);
+		FairplayToCUDAConverter circuitConverter = 
+				new FairplayToCUDAConverter(circuitParser, false);
 		List<List<Gate>> layersOfGates = circuitConverter.getGates();
 		String header[] = circuitConverter.getHeaders();
 		CommonUtilities.outputCUDACircuit(layersOfGates, circuitOutputFile, header[0]);
@@ -67,8 +69,8 @@ public class AllTests {
 		for(int i = 0; i < 4; i++){
 			File inputFile = new File("test/data/input/input" + i + ".bin");
 			File outputFile = new File("test/data/out.bin");
-			CUDACircuitParser cudaCircuitParser = 
-					new CUDACircuitParser(circuitOutputFile);
+			CUDAParser cudaCircuitParser = 
+					new CUDAParser(circuitOutputFile);
 			CircuitEvaluator eval = new CircuitEvaluator(
 					inputFile, outputFile, cudaCircuitParser.getGates(), 
 					cudaCircuitParser.getCUDAHeader(), Driver.FAIRPLAY_EVALUATOR);

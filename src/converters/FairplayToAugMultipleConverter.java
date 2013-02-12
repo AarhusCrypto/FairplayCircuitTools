@@ -1,18 +1,20 @@
-package impl;
+package converters;
 import java.util.ArrayList;
 import java.util.List;
+
+import parsers.FairplayParser;
 
 import common.CircuitConverter;
 import common.CommonUtilities;
 import common.Gate;
 
 
-public class FairplayCircuitAugMultipleOutputs implements CircuitConverter<Gate> {
+public class FairplayToAugMultipleConverter implements CircuitConverter<Gate> {
 
-	private FairplayCircuitParser circuitParser;
+	private FairplayParser circuitParser;
 	private List<Gate> multipleOutputCircuit;
 
-	public FairplayCircuitAugMultipleOutputs(FairplayCircuitParser circuitParser) {
+	public FairplayToAugMultipleConverter(FairplayParser circuitParser) {
 		this.circuitParser = circuitParser;
 	}
 	

@@ -1,4 +1,4 @@
-package impl;
+package parsers;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -19,7 +19,7 @@ import common.Gate;
 import org.apache.commons.lang3.StringUtils;
 
 
-public class VerilogCircuitParser implements CircuitParser {
+public class VerilogParser implements CircuitParser {
 	private File circuitFile;
 	private int numberOfInputs;
 	private int numberOfOutputs;
@@ -38,7 +38,7 @@ public class VerilogCircuitParser implements CircuitParser {
 
 	int maxOutputWire;
 
-	public VerilogCircuitParser(File circuitFile){
+	public VerilogParser(File circuitFile){
 		this.circuitFile = circuitFile;
 		stringMap = new HashMap<String, Integer>();
 		inputMap = new HashMap<String, Integer>();

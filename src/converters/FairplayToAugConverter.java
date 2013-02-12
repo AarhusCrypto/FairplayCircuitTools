@@ -1,15 +1,17 @@
-package impl;
+package converters;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import parsers.FairplayParser;
 
 import common.CircuitConverter;
 import common.CommonUtilities;
 import common.Gate;
 
-public class FairplayCircuitAugChecksum implements CircuitConverter<Gate> {
+public class FairplayToAugConverter implements CircuitConverter<Gate> {
 
-	private FairplayCircuitParser circuitParser;
+	private FairplayParser circuitParser;
 	private int numberOfNonXORGatesAdded;
 	private int largestOutputWire;
 	private int largestAugOutputWire;
@@ -21,7 +23,7 @@ public class FairplayCircuitAugChecksum implements CircuitConverter<Gate> {
 	private int numberOfNewInputs;
 	private int r;
 
-	public FairplayCircuitAugChecksum(FairplayCircuitParser circuitParser, int l) {
+	public FairplayToAugConverter(FairplayParser circuitParser, int l) {
 		this.circuitParser = circuitParser;
 		this.l = l;
 		

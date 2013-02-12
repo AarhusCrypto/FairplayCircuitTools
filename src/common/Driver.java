@@ -1,12 +1,19 @@
-package impl;
+package common;
+
 
 import java.io.File;
 import java.util.List;
 
-import common.CircuitConverter;
-import common.CircuitParser;
-import common.CommonUtilities;
-import common.Gate;
+import output.CircuitEvaluator;
+import output.FairplayCircuitToSPACL;
+
+import parsers.CUDAParser;
+import parsers.FairplayParser;
+import parsers.VerilogParser;
+
+import converters.FairplayToAugConverter;
+import converters.FairplayToAugMultipleConverter;
+import converters.FairplayToCUDAConverter;
 
 
 public class Driver {
@@ -40,8 +47,8 @@ public class Driver {
 			if (args[3].equals("strip")) {
 				stripWires = true;
 			}
-			FairplayCircuitParser circuitParser = new FairplayCircuitParser(circuitFile, stripWires);
-			CircuitConverter<List<Gate>> circuitConverter = new FairplayCircuitConverter(
+			FairplayParser circuitParser = new FairplayParser(circuitFile, stripWires);
+			CircuitConverter<List<Gate>> circuitConverter = new FairplayToCUDAConverter(
 					circuitParser, false);
 			
 			List<List<Gate>> layersOfGates = circuitConverter.getGates();
@@ -58,8 +65,8 @@ public class Driver {
 				stripWires = true;
 			}
 
-			FairplayCircuitParser circuitParser = new FairplayCircuitParser(circuitFile, stripWires);
-			CircuitConverter<Gate> circuitConverter = new FairplayCircuitAugChecksum(circuitParser, l);
+			FairplayParser circuitParser = new FairplayParser(circuitFile, stripWires);
+			CircuitConverter<Gate> circuitConverter = new FairplayToAugConverter(circuitParser, l);
 			
 			List<Gate> layersOfGates = circuitConverter.getGates();
 			String[] headers = circuitConverter.getHeaders();
@@ -73,9 +80,9 @@ public class Driver {
 				stripWires = true;
 			}
 
-			FairplayCircuitParser circuitParser = new FairplayCircuitParser(circuitFile, stripWires);
+			FairplayParser circuitParser = new FairplayParser(circuitFile, stripWires);
 			CircuitConverter<Gate> circuitConverter = 
-					new FairplayCircuitAugMultipleOutputs(circuitParser);
+					new FairplayToAugMultipleConverter(circuitParser);
 			
 			List<Gate> layersOfGates = circuitConverter.getGates();
 			String[] headers = circuitConverter.getHeaders();
@@ -94,10 +101,10 @@ public class Driver {
 				stripWires = true;
 			}
 
-			FairplayCircuitParser circuitParser = 
-					new FairplayCircuitParser(circuitFile, stripWires);
-			FairplayCircuitConverter circuitConverter = 
-					new FairplayCircuitConverter(circuitParser,	false);
+			FairplayParser circuitParser = 
+					new FairplayParser(circuitFile, stripWires);
+			FairplayToCUDAConverter circuitConverter = 
+					new FairplayToCUDAConverter(circuitParser,	false);
 			List<List<Gate>> layersOfGates = 
 					circuitConverter.getGates();
 
@@ -113,7 +120,7 @@ public class Driver {
 			inputFile = new File(args[1]);
 			circuitFile = new File(args[2]);
 			outputFile = new File(args[3]);
-			CUDACircuitParser circuitParser = new CUDACircuitParser(circuitFile);
+			CUDAParser circuitParser = new CUDAParser(circuitFile);
 			CircuitEvaluator eval = new CircuitEvaluator(
 					inputFile, outputFile, circuitParser.getGates(), 
 					circuitParser.getCUDAHeader(), mode);
@@ -124,7 +131,7 @@ public class Driver {
 			circuitFile = new File(args[1]);
 			outputFile = new File(args[2]);
 			CircuitParser circuitParser = 
-					new VerilogCircuitParser(circuitFile);
+					new VerilogParser(circuitFile);
 			
 			CommonUtilities.outputFairplayCircuit(circuitParser.getGates(), 
 					outputFile, circuitParser.getHeaders());
@@ -134,10 +141,10 @@ public class Driver {
 			circuitFile = new File(args[1]);
 			outputFile = new File(args[2]);
 			String circuitName = outputFile.getName();
-			FairplayCircuitParser circuitParser = 
-					new FairplayCircuitParser(circuitFile, true);
-			FairplayCircuitConverter circuitConverter =
-					new FairplayCircuitConverter(circuitParser, true);
+			FairplayParser circuitParser = 
+					new FairplayParser(circuitFile, true);
+			FairplayToCUDAConverter circuitConverter =
+					new FairplayToCUDAConverter(circuitParser, true);
 			FairplayCircuitToSPACL fairplaytoSpacl = 
 					new FairplayCircuitToSPACL(circuitConverter, outputFile, circuitName);
 			fairplaytoSpacl.run();

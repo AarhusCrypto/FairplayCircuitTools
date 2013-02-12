@@ -1,4 +1,4 @@
-package impl;
+package converters;
 import java.io.File;
 
 import common.CircuitParser;
