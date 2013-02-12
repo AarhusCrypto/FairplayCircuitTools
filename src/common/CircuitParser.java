@@ -2,7 +2,7 @@ package common;
 
 import java.util.List;
 
-public interface CircuitParser {
-	public List<Gate> getGates();
+public interface CircuitParser<E> {
+	public List<E> getGates();
 	public String[] getHeaders();
 }

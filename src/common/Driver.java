@@ -5,7 +5,7 @@ import java.io.File;
 import java.util.List;
 
 import output.CircuitEvaluator;
-import output.FairplayCircuitToSPACL;
+import output.FairplayToSPACL;
 
 import parsers.CUDAParser;
 import parsers.FairplayParser;
@@ -68,11 +68,9 @@ public class Driver {
 			FairplayParser circuitParser = new FairplayParser(circuitFile, stripWires);
 			CircuitConverter<Gate> circuitConverter = new FairplayToAugConverter(circuitParser, l);
 			
-			List<Gate> layersOfGates = circuitConverter.getGates();
-			String[] headers = circuitConverter.getHeaders();
-			CommonUtilities.outputFairplayCircuit(layersOfGates, outputFile, headers);
+			executeConverter(circuitConverter, outputFile);
 		}
-		// -am circuitfile outputfile
+		// -am circuitfile outputfile strip
 		else if (mode.equals(AUG_MULTI_OUTPUT) && checkArgs(args, 4)) {
 			circuitFile = new File(args[1]);
 			outputFile = new File(args[2]);
@@ -84,11 +82,8 @@ public class Driver {
 			CircuitConverter<Gate> circuitConverter = 
 					new FairplayToAugMultipleConverter(circuitParser);
 			
-			List<Gate> layersOfGates = circuitConverter.getGates();
-			String[] headers = circuitConverter.getHeaders();
-			CommonUtilities.outputFairplayCircuit(layersOfGates, outputFile, headers);
+			executeConverter(circuitConverter, outputFile);
 		}
-
 		// -fe, -fe32, -feMI, -feRE inputfile circuitfile outputfile strip
 		else if ((mode.equals(FAIRPLAY_EVALUATOR) || 
 				mode.equals(FAIRPLAY_EVALUATOR_IA32) || 
@@ -123,14 +118,14 @@ public class Driver {
 			CUDAParser circuitParser = new CUDAParser(circuitFile);
 			CircuitEvaluator eval = new CircuitEvaluator(
 					inputFile, outputFile, circuitParser.getGates(), 
-					circuitParser.getCUDAHeader(), mode);
+					circuitParser.getHeaders()[0], mode);
 			eval.run();
 		}
 		// -vc circuitfile outputfile
 		else if (mode.equals(VERILOG_CONVERT_TO_FAIRPLAY) && checkArgs(args, 3)) {
 			circuitFile = new File(args[1]);
 			outputFile = new File(args[2]);
-			CircuitParser circuitParser = 
+			CircuitParser<Gate> circuitParser = 
 					new VerilogParser(circuitFile);
 			
 			CommonUtilities.outputFairplayCircuit(circuitParser.getGates(), 
@@ -145,9 +140,9 @@ public class Driver {
 					new FairplayParser(circuitFile, true);
 			FairplayToCUDAConverter circuitConverter =
 					new FairplayToCUDAConverter(circuitParser, true);
-			FairplayCircuitToSPACL fairplaytoSpacl = 
-					new FairplayCircuitToSPACL(circuitConverter, outputFile, circuitName);
-			fairplaytoSpacl.run();
+			FairplayToSPACL fairplayToSPACL = 
+					new FairplayToSPACL(circuitConverter, outputFile, circuitName);
+			fairplayToSPACL.run();
 //			List<List<Gate>> gates = spaclCircuitConverter.getGates();
 //			String[] headers = spaclCircuitConverter.getHeaders();
 //			
@@ -167,7 +162,6 @@ public class Driver {
 		}
 	}
 
-
 	private static boolean checkArgs(String[] args, int expectedNumberOfArgs) {
 		if(args.length != expectedNumberOfArgs){
 			System.out.println("Incorrect number of argumens, expected: " + 
@@ -176,5 +170,12 @@ public class Driver {
 		}
 		else return true;
 
+	}
+	
+	private static void executeConverter(CircuitConverter<Gate> circuitConverter, 
+			File outputFile) {
+		List<Gate> layersOfGates = circuitConverter.getGates();
+		String[] headers = circuitConverter.getHeaders();
+		CommonUtilities.outputFairplayCircuit(layersOfGates, outputFile, headers);
 	}
 }

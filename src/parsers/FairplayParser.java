@@ -18,7 +18,7 @@ import common.Gate;
 import org.apache.commons.collections.map.MultiValueMap;
 
 
-public class FairplayParser implements CircuitParser {
+public class FairplayParser implements CircuitParser<Gate> {
 
 	private File circuitFile;
 	private int originalNumberOfWires;

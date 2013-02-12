@@ -12,13 +12,13 @@ import parsers.FairplayParser;
 import common.Gate;
 import converters.FairplayToCUDAConverter;
 
-public class FairplayCircuitToSPACL implements Runnable {
+public class FairplayToSPACL implements Runnable {
 
 	private FairplayToCUDAConverter circuitConverter;
 	private File outputFile;
 	private String circuitName;
 
-	public FairplayCircuitToSPACL(FairplayToCUDAConverter circuitConverter, 
+	public FairplayToSPACL(FairplayToCUDAConverter circuitConverter, 
 			File outputFile, String circuitName) {
 		this.circuitConverter = circuitConverter;
 		this.outputFile = outputFile;

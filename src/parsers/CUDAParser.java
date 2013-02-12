@@ -9,10 +9,11 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
+import common.CircuitParser;
 import common.Gate;
 
 
-public class CUDAParser {
+public class CUDAParser implements CircuitParser<List<Gate>> {
 
 	private File circuitFile;
 
@@ -52,7 +53,7 @@ public class CUDAParser {
 		return layersOfGates;
 	}
 
-	public String getCUDAHeader() {
+	public String[] getHeaders() {
 		BufferedReader fbr = null;
 		String line = null;
 		try {
@@ -63,7 +64,7 @@ public class CUDAParser {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return line;
+		return new String[]{line};
 	}
 
 }

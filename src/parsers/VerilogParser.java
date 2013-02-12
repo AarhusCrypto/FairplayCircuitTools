@@ -19,7 +19,7 @@ import common.Gate;
 import org.apache.commons.lang3.StringUtils;
 
 
-public class VerilogParser implements CircuitParser {
+public class VerilogParser implements CircuitParser<Gate> {
 	private File circuitFile;
 	private int numberOfInputs;
 	private int numberOfOutputs;
