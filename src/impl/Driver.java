@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.List;
 
 import common.CircuitConverter;
+import common.CircuitParser;
 import common.CommonUtilities;
 import common.Gate;
 
@@ -81,7 +82,7 @@ public class Driver {
 			CommonUtilities.outputFairplayCircuit(layersOfGates, outputFile, headers);
 		}
 
-		// -fe, -fe32, -feMI, -feRE inputfile circuitfile outputfile
+		// -fe, -fe32, -feMI, -feRE inputfile circuitfile outputfile strip
 		else if ((mode.equals(FAIRPLAY_EVALUATOR) || 
 				mode.equals(FAIRPLAY_EVALUATOR_IA32) || 
 				mode.equals(FAIRPLAY_EVALUATOR_MIRRORED) || 
@@ -122,24 +123,28 @@ public class Driver {
 		else if (mode.equals(VERILOG_CONVERT_TO_FAIRPLAY) && checkArgs(args, 3)) {
 			circuitFile = new File(args[1]);
 			outputFile = new File(args[2]);
-			VerilogCircuitParser circuitParser = 
+			CircuitParser circuitParser = 
 					new VerilogCircuitParser(circuitFile);
 			
 			CommonUtilities.outputFairplayCircuit(circuitParser.getGates(), 
 					outputFile, circuitParser.getHeaders());
 		}
 		// -spacl circuitfile outputfile
-//		else if (mode.equals(FAIRPLAY_TO_SPACL) && checkArgs(args, 3)) {
-//			circuitFile = new File(args[1]);
-//			outputFile = new File(args[2]);
-//			FairplayCircuitParser circuitParser = 
-//					new FairplayCircuitParser(circuitFile, true);
-//			FairplayCircuitConverter circuitConverter =
-//					new FairplayCircuitConverter(circuitParser, outputFile, true);
-//			FairplayCircuitToPACL PACLConverter = 
-//					new FairplayCircuitToPACL(circuitConverter, outputFile);
-//			PACLConverter.run();
-//		}
+		else if (mode.equals(FAIRPLAY_TO_SPACL) && checkArgs(args, 3)) {
+			circuitFile = new File(args[1]);
+			outputFile = new File(args[2]);
+			FairplayCircuitParser circuitParser = 
+					new FairplayCircuitParser(circuitFile, true);
+			FairplayCircuitConverter circuitConverter =
+					new FairplayCircuitConverter(circuitParser, true);
+			FairplayCircuitToSPACL spaclCircuitConverter = 
+					new FairplayCircuitToSPACL(circuitConverter);
+			List<List<Gate>> gates = spaclCircuitConverter.getGates();
+			String[] headers = spaclCircuitConverter.getHeaders();
+			
+			//This circuit needs to be evaluated using FAIRPLAY_EVALUATOR_REVERSED
+			CommonUtilities.outputCUDACircuit(gates, outputFile, headers[0]);
+		}
 		else {
 			System.out.println(
 					"Your request could not be identified, please " +
