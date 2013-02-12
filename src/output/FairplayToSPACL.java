@@ -7,6 +7,8 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.util.List;
 
+import org.apache.commons.collections.map.MultiValueMap;
+
 import parsers.FairplayParser;
 
 import common.Gate;
@@ -38,7 +40,7 @@ public class FairplayToSPACL implements Runnable {
 		int[] widthSize = getWidthSizes(gates);
 
 		outputCircuit(sizeOfKey, sizeOfPlaintext, sizeOfCiphertext,
-				heapSize, widthSize);
+				heapSize, widthSize, gates);
 	}
 
 
@@ -68,30 +70,104 @@ public class FairplayToSPACL implements Runnable {
 	}
 
 	private void outputCircuit(int sizeOfKey, int sizeOfPlaintext, 
-			int sizeOfCiphertext, int heapSize, int[] widthSize) {
+			int sizeOfCiphertext, int heapSize, int[] widthSize,
+			List<List<Gate>> gates) {
 		BufferedWriter fbw = null;
 		try {
 			fbw = new BufferedWriter(new OutputStreamWriter(
 					new FileOutputStream(outputFile), Charset.defaultCharset()));
 
+			// Function header
 			fbw.write("spacl " + circuitName + "(");
 			fbw.newLine();
-			fbw.write("private_common_in key[" + sizeOfKey + "],");
+			fbw.write("  private_common_in key[" + sizeOfKey + "],");
 			fbw.newLine();
-			fbw.write("public_common_in plaintext[" + sizeOfPlaintext + "],");
+			fbw.write("  public_common_in plaintext[" + sizeOfPlaintext + "],");
 			fbw.newLine();
-			fbw.write("public_common_out ciphertext[" + sizeOfCiphertext + "]) {");
-			
-			fbw.newLine();
-			fbw.newLine();
-			
-			fbw.write("size_of_heap(" + heapSize + ");");
-			
+			fbw.write("  public_common_out ciphertext[" + sizeOfCiphertext + "]) {");
 			fbw.newLine();
 			fbw.newLine();
 			
-			//continue
-
+			// Size of heap
+			fbw.write("  size_of_heap(" + heapSize + ");");
+			fbw.newLine();
+			fbw.newLine();
+			
+			// Max_width specifications
+			fbw.write(max_width("xor", widthSize[0]));
+			fbw.newLine();
+			fbw.write(max_width("and", widthSize[1]));
+			fbw.newLine();
+			fbw.write(max_width("nand", widthSize[2]));
+			fbw.newLine();
+			fbw.write(max_width("private_common_load", sizeOfKey));
+			fbw.newLine();
+			fbw.write(max_width("public_common_load", sizeOfPlaintext));
+			fbw.newLine();
+			fbw.write(max_width("public_common_out", sizeOfCiphertext));
+			fbw.newLine();
+			fbw.newLine();
+			
+			// Init key
+			fbw.write(begin_layer("private_common_load", sizeOfKey));
+			fbw.newLine();
+			for (int i = 0; i < sizeOfKey; i++) { //Check which is key and which is plaintext
+				fbw.write("    private_common_load(key[" + i + "]," + i + "," + i + ");");
+				fbw.newLine();
+			}
+			fbw.write(end_layer("  private_common_load", sizeOfKey));
+			fbw.newLine();
+			fbw.newLine();
+			
+			// Init plaintext
+			fbw.write(begin_layer("public_common_load", sizeOfPlaintext));
+			fbw.newLine();
+			for (int i = 0; i < sizeOfPlaintext; i++) { //TODO Check which is key and which is plaintext
+				fbw.write("  public_common_load(plaintext[" + (sizeOfKey + i) + "]," + i + "," + i + ");");
+				fbw.newLine();
+			}
+			fbw.write(end_layer("public_common_load", sizeOfPlaintext));
+			fbw.newLine();
+			fbw.newLine();
+			
+			// The layers
+			for (List<Gate> list: gates) {
+				fbw.write(gates.indexOf(list) + ""); //TODO Debugging
+				fbw.newLine(); //TODO Debugging
+				Gate tester = list.get(0);
+				int j = 0;
+				if (tester.isXOR()) {
+					fbw.write(begin_layer("xor", list.size()));
+					fbw.newLine();
+					for (Gate g: list) {
+						fbw.write(gateString(g, "xor", j++));
+						fbw.newLine();
+					}
+					fbw.write(end_layer("xor", list.size()));
+					fbw.newLine();
+				} else if (tester.isAND()) {
+					fbw.write(begin_layer("and", list.size()));
+					fbw.newLine();
+					for (Gate g: list) {
+						fbw.write(gateString(g, "and", j++));
+						fbw.newLine();
+					}
+					fbw.write(end_layer("and", list.size()));
+					fbw.newLine();
+				} else {
+					fbw.write(begin_layer("nand", list.size()));
+					fbw.newLine();
+					for (Gate g: list) {
+						fbw.write(gateString(g, "nand", j++));
+						fbw.newLine();
+					}
+					fbw.write(end_layer("nand", list.size()));
+					fbw.newLine();
+				}
+				fbw.newLine();
+			}
+			
+			fbw.write("}");
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally { 
@@ -103,7 +179,21 @@ public class FairplayToSPACL implements Runnable {
 		}
 	}
 	
-	private String common_load(String access, String type, int i1, int i2, int i3) {
-		return access + "_common_load(" + type + "[" + i1 + "]," + i2 + "," + i3 + ");";
+	private String max_width(String suffix, int index) {
+		return "  max_width_" + suffix + "(" + index + ");";
+	}
+	
+	private String begin_layer(String suffix, int index) {
+		return "  begin_layer_" + suffix + "(" + index + ");";
+	}
+	
+	private String end_layer(String suffix, int index) {
+		return "  end_layer_" + suffix + "(" + index + ");";
+	}
+	
+	private String gateString(Gate g, String gateType, int index) {
+		return "    " + gateType + "(" + g.getOutputWireIndex() + "," + 
+				g.getLeftWireIndex() + "," + g.getRightWireIndex()
+				+ "," + index + ");";
 	}
 }

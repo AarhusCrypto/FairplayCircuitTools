@@ -15,6 +15,8 @@ import converters.FairplayToAugConverter;
 import converters.FairplayToAugMultipleConverter;
 import converters.FairplayToCUDAConverter;
 
+import org.apache.commons.io.FilenameUtils;
+
 
 public class Driver {
 
@@ -135,7 +137,7 @@ public class Driver {
 		else if (mode.equals(FAIRPLAY_TO_SPACL) && checkArgs(args, 3)) {
 			circuitFile = new File(args[1]);
 			outputFile = new File(args[2]);
-			String circuitName = outputFile.getName();
+			String circuitName = FilenameUtils.removeExtension(outputFile.getName());
 			FairplayParser circuitParser = 
 					new FairplayParser(circuitFile, true);
 			FairplayToCUDAConverter circuitConverter =

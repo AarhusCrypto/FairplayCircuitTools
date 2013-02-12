@@ -204,7 +204,7 @@ public class FairplayToCUDAConverter implements CircuitConverter<List<Gate>> {
 			if (nonXorLayer.size() > NEW_LAYER_THRESHOLD) {
 				res.add(nonXorLayer);
 			} else {
-				xorLayer.addAll(nonXorLayer);
+				xorLayer.addAll(nonXorLayer); //TODO: Not sure this works for threshold neq 0.
 			}
 		}
 		return res;
