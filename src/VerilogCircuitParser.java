@@ -50,7 +50,7 @@ public class VerilogCircuitParser implements CircuitParser {
 	
 	public List<Gate> getGates() {
 		List<String> gateStrings = getAnalyzedCircuit();
-		System.out.println("lala");
+
 		List<Gate> gates = getGates(gateStrings);
 		List<Gate> res = getIncrementedGates(gates);
 		firstHeader = res.size() + " " + CommonUtilities.getWireCount(res);
