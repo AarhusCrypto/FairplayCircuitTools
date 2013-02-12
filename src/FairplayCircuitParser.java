@@ -13,7 +13,7 @@ import java.util.List;
 import org.apache.commons.collections.map.MultiValueMap;
 
 
-public class FairplayCircuitParser {
+public class FairplayCircuitParser implements CircuitParser {
 
 	private File circuitFile;
 	private int originalNumberOfWires;
@@ -225,36 +225,39 @@ public class FairplayCircuitParser {
 		}
 	}
 
-	public int[] getCUDAHeaderInfo(){
-		return new int[]{totalNumberOfInputs, totalNumberOfOutputs, numberOfNonXORGates};
-
-	}
-
-	public String[] getFairplayInputOutputHeader(){
+	public String[] getHeaders() {
 		return getHeaderArray(secondHeader);
 	}
 
-	public int getNumberOfInputs(){
+	public int getNumberOfInputs() {
 		return totalNumberOfInputs;
 	}
+	
+	public int getNumberOfOutputs() {
+		return totalNumberOfOutputs;
+	}
+	
+	public int getNumberOfNonXORGates() {
+		return numberOfNonXORGates;
+	}
 
-	public int getNumberOfP1Inputs(){
+	public int getNumberOfP1Inputs() {
 		return numberOfP1Inputs;
 	}
 
-	public int getNumberOfP2Inputs(){
+	public int getNumberOfP2Inputs() {
 		return numberOfP2Inputs;
 	}
 
-	public int getNumberOfP1Outputs(){
+	public int getNumberOfP1Outputs() {
 		return numberOfP1Outputs;
 	}
 
-	public int getNumberOfP2Outputs(){
+	public int getNumberOfP2Outputs() {
 		return numberOfP2Outputs;
 	}
 
-	public int getOriginalNumberOfWires(){
+	public int getOriginalNumberOfWires() {
 		return originalNumberOfWires;
 	}
 
@@ -262,7 +265,7 @@ public class FairplayCircuitParser {
 		return numberOfWiresParsed;
 	}
 
-	private String[] getHeaderArray(String line){
+	private String[] getHeaderArray(String line) {
 		char[] lineArray = line.toCharArray();
 		String tmp = "";
 		String[] split = new String[line.length() + 1/2]; //Cannot be greater

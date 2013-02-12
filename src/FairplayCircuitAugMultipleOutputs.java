@@ -160,7 +160,7 @@ public class FairplayCircuitAugMultipleOutputs implements Runnable {
 	private String[] getHeaders(List<Gate> augCircuit) {
 		String[] res = new String[2];
 		String[] inputOutputInfo = 
-				circuitParser.getFairplayInputOutputHeader();
+				circuitParser.getHeaders();
 
 		int m1 = Integer.parseInt(inputOutputInfo[2]);
 		res[0] = augCircuit.size() + " " + CommonUtilities.getWireCount(augCircuit);

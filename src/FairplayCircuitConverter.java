@@ -60,11 +60,10 @@ public class FairplayCircuitConverter implements Runnable {
 		for (List<Gate> l: layersOfGates) {
 			maxLayerWidth = Math.max(maxLayerWidth, l.size());
 		}
-		int[] CUDAHeaderInfo = circuitParser.getCUDAHeaderInfo();
 
-		int totalNumberOfInputs = CUDAHeaderInfo[0];
-		int totalNumberOfOutputs = CUDAHeaderInfo[1];
-		int numberOfNonXORGates = CUDAHeaderInfo[2];
+		int totalNumberOfInputs = circuitParser.getNumberOfInputs();
+		int totalNumberOfOutputs = circuitParser.getNumberOfOutputs();
+		int numberOfNonXORGates = circuitParser.getNumberOfNonXORGates();
 
 		return totalNumberOfInputs + " " + totalNumberOfOutputs + " " +
 		actualNumberOfWires + " " + layersOfGates.size() + " " + maxLayerWidth + " " +
