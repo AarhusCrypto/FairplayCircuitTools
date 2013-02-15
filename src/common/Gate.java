@@ -27,7 +27,7 @@ public class Gate {
 		rightWireIndex = Integer.parseInt(split[3]);
 		outputWireIndex = Integer.parseInt(split[4]);
 
-		boolTable = split[5].replaceFirst("^0*", ""); //Removes leading 0's
+		boolTable = split[5];//.replaceFirst("^0*", ""); //Removes leading 0's. Uncommented since it just adds work for the evaluator
 		gateNumber = -1;
 	}
 
