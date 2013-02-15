@@ -78,13 +78,13 @@ public class Gate {
 	}
 
 	public boolean isXOR() {
-		if (boolTable.matches("110")) {
+		if (boolTable.matches("0110")) {
 			return true;
 		} else return false;
 	}
 	
 	public boolean isAND() {
-		if (boolTable.matches("1")) {
+		if (boolTable.matches("0001")) {
 			return true;
 		} else return false;
 	}
@@ -99,7 +99,6 @@ public class Gate {
 
 	public void setLeftWireIndex(int index) {
 		leftWireIndex = index;
-
 	}
 
 	public void setRightWireIndex(int index) {
@@ -108,6 +107,7 @@ public class Gate {
 
 	public void setOutputWireIndex(int index) {
 		outputWireIndex = index;
-
 	}
+	
+	
 }
