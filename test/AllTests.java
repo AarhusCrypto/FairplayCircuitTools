@@ -54,7 +54,7 @@ public class AllTests {
 		FairplayParser circuitParser = 
 				new FairplayParser(circuitFile, true);
 		FairplayToCUDAConverter circuitConverter = 
-				new FairplayToCUDAConverter(circuitParser, false);
+				new FairplayToCUDAConverter(circuitParser);
 		List<List<Gate>> layersOfGates = circuitConverter.getGates();
 		String header[] = circuitConverter.getHeaders();
 		CommonUtilities.outputCUDACircuit(layersOfGates, circuitOutputFile, header[0]);

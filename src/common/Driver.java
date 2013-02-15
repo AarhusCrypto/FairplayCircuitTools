@@ -51,7 +51,7 @@ public class Driver {
 			}
 			FairplayParser circuitParser = new FairplayParser(circuitFile, stripWires);
 			CircuitConverter<List<Gate>> circuitConverter = new FairplayToCUDAConverter(
-					circuitParser, false);
+					circuitParser);
 			
 			List<List<Gate>> layersOfGates = circuitConverter.getGates();
 			String[] headers = circuitConverter.getHeaders();
@@ -101,7 +101,7 @@ public class Driver {
 			FairplayParser circuitParser = 
 					new FairplayParser(circuitFile, stripWires);
 			FairplayToCUDAConverter circuitConverter = 
-					new FairplayToCUDAConverter(circuitParser,	false);
+					new FairplayToCUDAConverter(circuitParser);
 			List<List<Gate>> layersOfGates = 
 					circuitConverter.getGates();
 
@@ -141,15 +141,10 @@ public class Driver {
 			FairplayParser circuitParser = 
 					new FairplayParser(circuitFile, true);
 			FairplayToCUDAConverter circuitConverter =
-					new FairplayToCUDAConverter(circuitParser, true);
+					new FairplayToCUDAConverter(circuitParser);
 			FairplayToSPACL fairplayToSPACL = 
 					new FairplayToSPACL(circuitConverter, outputFile, circuitName);
-			fairplayToSPACL.run();
-//			List<List<Gate>> gates = spaclCircuitConverter.getGates();
-//			String[] headers = spaclCircuitConverter.getHeaders();
-//			
-//			//This circuit needs to be evaluated using FAIRPLAY_EVALUATOR_REVERSED
-//			CommonUtilities.outputCUDACircuit(gates, outputFile, headers[0]);
+			fairplayToSPACL.run(); //Needs FairplayEvaluator reversed mode to pass tests
 		}
 		else {
 			System.out.println(

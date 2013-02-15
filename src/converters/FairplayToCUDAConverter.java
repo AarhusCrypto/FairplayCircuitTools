@@ -17,9 +17,7 @@ import parsers.FairplayParser;
  */
 public class FairplayToCUDAConverter implements CircuitConverter<List<Gate>> {
 
-	private static final int NEW_LAYER_THRESHOLD = 0;
-
-	private boolean sorted;
+//	private static final int NEW_LAYER_THRESHOLD = 0;
 
 	private MultiValueMap leftMap;
 	private MultiValueMap rightMap;
@@ -32,9 +30,7 @@ public class FairplayToCUDAConverter implements CircuitConverter<List<Gate>> {
 	 * @param circuitFile
 	 * @param outputFile
 	 */
-	public FairplayToCUDAConverter(FairplayParser circuitParser, 
-			boolean sorted) {
-		this.sorted = sorted;
+	public FairplayToCUDAConverter(FairplayParser circuitParser) {
 		this.circuitParser = circuitParser;
 
 		leftMap = new MultiValueMap();
@@ -44,12 +40,7 @@ public class FairplayToCUDAConverter implements CircuitConverter<List<Gate>> {
 	
 	public List<List<Gate>> getGates() {
 		List<Gate> gates = circuitParser.getGates();
-
 		layersOfGates = getLayersOfGates(gates);
-
-		if (sorted) {
-			layersOfGates = getXorSortedLayers(layersOfGates);
-		}
 		
 		return layersOfGates;
 	}
@@ -146,7 +137,7 @@ public class FairplayToCUDAConverter implements CircuitConverter<List<Gate>> {
 	private List<List<Gate>> visitGate(Gate g, int time, List<List<Gate>> layersOfGates) {
 		g.decCounter();
 		g.setTime(time);
-		if (g.getCounter() == 0) {	
+		if (g.getCounter() == 0) {
 			addToSublist(g, layersOfGates);
 			for (Gate dependingGate: getDependingGates(g)) {
 				visitGate(dependingGate, g.getTime() + 1, layersOfGates);
@@ -177,38 +168,38 @@ public class FairplayToCUDAConverter implements CircuitConverter<List<Gate>> {
 		return res;
 	}
 
-	/**
-	 * 
-	 * @param layersOfGates
-	 * @return A list of lists where all layers either are xor-only or not
-	 * containing any xors at all
-	 */
-	private List<List<Gate>> getXorSortedLayers(List<List<Gate>> layersOfGates) {
-		List<List<Gate>> res = new ArrayList<List<Gate>>();
-		for (List<Gate> l: layersOfGates) {
-			List<Gate> xorLayer = new ArrayList<Gate>();
-			List<Gate> nonXorLayer = new ArrayList<Gate>();
-			for (Gate g: l) {
-				if (g.isXOR()) {
-					xorLayer.add(g);
-				} else {
-					nonXorLayer.add(g);
-				}
-			}
-			res.add(xorLayer);
-			/**
-			 * Can now adjust how many nonXors there has to be to
-			 * justify creating a new layer
-			 */
-
-			if (nonXorLayer.size() > NEW_LAYER_THRESHOLD) {
-				res.add(nonXorLayer);
-			} else {
-				xorLayer.addAll(nonXorLayer); //TODO: Not sure this works for threshold neq 0.
-			}
-		}
-		return res;
-	}
+//	/**
+//	 * 
+//	 * @param layersOfGates
+//	 * @return A list of lists where all layers either are xor-only or not
+//	 * containing any xors at all
+//	 */
+//	private List<List<Gate>> getXorSortedLayers(List<List<Gate>> layersOfGates) {
+//		List<List<Gate>> res = new ArrayList<List<Gate>>();
+//		for (List<Gate> l: layersOfGates) {
+//			List<Gate> xorLayer = new ArrayList<Gate>();
+//			List<Gate> nonXorLayer = new ArrayList<Gate>();
+//			for (Gate g: l) {
+//				if (g.isXOR()) {
+//					xorLayer.add(g);
+//				} else {
+//					nonXorLayer.add(g);
+//				}
+//			}
+//			res.add(xorLayer);
+//			/**
+//			 * Can now adjust how many nonXors there has to be to
+//			 * justify creating a new layer
+//			 */
+//
+//			if (nonXorLayer.size() > NEW_LAYER_THRESHOLD) {
+//				res.add(nonXorLayer);
+//			} else {
+//				xorLayer.addAll(nonXorLayer); //Not sure this works for threshold neq 0.
+//			}
+//		}
+//		return res;
+//	}
 
 	/**
 	 * @param g
