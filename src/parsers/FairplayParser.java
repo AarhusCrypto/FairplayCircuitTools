@@ -38,13 +38,11 @@ public class FairplayParser implements CircuitParser<Gate> {
 	HashMap<Integer, Gate> outputMap;
 
 	private String secondHeader;
-	private int addedWires;
 	private boolean stripWires;
 
 	public FairplayParser(File circuitFile, boolean stripWires){
 		this.circuitFile = circuitFile;
 		this.stripWires = stripWires;
-		this.addedWires = 0;
 		this.leftMap = new MultiValueMap();
 		this.rightMap = new MultiValueMap();
 		this.outputMap = new HashMap<Integer, Gate>();
@@ -55,7 +53,6 @@ public class FairplayParser implements CircuitParser<Gate> {
 	 */
 	public List<Gate> getGates() {
 		boolean secondLine = false;
-		boolean constantGateCounter = false;
 		List<Gate> res = new ArrayList<Gate>();
 
 		try {
@@ -103,40 +100,18 @@ public class FairplayParser implements CircuitParser<Gate> {
 					continue;
 				}
 
-				// If format
-				if (!constantGateCounter && (line.endsWith("INV") || 
-						line.endsWith("XOR") || line.endsWith("AND"))) {
-
-					//Constructs the constant 1 wire at second first wire after input
-					String nAND1 = "2 1 0 0 " + totalNumberOfInputs + " 1110";
-					String nAND2 = "2 1 0 " + totalNumberOfInputs + " " + (totalNumberOfInputs + 1) + " 1110";
-					Gate g1 = new Gate(nAND1);
-					Gate g2 = new Gate(nAND2);
-
-					res.add(g1);
-					res.add(g2);
-					addedWires = 2;
-					originalNumberOfWires += addedWires;
-					
-					// blankWires must be overwritten before adding g1 and g2
-					blankWires = new boolean[originalNumberOfWires];
-					addToWireInfo(g1);
-					addToWireInfo(g2);
-					constantGateCounter = true;
-				}
-
 				// Transforms format from http://www.cs.bris.ac.uk/Research/CryptographySecurity/MPC/
 				// to standard Fairplay.
 				String[] split = line.split(" ");
 				if (line.endsWith("INV")) {
-					line = "2 " + split[1] + " " + getWire(split[2]) + " " + 
-							(totalNumberOfInputs + 1) + " " + getWire(split[3]) + " " + "0110";
+					line = "2 " + split[1] + " " + split[2] + " " + 
+							split[2] + " " + split[3] + " -1";
 				} else if (line.endsWith("XOR")) {
-					line = split[0] + " " + split[1] + " " + getWire(split[2]) + " " + 
-							getWire(split[3]) + " " + getWire(split[4]) + " " + "0110";
+					line = split[0] + " " + split[1] + " " + split[2] + " " + 
+							split[3] + " " + split[4] + " " + "0110";
 				} else if (line.endsWith("AND")) {
-					line = split[0] + " " + split[1] + " " + getWire(split[2]) + " " + 
-							getWire(split[3]) + " " + getWire(split[4]) + " " + "0001";
+					line = split[0] + " " + split[1] + " " + split[2] + " " + 
+							split[3] + " " + split[4] + " " + "0001";
 				}
 
 				/*
@@ -144,7 +119,6 @@ public class FairplayParser implements CircuitParser<Gate> {
 				 */
 				Gate g = new Gate(line);
 				addToWireInfo(g);
-
 
 				if (!g.isXOR()){
 					g.setGateNumber(numberOfNonXORGates);
@@ -172,15 +146,6 @@ public class FairplayParser implements CircuitParser<Gate> {
 		}	
 
 		return res;
-	}
-	
-	private int getWire(String s) {
-		int wire = Integer.parseInt(s);
-		if (wire < totalNumberOfInputs) {
-			return wire;
-		} else {
-			return wire + addedWires;
-		}
 	}
 
 	private void addToWireInfo(Gate g) {
