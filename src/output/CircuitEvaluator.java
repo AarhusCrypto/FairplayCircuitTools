@@ -126,31 +126,34 @@ public class CircuitEvaluator implements Runnable {
 		for (List<Gate> layer: layersOfGates) {
 			for (Gate g: layer) {
 				String boolTable = g.getBoolTable();
-				for (int i = boolTable.length(); i < 4; i++) {
-					boolTable = "0" + boolTable;
-				}
-				char[] boolTableArray = boolTable.toCharArray();
-				
 				assert(evals.get(g.getLeftWireIndex()) != null &&
 						evals.get(g.getLeftWireIndex()) != null);
-				
+
 				boolean leftInput = evals.get(g.getLeftWireIndex());
 				boolean rightInput = evals.get(g.getRightWireIndex());
-				
+				if (boolTable.equals("-1")) {
+					evals.put(g.getOutputWireIndex(), !evals.get(g.getLeftWireIndex()));
+				} else {
+					for (int i = boolTable.length(); i < 4; i++) {
+						boolTable = "0" + boolTable;
+					}
+					char[] boolTableArray = boolTable.toCharArray();
 
-				if (leftInput == false && rightInput == false && 
-						boolTableArray[0] == '1') {
-					evals.put(g.getOutputWireIndex(), true);
-				} else if (leftInput == false && rightInput == true && 
-						boolTableArray[1] == '1') {
-					evals.put(g.getOutputWireIndex(), true);
-				} else if (leftInput == true && rightInput == false && 
-						boolTableArray[2] == '1') {
-					evals.put(g.getOutputWireIndex(), true);
-				} else if (leftInput == true &&	rightInput == true && 
-						boolTableArray[3] == '1') {
-					evals.put(g.getOutputWireIndex(), true);
-				} else evals.put(g.getOutputWireIndex(), false);
+
+					if (leftInput == false && rightInput == false && 
+							boolTableArray[0] == '1') {
+						evals.put(g.getOutputWireIndex(), true);
+					} else if (leftInput == false && rightInput == true && 
+							boolTableArray[1] == '1') {
+						evals.put(g.getOutputWireIndex(), true);
+					} else if (leftInput == true && rightInput == false && 
+							boolTableArray[2] == '1') {
+						evals.put(g.getOutputWireIndex(), true);
+					} else if (leftInput == true &&	rightInput == true && 
+							boolTableArray[3] == '1') {
+						evals.put(g.getOutputWireIndex(), true);
+					} else evals.put(g.getOutputWireIndex(), false);
+				}
 			}
 		}
 		// Read output in little endian, but stores it in big endian
