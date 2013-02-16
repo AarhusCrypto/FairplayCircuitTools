@@ -6,16 +6,16 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-import org.apache.commons.collections.map.MultiValueMap;
-
 import parsers.FairplayParser;
 
+import common.CurrentGate;
 import common.Gate;
-import common.SystemInfo;
+import common.LayerComparator;
+import common.TopoTypeComparator;
 
 import converters.FairplayToCUDAConverter;
 
@@ -34,14 +34,13 @@ public class FairplayToSPACL implements Runnable {
 	}
 
 	public void run() {
-		List<List<Gate>> gates = circuitConverter.getGates();
+		List<List<Gate>> list = circuitConverter.getGates();
 		FairplayParser circuitParser = circuitConverter.getParser();
 		int numberOfInputs = circuitParser.getNumberOfInputs();
 		
-		List<List<Gate>> layeredGates = getLayeredGates(gates, 
+		List<Gate> sortedGates = getLayeredGates(list, 
 				numberOfInputs);
-
-//		gates = getSortedGates(layeredGates);
+		List<List<Gate>> layeredGates = getSortedGates(sortedGates);
 
 
 		int sizeOfKey = circuitParser.getNumberOfP1Inputs();
@@ -55,19 +54,15 @@ public class FairplayToSPACL implements Runnable {
 				heapSize, widthSize, layeredGates);
 	}
 
-	@SuppressWarnings("unchecked")
-	private List<List<Gate>> getLayeredGates(List<List<Gate>> gates, int inputSize) {
-		List<List<Gate>> res = new ArrayList<List<Gate>>();
+	private List<Gate> getLayeredGates(List<List<Gate>> gates, int inputSize) {
+		List<Gate> res = new ArrayList<Gate>();
 
 		// Init wireLayer map with input wires
 		HashMap<Integer, Integer> wireLayers = new HashMap<Integer, Integer>();
-		MultiValueMap nonAndMap = new MultiValueMap();
-		MultiValueMap invMap = new MultiValueMap();
-		MultiValueMap andMap = new MultiValueMap();
 		for (int i = 0; i < inputSize; i++) {
 			wireLayers.put(i, 0);
 		}
-
+		
 		for (List<Gate> list: gates) {
 			for (Gate g: list) {
 				int a = wireLayers.get(g.getLeftWireIndex());
@@ -75,90 +70,111 @@ public class FairplayToSPACL implements Runnable {
 				int layer;
 				if (g.isAND()) {
 					layer = Math.max(a, b) + 1;
-					andMap.put(layer - 1, g);
+					g.setTopologicalLayer(layer - 1);
 				} else {
 					layer = Math.max(a, b);
-					nonAndMap.put(layer, g);
+					g.setTopologicalLayer(layer);
 				}
 				wireLayers.put(g.getOutputWireIndex(), layer);
+				
+				res.add(g);
 			}
 		}
+		Collections.sort(res, new TopoTypeComparator());
+		return res;
+	}
 
-		int limit = Math.max(nonAndMap.size(), andMap.size());
+//		int limit = Math.max(nonAndMap.size(), andMap.size());
+//		res.add(new ArrayList<Gate>());
+//		for (int i = 0; i < limit; i++) {
+//			Collection<Gate> xorList = nonAndMap.getCollection(i);
+////			Collection<Gate> invList = invMap.getCollection(i);
+//			Collection<Gate> andList = andMap.getCollection(i);
+//			
+//			if (xorList != null) {
+//				int startIndex = res.size() - 1;
+//				boolean addingXor = true;
+//				int j = 0;
+//				for (Gate g: xorList) {
+//					if (i == 0)
+////						System.out.println(g.toFairPlayString());
+//					if (g.isXOR()) {
+//						if (addingXor) {
+//							res.get(startIndex + j).add(g);
+//						} else {
+//							addingXor = !addingXor;
+//							List<Gate> tmp = new ArrayList<Gate>();
+//							tmp.add(g);
+//							res.add(tmp);
+//							j++;
+//						}
+//					} else {
+//						if (!addingXor) {
+//							res.get(startIndex + j).add(g);
+//						} else {
+//							addingXor = !addingXor;
+//							List<Gate> tmp = new ArrayList<Gate>();
+//							tmp.add(g);
+//							res.add(tmp);
+//							j++;
+//						}
+//					}
+//				}
+//			}
+//			if (andList != null) {
+//				List<Gate> ands = new ArrayList<Gate>();
+//				ands.addAll(andList);
+//				res.add(ands);
+//			}
+//		}
+
+	private List<List<Gate>> getSortedGates(List<Gate> gates) {
+		List<List<Gate>> res = new ArrayList<List<Gate>>();
+		CurrentGate current;
+		int index = 0;
+		Gate trial = gates.get(0);
+		
+		if (trial.isXOR()) {
+			current = CurrentGate.XOR;
+		} else if (trial.isAND()) {
+			current = CurrentGate.AND;
+		} else current = CurrentGate.INV;
+		
 		res.add(new ArrayList<Gate>());
-		for (int i = 0; i < limit; i++) {
-			Collection<Gate> xorList = nonAndMap.getCollection(i);
-//			Collection<Gate> invList = invMap.getCollection(i);
-			Collection<Gate> andList = andMap.getCollection(i);
-			
-			if (xorList != null) {
-				int startIndex = res.size() - 1;
-				boolean addingXor = true;
-				int j = 0;
-				for (Gate g: xorList) {
-					if (i == 0)
-//						System.out.println(g.toFairPlayString());
-					if (g.isXOR()) {
-						if (addingXor) {
-							res.get(startIndex + j).add(g);
-						} else {
-							addingXor = !addingXor;
-							List<Gate> tmp = new ArrayList<Gate>();
-							tmp.add(g);
-							res.add(tmp);
-							j++;
-						}
-					} else {
-						if (!addingXor) {
-							res.get(startIndex + j).add(g);
-						} else {
-							addingXor = !addingXor;
-							List<Gate> tmp = new ArrayList<Gate>();
-							tmp.add(g);
-							res.add(tmp);
-							j++;
-						}
-					}
-				}
+		for (Gate g: gates) {
+			if (equal(g, current)) {
+				res.get(index).add(g);
+			} else {
+				res.add(new ArrayList<Gate>());
+				index++;
+				res.get(index).add(g);
+				current = getNewCurrent(g);
 			}
-			if (andList != null) {
-				List<Gate> ands = new ArrayList<Gate>();
-				ands.addAll(andList);
-				res.add(ands);
-			}
+		}
+		
+		for (List<Gate> list: res) {
+			Collections.sort(list, new LayerComparator());
 		}
 		return res;
 	}
 
-//	private List<List<Gate>> getSortedGates(List<List<Gate>> gates) {
-//		List<List<Gate>> res = new ArrayList<List<Gate>>();
-//
-//		for (List<Gate> list: gates) {
-//			List<Gate> xors = new ArrayList<Gate>();
-//			List<Gate> invs = new ArrayList<Gate>();
-//			List<Gate> ands = new ArrayList<Gate>();
-//			for (Gate g: list) {
-//				if (g.isXOR()) {
-//					xors.add(g);
-//				} else if (g.isAND()) {
-//					ands.add(g);
-//				} else {
-//					invs.add(g);
-//				}
-//			}
-//			if (!xors.isEmpty()) {
-//				res.add(xors);
-//			}
-//			if (!invs.isEmpty()) {
-//				res.add(invs);
-//			}
-//			if (!ands.isEmpty()) {
-//				res.add(ands);
-//			}
-//		}
-//		return res;
-//	}
-
+	private boolean equal(Gate g, CurrentGate current) {
+		if (g.isXOR() && current == CurrentGate.XOR) {
+			return true;
+		} else if (g.isAND() && current == CurrentGate.AND) {
+			return true;
+		} else if (g.isINV() && current == CurrentGate.INV) {
+			return true;
+		} else return false;
+	}
+	
+	private CurrentGate getNewCurrent(Gate g) {
+		if (g.isXOR()) {
+			return CurrentGate.XOR;
+		} else if (g.isAND()) {
+			return CurrentGate.AND;
+		} else return CurrentGate.INV;
+	}
 
 
 	private int getNumberOfGates(List<List<Gate>> gates) {
