@@ -136,11 +136,11 @@ public class FairplayToCUDAConverter implements CircuitConverter<List<Gate>> {
 	 */
 	private List<List<Gate>> visitGate(Gate g, int time, List<List<Gate>> layersOfGates) {
 		g.decCounter();
-		g.setTime(time);
+		g.setLayer(time);
 		if (g.getCounter() == 0) {
 			addToSublist(g, layersOfGates);
 			for (Gate dependingGate: getDependingGates(g)) {
-				visitGate(dependingGate, g.getTime() + 1, layersOfGates);
+				visitGate(dependingGate, g.getLayer() + 1, layersOfGates);
 			}
 		}
 		return layersOfGates;
@@ -209,11 +209,11 @@ public class FairplayToCUDAConverter implements CircuitConverter<List<Gate>> {
 	 */
 	private List<List<Gate>> addToSublist(Gate g, List<List<Gate>> layersOfGates) {
 
-		while (layersOfGates.size() <= g.getTime()) {
+		while (layersOfGates.size() <= g.getLayer()) {
 			layersOfGates.add(new ArrayList<Gate>());
 		}
 
-		List<Gate> layer = layersOfGates.get(g.getTime());
+		List<Gate> layer = layersOfGates.get(g.getLayer());
 		layer.add(g);
 
 		return layersOfGates;

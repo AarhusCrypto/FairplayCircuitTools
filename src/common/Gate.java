@@ -6,7 +6,6 @@ public class Gate {
 	private static final int INPUT_WIRES = 2;
 
 	private int counter;
-	private int time;
 	private int leftWireIndex;
 	private int rightWireIndex;
 	private int outputWireIndex;
@@ -14,13 +13,15 @@ public class Gate {
 	private int gateNumber;
 	private int numberOfInputWires;
 	private int numberOfOutputWires;
+	private int layer;
+	private int topologicalLayer;
 
 	public Gate(String s) {
 
 		//Example string: 2 1 96 99 256 0110
 		String[] split = s.split(" ");
 		counter = INPUT_WIRES;
-		time = -1;
+		layer = -1;
 		numberOfInputWires = Integer.parseInt(split[0]);
 		numberOfOutputWires = Integer.parseInt(split[1]);
 		leftWireIndex = Integer.parseInt(split[2]);
@@ -49,14 +50,6 @@ public class Gate {
 
 	public void decCounter() {
 		counter--;
-	}
-
-	public int getTime() {
-		return time;
-	}
-
-	public void setTime(int time) {
-		this.time = Math.max(this.time, time);
 	}
 
 	public String getBoolTable() {
@@ -88,6 +81,12 @@ public class Gate {
 			return true;
 		} else return false;
 	}
+	
+	public boolean isINV() {
+		if (boolTable.matches("-1")) {
+			return true;
+		} else return false;
+	}
 
 	public void setGateNumber(int gateNumber) {
 		this.gateNumber = gateNumber;
@@ -95,6 +94,22 @@ public class Gate {
 
 	public int getGateNumber() {
 		return gateNumber;
+	}
+	
+	public int getLayer() {
+		return layer;
+	}
+
+	public void setLayer(int layer) {
+		this.layer = Math.max(this.layer, layer);
+	}
+
+	public int getTopologicalLayer() {
+		return topologicalLayer;
+	}
+
+	public void setTopologicalLayer(int topologicalLayer) {
+		this.topologicalLayer = topologicalLayer;
 	}
 
 	public void setLeftWireIndex(int index) {
@@ -108,6 +123,4 @@ public class Gate {
 	public void setOutputWireIndex(int index) {
 		outputWireIndex = index;
 	}
-	
-	
 }
