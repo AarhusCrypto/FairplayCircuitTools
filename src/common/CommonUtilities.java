@@ -95,7 +95,28 @@ public class CommonUtilities {
 		}
 		return hs.size();
 	}
-	
+
+	public static int getWireCountList(List<List<Gate>> gates) {
+		HashSet<Integer> hs = new HashSet<Integer>();
+		for (List<Gate> list: gates) {
+			for (Gate g: list) {
+				int leftIndex = g.getLeftWireIndex();
+				int rightIndex = g.getRightWireIndex();
+				int outputIndex = g.getOutputWireIndex();
+				if (leftIndex != Integer.MIN_VALUE) {
+					hs.add(g.getLeftWireIndex());
+				}
+				if (rightIndex != Integer.MIN_VALUE) {
+					hs.add(g.getRightWireIndex());
+				}
+				if (outputIndex != Integer.MIN_VALUE) {
+					hs.add(g.getOutputWireIndex());
+				}
+			}
+		}
+		return hs.size();
+	}
+
 	public static void showBlankWires(List<Gate> gates, int size) {
 		boolean[] wires = new boolean[size];
 		for (Gate g: gates) {
