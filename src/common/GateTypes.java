@@ -1,5 +1,5 @@
 package common;
 
-public enum CurrentGate {
+public enum GateTypes {
 	XOR, INV, AND
 }
