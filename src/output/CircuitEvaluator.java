@@ -61,7 +61,8 @@ public class CircuitEvaluator implements Runnable {
 			input = input.getIA32BitString();
 		} else if (mode.equals(Driver.FAIRPLAY_EVALUATOR_MIRRORED)) {
 			input = input.getMirroredBitString();
-		} else if (mode.equals(Driver.FAIRPLAY_EVALUATOR_REVERSED)) {
+		} else if (mode.equals(Driver.FAIRPLAY_EVALUATOR_REVERSED) ||
+				mode.equals(Driver.SPACL_EVALUATOR)) {
 			input = input.getReverseOrder();
 		}
 

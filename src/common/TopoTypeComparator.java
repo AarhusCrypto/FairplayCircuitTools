@@ -10,6 +10,11 @@ public class TopoTypeComparator implements Comparator<Gate> {
         if (topological != 0) {
             return topological;
         }
+        
+        int layer = g1.getLayer() - g2.getLayer();
+        if (layer != 0) {
+        	return layer;
+        }
 
         if (g1.isXOR()) {
         	if (g2.isXOR()){
