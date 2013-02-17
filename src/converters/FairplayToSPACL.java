@@ -1,4 +1,4 @@
-package output;
+package converters;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -17,7 +17,6 @@ import common.Gate;
 import common.LayerComparator;
 import common.TopoTypeComparator;
 
-import converters.FairplayToCUDAConverter;
 
 public class FairplayToSPACL implements Runnable {
 
@@ -45,7 +44,7 @@ public class FairplayToSPACL implements Runnable {
 
 		int sizeOfKey = circuitParser.getNumberOfP1Inputs();
 		int sizeOfPlaintext = circuitParser.getNumberOfP2Inputs();
-		int sizeOfCiphertext = numberOfInputs;
+		int sizeOfCiphertext = circuitParser.getNumberOfOutputs();
 
 		int heapSize = getNumberOfGates(layeredGates);
 		int[] widthSize = getWidthSizes(layeredGates);

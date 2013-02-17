@@ -7,7 +7,6 @@ import java.util.List;
 import org.apache.commons.io.FilenameUtils;
 
 import output.CircuitEvaluator;
-import output.FairplayToSPACL;
 import parsers.CUDAParser;
 import parsers.FairplayParser;
 import parsers.SPACLParser;
@@ -15,6 +14,7 @@ import parsers.VerilogParser;
 import converters.FairplayToAugConverter;
 import converters.FairplayToAugMultipleConverter;
 import converters.FairplayToCUDAConverter;
+import converters.FairplayToSPACL;
 
 
 public class Driver {
