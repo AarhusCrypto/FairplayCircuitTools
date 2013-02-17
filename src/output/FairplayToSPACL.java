@@ -12,7 +12,7 @@ import java.util.List;
 
 import parsers.FairplayParser;
 
-import common.CurrentGate;
+import common.GateTypes;
 import common.Gate;
 import common.LayerComparator;
 import common.TopoTypeComparator;
@@ -67,13 +67,17 @@ public class FairplayToSPACL implements Runnable {
 			for (Gate g: list) {
 				int a = wireLayers.get(g.getLeftWireIndex());
 				int b = wireLayers.get(g.getRightWireIndex());
-				int layer;
+				int layer = 0;
 				if (g.isAND()) {
 					layer = Math.max(a, b) + 1;
 					g.setTopologicalLayer(layer - 1);
-				} else {
+				} else if (g.isXOR() || g.isINV()) {
 					layer = Math.max(a, b);
 					g.setTopologicalLayer(layer);
+				} else {
+					System.out.println("Input Circuit may only consist of XOR, INV, AND");
+					System.out.println("Terminating without output");
+					System.exit(-1);
 				}
 				wireLayers.put(g.getOutputWireIndex(), layer);
 				
@@ -130,15 +134,17 @@ public class FairplayToSPACL implements Runnable {
 
 	private List<List<Gate>> getSortedGates(List<Gate> gates) {
 		List<List<Gate>> res = new ArrayList<List<Gate>>();
-		CurrentGate current;
+		GateTypes current = null;
 		int index = 0;
 		Gate trial = gates.get(0);
 		
 		if (trial.isXOR()) {
-			current = CurrentGate.XOR;
+			current = GateTypes.XOR;
 		} else if (trial.isAND()) {
-			current = CurrentGate.AND;
-		} else current = CurrentGate.INV;
+			current = GateTypes.AND;
+		} else if (trial.isINV()) {
+			current = GateTypes.INV;
+		}
 		
 		res.add(new ArrayList<Gate>());
 		for (Gate g: gates) {
@@ -158,22 +164,26 @@ public class FairplayToSPACL implements Runnable {
 		return res;
 	}
 
-	private boolean equal(Gate g, CurrentGate current) {
-		if (g.isXOR() && current == CurrentGate.XOR) {
+	private boolean equal(Gate g, GateTypes current) {
+		if (g.isXOR() && current == GateTypes.XOR) {
 			return true;
-		} else if (g.isAND() && current == CurrentGate.AND) {
+		} else if (g.isAND() && current == GateTypes.AND) {
 			return true;
-		} else if (g.isINV() && current == CurrentGate.INV) {
+		} else if (g.isINV() && current == GateTypes.INV) {
 			return true;
 		} else return false;
 	}
 	
-	private CurrentGate getNewCurrent(Gate g) {
+	private GateTypes getNewCurrent(Gate g) {
+		GateTypes res = null;
 		if (g.isXOR()) {
-			return CurrentGate.XOR;
+			res = GateTypes.XOR;
 		} else if (g.isAND()) {
-			return CurrentGate.AND;
-		} else return CurrentGate.INV;
+			res = GateTypes.AND;
+		} else if (g.isINV()) {
+			res = GateTypes.INV;
+		}
+		return res;
 	}
 
 
@@ -193,7 +203,9 @@ public class FairplayToSPACL implements Runnable {
 				res[0] = Math.max(res[0], list.size());
 			} else if (tester.isAND()) {
 				res[1] = Math.max(res[1], list.size());
-			} else res[2] = Math.max(res[2], list.size());
+			} else if (tester.isXOR() || tester.isINV()) {
+				res[2] = Math.max(res[2], list.size());
+			}
 		}
 		return res;
 	}
