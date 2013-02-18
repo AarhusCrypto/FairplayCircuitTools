@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 import common.CircuitParser;
 import common.CommonUtilities;
 import common.Gate;
+import common.InputGateType;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -137,8 +138,8 @@ public class VerilogParser implements CircuitParser<Gate> {
 		//Constructs the constant 1 wire at second first wire after input
 		String nAND1 = "2 1 0 0 " + numberOfInputs + " 1110";
 		String nAND2 = "2 1 0 " + numberOfInputs + " " + (numberOfInputs + 1) + " 1110";
-		Gate g1 = new Gate(nAND1);
-		Gate g2 = new Gate(nAND2);
+		Gate g1 = new Gate(nAND1, InputGateType.FAIRPLAY);
+		Gate g2 = new Gate(nAND2, InputGateType.FAIRPLAY);
 		res.add(g1);
 		res.add(g2);
 
@@ -199,7 +200,7 @@ public class VerilogParser implements CircuitParser<Gate> {
 			String gateString = inputs + " " + outputs + " " + leftWire +
 					" " + rightWire + " " + outputWire + " " + boolTable;
 
-			Gate g = new Gate(gateString);
+			Gate g = new Gate(gateString, InputGateType.FAIRPLAY);
 			maxOutputWire = Math.max(maxOutputWire, g.getOutputWireIndex());
 
 			

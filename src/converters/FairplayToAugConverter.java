@@ -8,6 +8,7 @@ import parsers.FairplayParser;
 import common.CircuitConverter;
 import common.CommonUtilities;
 import common.Gate;
+import common.InputGateType;
 
 public class FairplayToAugConverter implements CircuitConverter<Gate> {
 
@@ -85,7 +86,7 @@ public class FairplayToAugConverter implements CircuitConverter<Gate> {
 				int rightWire = x;
 				int outputWire = numberOfNewInputs + i * t_a + x;
 				Gate g = new Gate("2 1 "+ leftWire + " " + rightWire +
-						" " + outputWire + " 0001");
+						" " + outputWire + " 0001", InputGateType.FAIRPLAY);
 				largestAugOutputWire = Math.max(largestAugOutputWire, g.getOutputWireIndex());
 				g.setGateNumber(gateNumber++);
 				andGates.add(g);
@@ -121,7 +122,7 @@ public class FairplayToAugConverter implements CircuitConverter<Gate> {
 				// creating a chain structure. The last gate in this list is the
 				// output gate.
 				Gate g = new Gate("2 1 " + leftWire + " " +
-						rightWire + " " + outputWire + " 0110");
+						rightWire + " " + outputWire + " 0110", InputGateType.FAIRPLAY);
 				largestAugOutputWire = Math.max(largestAugOutputWire, g.getOutputWireIndex());
 				xorGates.add(g);
 			}
@@ -134,7 +135,7 @@ public class FairplayToAugConverter implements CircuitConverter<Gate> {
 
 			int s = t_a + i;
 			Gate outputGate = new Gate("2 1 " + xorOutputWireIndex + " " +
-					s + " " + i + " 0110");
+					s + " " + i + " 0110", InputGateType.FAIRPLAY);
 
 			outputGates.add(outputGate);
 			res.addAll(xorGates);

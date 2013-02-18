@@ -11,6 +11,7 @@ import java.util.List;
 
 import common.CircuitParser;
 import common.Gate;
+import common.InputGateType;
 
 
 public class CUDAParser implements CircuitParser<List<Gate>> {
@@ -42,7 +43,7 @@ public class CUDAParser implements CircuitParser<List<Gate>> {
 				}
 
 				// Parse each gate line and count numberOfNonXORGates
-				Gate g = new Gate(line);
+				Gate g = new Gate(line, InputGateType.CUDA);
 				currentLayer.add(g);
 			}
 			fbr.close();

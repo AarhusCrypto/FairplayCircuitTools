@@ -14,6 +14,7 @@ import java.util.List;
 import common.CircuitParser;
 import common.CommonUtilities;
 import common.Gate;
+import common.InputGateType;
 
 import org.apache.commons.collections.map.MultiValueMap;
 
@@ -40,7 +41,7 @@ public class FairplayParser implements CircuitParser<Gate> {
 	private String secondHeader;
 	private boolean stripWires;
 
-	public FairplayParser(File circuitFile, boolean stripWires){
+	public FairplayParser(File circuitFile, boolean stripWires) {
 		this.circuitFile = circuitFile;
 		this.stripWires = stripWires;
 		this.leftMap = new MultiValueMap();
@@ -59,7 +60,7 @@ public class FairplayParser implements CircuitParser<Gate> {
 			BufferedReader fbr = new BufferedReader(new InputStreamReader(
 					new FileInputStream(circuitFile), Charset.defaultCharset()));
 			String line = "";
-			while((line = fbr.readLine()) != null) {
+			while ((line = fbr.readLine()) != null) {
 				if (line.isEmpty()){
 					continue;
 				}
@@ -67,7 +68,7 @@ public class FairplayParser implements CircuitParser<Gate> {
 				/*
 				 * Parse meta-data info
 				 */
-				if(line.matches("[0-9]* [0-9]*")){
+				if (line.matches("[0-9]* [0-9]*")) {
 					String[] sizeInfo = line.split(" ");
 					originalNumberOfWires = Integer.parseInt(sizeInfo[1]);
 					blankWires = new boolean[originalNumberOfWires];
@@ -79,7 +80,7 @@ public class FairplayParser implements CircuitParser<Gate> {
 				/*
 				 * Parse number of input bits
 				 */
-				if (secondLine){
+				if (secondLine) {
 					secondHeader = line;
 
 					String[] split = getHeaderArray(line);
@@ -104,8 +105,8 @@ public class FairplayParser implements CircuitParser<Gate> {
 				// to standard Fairplay.
 				String[] split = line.split(" ");
 				if (line.endsWith("INV")) {
-					line = "2 " + split[1] + " " + split[2] + " " + 
-							split[2] + " " + split[3] + " -1";
+					line = "1 " + split[1] + " " +  split[2] + " " + 
+							split[3] + " -1";
 				} else if (line.endsWith("XOR")) {
 					line = split[0] + " " + split[1] + " " + split[2] + " " + 
 							split[3] + " " + split[4] + " " + "0110";
@@ -117,7 +118,7 @@ public class FairplayParser implements CircuitParser<Gate> {
 				/*
 				 * Parse each gate line and count numberOfNonXORGates
 				 */
-				Gate g = new Gate(line);
+				Gate g = new Gate(line, InputGateType.FAIRPLAY);
 				addToWireInfo(g);
 
 				if (!g.isXOR()){

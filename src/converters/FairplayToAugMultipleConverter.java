@@ -7,6 +7,7 @@ import parsers.FairplayParser;
 import common.CircuitConverter;
 import common.CommonUtilities;
 import common.Gate;
+import common.InputGateType;
 
 
 public class FairplayToAugMultipleConverter implements CircuitConverter<Gate> {
@@ -118,7 +119,7 @@ public class FairplayToAugMultipleConverter implements CircuitConverter<Gate> {
 			int rightWire = startOfC + i;
 			int outputWire = startOfE + i;
 			Gate g = new Gate("2 1 "+ leftWire + " " + rightWire +
-					" " + outputWire + " 0110");
+					" " + outputWire + " 0110", InputGateType.FAIRPLAY);
 			res.add(g);
 		}
 
@@ -141,7 +142,7 @@ public class FairplayToAugMultipleConverter implements CircuitConverter<Gate> {
 				index = m1 * j + i;
 				int outputWire = startOfMComputation + index;
 				Gate andGate = new Gate("2 1 "+ leftWire + " " + rightWire +
-						" " + outputWire + " 0001");
+						" " + outputWire + " 0001", InputGateType.FAIRPLAY);
 				res.add(andGate);
 				/*****************************************************/
 				if (i == m1 - 1) {
@@ -160,7 +161,7 @@ public class FairplayToAugMultipleConverter implements CircuitConverter<Gate> {
 				outputWire = priorOutput = 
 						startOfMComputation + index + m1Squared;
 				Gate orGate = new Gate("2 1 "+ leftWire + " " + rightWire +
-						" " + outputWire + " 0110");
+						" " + outputWire + " 0110", InputGateType.FAIRPLAY);
 				res.add(orGate);
 
 			}
@@ -173,7 +174,7 @@ public class FairplayToAugMultipleConverter implements CircuitConverter<Gate> {
 			int rightWire = startOfB + i;
 			int outputWire = startOfM + i;
 			Gate g = new Gate("2 1 "+ leftWire + " " + rightWire +
-					" " + outputWire + " 0110");
+					" " + outputWire + " 0110", InputGateType.FAIRPLAY);
 			res.add(g);
 		}
 		return res;
