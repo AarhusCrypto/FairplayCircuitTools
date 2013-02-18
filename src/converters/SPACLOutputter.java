@@ -255,7 +255,7 @@ public class SPACLOutputter implements Runnable {
 			write(begin_layer("public_common_out", sizeOfCiphertext));
 			newLine();
 			for (int i = 0; i < sizeOfCiphertext; i++) {
-				write("    public_common_out(ciphertext[" + (heapSize - 1 - i)  + "]," + i + "," + i + ");");
+				write("    public_common_out(ciphertext[" + (heapSize - sizeOfCiphertext + i)  + "]," + i + "," + i + ");");
 				newLine();
 			}
 			write(end_layer("public_common_out", sizeOfCiphertext));
