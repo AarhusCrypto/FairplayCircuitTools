@@ -14,7 +14,7 @@ import parsers.VerilogParser;
 import converters.FairplayToAugConverter;
 import converters.FairplayToAugMultipleConverter;
 import converters.FairplayToCUDAConverter;
-import converters.FairplayToSPACL;
+import converters.SPACLOutputter;
 
 
 public class Driver {
@@ -108,8 +108,8 @@ public class Driver {
 					new FairplayParser(circuitFile, true);
 			FairplayToCUDAConverter circuitConverter =
 					new FairplayToCUDAConverter(circuitParser);
-			FairplayToSPACL fairplayToSPACL = 
-					new FairplayToSPACL(circuitConverter, outputFile, circuitName);
+			SPACLOutputter fairplayToSPACL = 
+					new SPACLOutputter(circuitConverter, outputFile, circuitName);
 			fairplayToSPACL.run(); //Needs FairplayEvaluator reversed mode to pass tests
 		}
 		// --------------------------------------------------------------------

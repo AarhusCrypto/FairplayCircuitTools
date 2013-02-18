@@ -12,20 +12,21 @@ import java.util.List;
 
 import parsers.FairplayParser;
 
+import common.CommonUtilities;
 import common.GateTypes;
 import common.Gate;
 import common.LayerComparator;
 import common.TopoTypeComparator;
 
 
-public class FairplayToSPACL implements Runnable {
+public class SPACLOutputter implements Runnable {
 
 	private FairplayToCUDAConverter circuitConverter;
 	private File outputFile;
 	private String circuitName;
 	private BufferedWriter bw;
 
-	public FairplayToSPACL(FairplayToCUDAConverter circuitConverter, 
+	public SPACLOutputter(FairplayToCUDAConverter circuitConverter, 
 			File outputFile, String circuitName) {
 		this.circuitConverter = circuitConverter;
 		this.outputFile = outputFile;
@@ -36,7 +37,7 @@ public class FairplayToSPACL implements Runnable {
 		List<List<Gate>> list = circuitConverter.getGates();
 		FairplayParser circuitParser = circuitConverter.getParser();
 		int numberOfInputs = circuitParser.getNumberOfInputs();
-		
+
 		List<Gate> sortedGates = getLayeredGates(list, 
 				numberOfInputs);
 		List<List<Gate>> layeredGates = getSortedGates(sortedGates);
@@ -46,7 +47,7 @@ public class FairplayToSPACL implements Runnable {
 		int sizeOfPlaintext = circuitParser.getNumberOfP2Inputs();
 		int sizeOfCiphertext = circuitParser.getNumberOfOutputs();
 
-		int heapSize = getNumberOfGates(layeredGates);
+		int heapSize = CommonUtilities.getWireCountList(layeredGates);
 		int[] widthSize = getWidthSizes(layeredGates);
 
 		outputCircuit(sizeOfKey, sizeOfPlaintext, sizeOfCiphertext,
@@ -61,7 +62,7 @@ public class FairplayToSPACL implements Runnable {
 		for (int i = 0; i < inputSize; i++) {
 			wireLayers.put(i, 0);
 		}
-		
+
 		for (List<Gate> list: gates) {
 			for (Gate g: list) {
 				int a = wireLayers.get(g.getLeftWireIndex());
@@ -79,7 +80,7 @@ public class FairplayToSPACL implements Runnable {
 					System.exit(-1);
 				}
 				wireLayers.put(g.getOutputWireIndex(), layer);
-				
+
 				res.add(g);
 			}
 		}
@@ -87,56 +88,12 @@ public class FairplayToSPACL implements Runnable {
 		return res;
 	}
 
-//		int limit = Math.max(nonAndMap.size(), andMap.size());
-//		res.add(new ArrayList<Gate>());
-//		for (int i = 0; i < limit; i++) {
-//			Collection<Gate> xorList = nonAndMap.getCollection(i);
-////			Collection<Gate> invList = invMap.getCollection(i);
-//			Collection<Gate> andList = andMap.getCollection(i);
-//			
-//			if (xorList != null) {
-//				int startIndex = res.size() - 1;
-//				boolean addingXor = true;
-//				int j = 0;
-//				for (Gate g: xorList) {
-//					if (i == 0)
-////						System.out.println(g.toFairPlayString());
-//					if (g.isXOR()) {
-//						if (addingXor) {
-//							res.get(startIndex + j).add(g);
-//						} else {
-//							addingXor = !addingXor;
-//							List<Gate> tmp = new ArrayList<Gate>();
-//							tmp.add(g);
-//							res.add(tmp);
-//							j++;
-//						}
-//					} else {
-//						if (!addingXor) {
-//							res.get(startIndex + j).add(g);
-//						} else {
-//							addingXor = !addingXor;
-//							List<Gate> tmp = new ArrayList<Gate>();
-//							tmp.add(g);
-//							res.add(tmp);
-//							j++;
-//						}
-//					}
-//				}
-//			}
-//			if (andList != null) {
-//				List<Gate> ands = new ArrayList<Gate>();
-//				ands.addAll(andList);
-//				res.add(ands);
-//			}
-//		}
-
 	private List<List<Gate>> getSortedGates(List<Gate> gates) {
 		List<List<Gate>> res = new ArrayList<List<Gate>>();
 		GateTypes current = null;
 		int index = 0;
 		Gate trial = gates.get(0);
-		
+
 		if (trial.isXOR()) {
 			current = GateTypes.XOR;
 		} else if (trial.isAND()) {
@@ -144,7 +101,7 @@ public class FairplayToSPACL implements Runnable {
 		} else if (trial.isINV()) {
 			current = GateTypes.INV;
 		}
-		
+
 		res.add(new ArrayList<Gate>());
 		for (Gate g: gates) {
 			if (equal(g, current)) {
@@ -156,7 +113,7 @@ public class FairplayToSPACL implements Runnable {
 				current = getNewCurrent(g);
 			}
 		}
-		
+
 		for (List<Gate> list: res) {
 			Collections.sort(list, new LayerComparator());
 		}
@@ -172,7 +129,7 @@ public class FairplayToSPACL implements Runnable {
 			return true;
 		} else return false;
 	}
-	
+
 	private GateTypes getNewCurrent(Gate g) {
 		GateTypes res = null;
 		if (g.isXOR()) {
@@ -183,15 +140,6 @@ public class FairplayToSPACL implements Runnable {
 			res = GateTypes.INV;
 		}
 		return res;
-	}
-
-
-	private int getNumberOfGates(List<List<Gate>> gates) {
-		int size = 0;
-		for (List<Gate> list: gates) {
-			size += list.size();
-		}
-		return size;
 	}
 
 	private int[] getWidthSizes(List<List<Gate>> gates) {
@@ -262,7 +210,7 @@ public class FairplayToSPACL implements Runnable {
 			write(begin_layer("public_common_load", sizeOfPlaintext));
 			newLine();
 			for (int i = 0; i < sizeOfPlaintext; i++) { //TODO Check which is key and which is plaintext
-				write("  public_common_load(plaintext[" + i + "]," + (sizeOfKey + i) + "," + i + ");");
+				write("    public_common_load(plaintext[" + i + "]," + (sizeOfKey + i) + "," + i + ");");
 				newLine();
 			}
 			write(end_layer("public_common_load", sizeOfPlaintext));
@@ -270,7 +218,7 @@ public class FairplayToSPACL implements Runnable {
 			newLine();
 
 			// The layers
-			int i = 0;
+			int index = 0;
 			for (List<Gate> list: gates) {
 				Gate tester = list.get(0);
 				int j = 0;
@@ -287,7 +235,7 @@ public class FairplayToSPACL implements Runnable {
 				newLine();
 				for (Gate g: list) {
 					if (g.isAND()) {
-						write(getGateString(g, layerString, j++, i++));
+						write(getGateString(g, layerString, j++, index++));
 					} else {
 						write(getGateString(g, layerString, j++));
 					}
@@ -297,6 +245,17 @@ public class FairplayToSPACL implements Runnable {
 				newLine();
 				newLine();
 			}
+
+			// Write output
+			write(begin_layer("public_common_out", sizeOfCiphertext));
+			newLine();
+			for (int i = 0; i < sizeOfCiphertext; i++) { //TODO Check which is key and which is plaintext
+				write("    public_common_out(ciphertext[" + (heapSize - 1 - i)  + "]," + i + "," + i + ");");
+				newLine();
+			}
+			write(end_layer("public_common_out", sizeOfCiphertext));
+			newLine();
+
 			write("}");
 		} catch (IOException e) {
 			e.printStackTrace();
