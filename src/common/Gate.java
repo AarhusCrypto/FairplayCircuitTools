@@ -3,8 +3,6 @@ package common;
 
 public class Gate {
 
-	private static final int INPUT_WIRES = 2;
-
 	private int counter;
 	private int leftWireIndex;
 	private int rightWireIndex;
@@ -16,20 +14,40 @@ public class Gate {
 	private int layer;
 	private int topologicalLayer;
 
-	public Gate(String s) {
+	public Gate(String s, InputGateType type) {
 
 		//Example string: 2 1 96 99 256 0110
 		String[] split = s.split(" ");
-		counter = INPUT_WIRES;
 		layer = -1;
-		numberOfInputWires = Integer.parseInt(split[0]);
-		numberOfOutputWires = Integer.parseInt(split[1]);
-		leftWireIndex = Integer.parseInt(split[2]);
-		rightWireIndex = Integer.parseInt(split[3]);
-		outputWireIndex = Integer.parseInt(split[4]);
-
-		boolTable = split[5];//.replaceFirst("^0*", ""); //Removes leading 0's. Uncommented since it just adds work for the evaluator
 		gateNumber = -1;
+		if (type == InputGateType.FAIRPLAY) {
+			if (split[0].startsWith("1")) {
+				initGate(Integer.parseInt(split[0]), 
+						Integer.parseInt(split[1]), Integer.parseInt(split[2]),
+						Integer.MIN_VALUE, Integer.parseInt(split[3]), split[4]);
+			} else {
+				initGate(Integer.parseInt(split[0]), 
+						Integer.parseInt(split[1]), Integer.parseInt(split[2]),
+						Integer.parseInt(split[3]), Integer.parseInt(split[4]), split[5]);
+			}
+		} else {
+			initGate(2, Integer.parseInt(split[1]), Integer.parseInt(split[2]),
+					Integer.parseInt(split[3]), Integer.parseInt(split[4]), split[5]);
+			layer = Integer.parseInt(split[0]);
+		}
+	}
+
+	public void initGate(int numberOfInputWires, int numberOfOutputWires,
+			int leftWireIndex, int rightWireIndex, int outputWireIndex, String boolTable) {
+		this.counter = numberOfInputWires;
+		this.numberOfInputWires = numberOfInputWires;
+		this.numberOfOutputWires = numberOfOutputWires;
+		this.leftWireIndex = leftWireIndex;
+		if (numberOfInputWires == 2) {
+			this.rightWireIndex = rightWireIndex;
+		}
+		this.outputWireIndex = outputWireIndex;
+		this.boolTable = boolTable; //.replaceFirst("^0*", ""); //Removes leading 0's. Uncommented since it just adds work for the evaluator
 	}
 
 	public int getLeftWireIndex()  {
@@ -56,9 +74,16 @@ public class Gate {
 		return boolTable;
 	}
 
+	public int getNumberOfInputWires() {
+		return numberOfInputWires;
+	}
+
 	public String toFairPlayString() {
-		return numberOfInputWires + " " +  numberOfOutputWires + " " + getLeftWireIndex() + " " + getRightWireIndex() +
-				" " + getOutputWireIndex() + " " + getBoolTable();
+		if (getNumberOfInputWires() == 2) {
+			return numberOfInputWires + " " +  numberOfOutputWires + " " + getLeftWireIndex() + " " +
+					getRightWireIndex() + " " + getOutputWireIndex() + " " + getBoolTable();
+		} else return numberOfInputWires + " " +  numberOfOutputWires + " " + getLeftWireIndex() + " " +
+		getOutputWireIndex() + " " + getBoolTable();
 	}
 
 	public String toCUDAString() {
@@ -75,13 +100,13 @@ public class Gate {
 			return true;
 		} else return false;
 	}
-	
+
 	public boolean isAND() {
 		if (boolTable.matches("0001")) {
 			return true;
 		} else return false;
 	}
-	
+
 	public boolean isINV() {
 		if (boolTable.matches("-1")) {
 			return true;
@@ -95,7 +120,7 @@ public class Gate {
 	public int getGateNumber() {
 		return gateNumber;
 	}
-	
+
 	public int getLayer() {
 		return layer;
 	}

@@ -123,7 +123,9 @@ public class FairplayToCUDAConverter implements CircuitConverter<List<Gate>> {
 	private void initMaps(List<Gate> gates) {
 		for (Gate g: gates) {
 			leftMap.put(g.getLeftWireIndex(), g);
-			rightMap.put(g.getRightWireIndex(), g);
+			if (g.getNumberOfInputWires() == 2) {
+				rightMap.put(g.getRightWireIndex(), g);
+			}
 			outputMap.put(g.getOutputWireIndex(), g);
 		}
 	}
@@ -208,7 +210,6 @@ public class FairplayToCUDAConverter implements CircuitConverter<List<Gate>> {
 	 * correct sublists depending on it's timestamp
 	 */
 	private List<List<Gate>> addToSublist(Gate g, List<List<Gate>> layersOfGates) {
-
 		while (layersOfGates.size() <= g.getLayer()) {
 			layersOfGates.add(new ArrayList<Gate>());
 		}

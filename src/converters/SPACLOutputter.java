@@ -65,21 +65,26 @@ public class SPACLOutputter implements Runnable {
 
 		for (List<Gate> list: gates) {
 			for (Gate g: list) {
-				int a = wireLayers.get(g.getLeftWireIndex());
-				int b = wireLayers.get(g.getRightWireIndex());
-				int layer = 0;
-				if (g.isAND()) {
-					layer = Math.max(a, b) + 1;
-					g.setTopologicalLayer(layer - 1);
-				} else if (g.isXOR() || g.isINV()) {
-					layer = Math.max(a, b);
-					g.setTopologicalLayer(layer);
+				int topologicalLayer = 0;
+				if (g.isAND() || g.isXOR()) {
+					int a = wireLayers.get(g.getLeftWireIndex());
+					int b = wireLayers.get(g.getRightWireIndex());
+					if (g.isAND()) {
+						topologicalLayer = Math.max(a, b) + 1;
+						g.setTopologicalLayer(topologicalLayer - 1);
+					} else if (g.isXOR()) {
+						topologicalLayer = Math.max(a, b);
+						g.setTopologicalLayer(topologicalLayer);
+					}
+				} else if (g.isINV()) {
+					topologicalLayer = wireLayers.get(g.getLeftWireIndex());
+					g.setTopologicalLayer(topologicalLayer);
 				} else {
 					System.out.println("Input Circuit may only consist of XOR, INV, AND");
 					System.out.println("Terminating without output");
 					System.exit(-1);
 				}
-				wireLayers.put(g.getOutputWireIndex(), layer);
+				wireLayers.put(g.getOutputWireIndex(), topologicalLayer);
 
 				res.add(g);
 			}
@@ -249,7 +254,7 @@ public class SPACLOutputter implements Runnable {
 			// Write output
 			write(begin_layer("public_common_out", sizeOfCiphertext));
 			newLine();
-			for (int i = 0; i < sizeOfCiphertext; i++) { //TODO Check which is key and which is plaintext
+			for (int i = 0; i < sizeOfCiphertext; i++) {
 				write("    public_common_out(ciphertext[" + (heapSize - 1 - i)  + "]," + i + "," + i + ");");
 				newLine();
 			}
@@ -295,8 +300,12 @@ public class SPACLOutputter implements Runnable {
 	}
 
 	private String getGateString(Gate g, String gateType, int index) {
-		return "    " + gateType + "(" + g.getOutputWireIndex() + "," + 
-				g.getLeftWireIndex() + "," + g.getRightWireIndex()
-				+ "," + index + ");";
+		if (gateType.equals("xor")) {
+			return "    " + gateType + "(" + g.getOutputWireIndex() + "," + 
+					g.getLeftWireIndex() + "," + g.getRightWireIndex()
+					+ "," + index + ");";
+		} else return "    " + gateType + "(" + g.getOutputWireIndex() + "," + 
+		g.getLeftWireIndex() + "," + index + ");";
+
 	}
 }

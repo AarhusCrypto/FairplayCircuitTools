@@ -34,7 +34,7 @@ public class CircuitEvaluator implements Runnable {
 	 * @param parseStrategy
 	 */
 	public CircuitEvaluator(File inputFile, File outputFile,
-			List<List<Gate>> layersOfGates, String header, String mode){
+			List<List<Gate>> layersOfGates, String header, String mode) {
 		this.inputFile = inputFile;
 		this.outputFile = outputFile;
 		this.layersOfGates = layersOfGates;
@@ -49,7 +49,7 @@ public class CircuitEvaluator implements Runnable {
 
 	@Override
 	public void run() {
-		if(inputFile.length() < inputSize/BYTESIZE){
+		if(inputFile.length() < inputSize/BYTESIZE) {
 			System.out.println("Input too short, check inputfile");
 			return;
 		}
@@ -132,8 +132,10 @@ public class CircuitEvaluator implements Runnable {
 
 				boolean leftInput = evals.get(g.getLeftWireIndex());
 				boolean rightInput = evals.get(g.getRightWireIndex());
-				if (boolTable.equals("-1")) {
-					evals.put(g.getOutputWireIndex(), !evals.get(g.getLeftWireIndex()));
+				
+				// Make sure to only use leftInput if g is INV gate.
+				if (g.getNumberOfInputWires() == 1) {
+					evals.put(g.getOutputWireIndex(), !leftInput);
 				} else {
 					for (int i = boolTable.length(); i < 4; i++) {
 						boolTable = "0" + boolTable;
@@ -160,7 +162,7 @@ public class CircuitEvaluator implements Runnable {
 		// Read output in little endian, but stores it in big endian
 		int currentBit = outputSize - 1;
 		BitString result = new BitString(outputSize);
-		for(int i = numberOfWires - outputSize; i < numberOfWires; i++){
+		for (int i = numberOfWires - outputSize; i < numberOfWires; i++) {
 			boolean res;
 			res = evals.get(i);
 			if(res == true){

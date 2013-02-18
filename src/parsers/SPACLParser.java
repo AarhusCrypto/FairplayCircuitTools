@@ -13,6 +13,7 @@ import common.CircuitParser;
 import common.CommonUtilities;
 import common.Gate;
 import common.GateTypes;
+import common.InputGateType;
 
 public class SPACLParser implements CircuitParser<List<Gate>> {
 
@@ -78,28 +79,34 @@ public class SPACLParser implements CircuitParser<List<Gate>> {
 		}
 		numberOfLayers = layersOfGates.size();
 		numberOfWires = CommonUtilities.getWireCountList(layersOfGates);
-		
+
 		return layersOfGates;
 	}
 
 	private Gate getGate(String line, GateTypes type) {
-		String gateType = "";
-		if (type.equals(GateTypes.XOR)) {
-			gateType = "0110";
-		} else if (type.equals(GateTypes.INV)) {
-			gateType = "-1";
-		} else if (type.equals(GateTypes.AND)) {
-			gateType = "0001";
-		}
-
 		String[] split = line.split(",");
-		String output = split[0].substring(4);
-		String leftInput = split[1];
-		String rightInput = split[2];
-		String gateString = "2 1 " + leftInput + " " + rightInput + " " +
-				output + " " + gateType;
-		return new Gate(gateString);
+		if (type == GateTypes.INV) {
+			String output = split[0].substring(4);
+			String leftInput = split[1];
+			String gateString = "1 1 " + leftInput + " " +
+					output + " " + "-1";
+			return new Gate(gateString, InputGateType.FAIRPLAY);
+		} else {
+			String gateType = "";
+			String output = split[0].substring(4);
+			String leftInput = split[1];
+			String rightInput = split[2];
+			
+			if (type.equals(GateTypes.XOR)) {
+				gateType = "0110";
+			} else if (type.equals(GateTypes.AND)) {
+				gateType = "0001";
+			}
 
+			String gateString = "2 1 " + leftInput + " " + rightInput + " " +
+					output + " " + gateType;
+			return new Gate(gateString, InputGateType.FAIRPLAY);
+		}
 	}
 
 	@Override
@@ -107,7 +114,7 @@ public class SPACLParser implements CircuitParser<List<Gate>> {
 		int input = Integer.parseInt(numberOfleftInput) + Integer.parseInt(numberOfrightInput);
 		int maxLayer = Math.max(Integer.parseInt(xorMaxlayerSize), Integer.parseInt(invMaxlayerSize));
 		maxLayer = Math.max(maxLayer, Integer.parseInt(andMaxlayerSize));
-		
+
 		return new String[]{input + " " + numberOfOutput + " " + numberOfWires +
 				" " + numberOfLayers + " " + maxLayer + " " + numberOfNonXorGates};
 	}
