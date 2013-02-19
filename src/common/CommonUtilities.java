@@ -11,8 +11,10 @@ import java.util.List;
 
 
 public class CommonUtilities {
-	public static void outputFairplayCircuit(List<Gate> circuit, File outputFile,
-			String[] headers) {
+	public static void outputFairplayCircuit(CircuitParser<Gate> circuitParser,
+			File outputFile) {
+		List<Gate> circuit = circuitParser.getGates();
+		String[] headers = circuitParser.getHeaders();
 		BufferedWriter fbw = null;
 		try {
 			fbw = new BufferedWriter(new OutputStreamWriter(
@@ -39,8 +41,10 @@ public class CommonUtilities {
 		}
 	}
 
-	public static void outputCUDACircuit(List<List<Gate>> layersOfGates, 
-			File outputFile, String header) {
+	public static void outputCUDACircuit(CircuitParser<List<Gate>> circuitParser, 
+			File outputFile) {
+		List<List<Gate>> layersOfGates = circuitParser.getGates();
+		String header = circuitParser.getHeaders()[0];
 		BufferedWriter fbw = null;
 		try {
 			fbw = new BufferedWriter(new OutputStreamWriter(

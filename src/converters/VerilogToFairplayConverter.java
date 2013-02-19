@@ -16,7 +16,7 @@ public class VerilogToFairplayConverter implements Runnable {
 
 	@Override
 	public void run() {
-		CommonUtilities.outputFairplayCircuit(circuitParser.getGates(), 
-				outputFile, circuitParser.getHeaders());
+		CommonUtilities.outputFairplayCircuit(circuitParser, 
+				outputFile);
 	}
 }

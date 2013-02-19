@@ -50,7 +50,6 @@ public class AllTests {
 
 	@Test
 	public void assertAESCircuitConverted() {
-
 		File circuitFile = new File("test/data/aes_fairplay.txt");
 		File circuitOutputFile = new File("test/data/out/aes_cuda_tmp.txt");
 
@@ -58,9 +57,7 @@ public class AllTests {
 				new FairplayParser(circuitFile, true);
 		FairplayToCUDAConverter circuitConverter = 
 				new FairplayToCUDAConverter(circuitParser);
-		List<List<Gate>> layersOfGates = circuitConverter.getGates();
-		String header[] = circuitConverter.getHeaders();
-		CommonUtilities.outputCUDACircuit(layersOfGates, circuitOutputFile, header[0]);
+		CommonUtilities.outputCUDACircuit(circuitConverter, circuitOutputFile);
 		
 		CircuitParser<List<Gate>> cudaCircuitParser = 
 				new CUDAParser(circuitOutputFile);
