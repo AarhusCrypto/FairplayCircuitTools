@@ -39,78 +39,62 @@ public class Driver {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		File inputFile = null;
-		File circuitFile = null;
-		File outputFile = null;
 		boolean stripWires = false;
 
 		String mode = args[0];
 		// -fc circuitfile outputfile strip
 		if (mode.equals(FAIRPLAY_CONVERT_TO_CUDA) && checkArgs(args, 4)) {
-			circuitFile = new File(args[1]);
-			outputFile = new File(args[2]);
 			if (args[3].equals("strip")) {
 				stripWires = true;
 			}
-			FairplayParser circuitParser = new FairplayParser(circuitFile, stripWires);
-			CircuitConverter<List<Gate>> circuitConverter = new FairplayToCUDAConverter(
+			
+			FairplayParser circuitParser = new FairplayParser(new File(args[1]), stripWires);
+			CircuitParser<List<Gate>> circuitConverter = new FairplayToCUDAConverter(
 					circuitParser);
-
-			List<List<Gate>> layersOfGates = circuitConverter.getGates();
-			String[] headers = circuitConverter.getHeaders();
-			CommonUtilities.outputCUDACircuit(layersOfGates, outputFile, headers[0]);
+			CommonUtilities.outputCUDACircuit(circuitConverter, new File(args[2]));
 
 		}
 		// -ac circuitfile outputfile l (int) strip
 		else if (mode.equals(FAIRPLAY_AUG_CHECKSUM) && checkArgs(args, 5)) {
-			circuitFile = new File(args[1]);
-			outputFile = new File(args[2]);
 			int l = Integer.parseInt(args[3]);
 			if (args[4].equals("strip")) {
 				stripWires = true;
 			}
 
-			FairplayParser circuitParser = new FairplayParser(circuitFile, stripWires);
-			CircuitConverter<Gate> circuitConverter = new FairplayToAugConverter(circuitParser, l);
-
-			executeConverter(circuitConverter, outputFile);
+			FairplayParser circuitParser = new FairplayParser(new File(args[1]), stripWires);
+			CircuitParser<Gate> circuitConverter = new FairplayToAugConverter(circuitParser, l);
+			executeConverter(circuitConverter, new File(args[2]));
 		}
 		// -am circuitfile outputfile strip
 		else if (mode.equals(FAIRPLAY_AUG_MULTI_OUTPUT) && checkArgs(args, 4)) {
-			circuitFile = new File(args[1]);
-			outputFile = new File(args[2]);
 			if (args[3].equals("strip")) {
 				stripWires = true;
 			}
 
-			FairplayParser circuitParser = new FairplayParser(circuitFile, stripWires);
-			CircuitConverter<Gate> circuitConverter = 
+			FairplayParser circuitParser = new FairplayParser(new File(args[1]), stripWires);
+			CircuitParser<Gate> circuitConverter = 
 					new FairplayToAugMultipleConverter(circuitParser);
-
-			executeConverter(circuitConverter, outputFile);
+			executeConverter(circuitConverter, new File(args[2]));
 		}
 		// -vc circuitfile outputfile
 		else if (mode.equals(VERILOG_TO_FAIRPLAY) && checkArgs(args, 3)) {
-			circuitFile = new File(args[1]);
-			outputFile = new File(args[2]);
 			CircuitParser<Gate> circuitParser = 
-					new VerilogParser(circuitFile);
-
-			CommonUtilities.outputFairplayCircuit(circuitParser.getGates(), 
-					outputFile, circuitParser.getHeaders());
+					new VerilogParser(new File(args[1]));
+			CommonUtilities.outputFairplayCircuit(circuitParser, 
+					new File(args[2]));
 		}
 		// -spacl circuitfile outputfile
 		else if (mode.equals(FAIRPLAY_TO_SPACL) && checkArgs(args, 3)) {
-			circuitFile = new File(args[1]);
-			outputFile = new File(args[2]);
+			File outputFile = new File(args[2]);
 			String circuitName = FilenameUtils.removeExtension(outputFile.getName());
+			
 			FairplayParser circuitParser = 
-					new FairplayParser(circuitFile, true);
+					new FairplayParser(new File(args[1]), true);
 			FairplayToCUDAConverter circuitConverter =
 					new FairplayToCUDAConverter(circuitParser);
 			SPACLOutputter fairplayToSPACL = 
 					new SPACLOutputter(circuitConverter, outputFile, circuitName);
-			fairplayToSPACL.run(); //Needs FairplayEvaluator reversed mode to pass tests
+			fairplayToSPACL.run(); //AES Needs FairplayEvaluator reversed mode to pass tests
 		}
 		// --------------------------------------------------------------------
 		// -fe, -fe32, -feMI, -feRE inputfile circuitfile outputfile strip
@@ -118,50 +102,25 @@ public class Driver {
 				mode.equals(FAIRPLAY_EVALUATOR_IA32) || 
 				mode.equals(FAIRPLAY_EVALUATOR_MIRRORED) || 
 				mode.equals(FAIRPLAY_EVALUATOR_REVERSED)) && checkArgs(args, 5)) {	
-			inputFile = new File(args[1]);
-			circuitFile = new File(args[2]);
-			outputFile = new File(args[3]);
 			if (args[4].equals("strip")) {
 				stripWires = true;
 			}
 
 			FairplayParser circuitParser = 
-					new FairplayParser(circuitFile, stripWires);
-			FairplayToCUDAConverter circuitConverter = 
+					new FairplayParser(new File(args[2]), stripWires);
+			CircuitParser<List<Gate>> circuitConverter = 
 					new FairplayToCUDAConverter(circuitParser);
-			List<List<Gate>> layersOfGates = 
-					circuitConverter.getGates();
-
-			String[] headers = circuitConverter.getHeaders();
-			CircuitEvaluator eval = new CircuitEvaluator(inputFile, outputFile,
-					layersOfGates, headers[0], mode);
-
-			eval.run();
+			evaluate(new File(args[1]), new File(args[3]), circuitConverter, mode);
 		}
 		// -ce inputfile circuitfile outputfile
 		else if (mode.equals(CUDA_EVALUATOR) && checkArgs(args, 4)) {
-
-			inputFile = new File(args[1]);
-			circuitFile = new File(args[2]);
-			outputFile = new File(args[3]);
-			CUDAParser circuitParser = new CUDAParser(circuitFile);
-			CircuitEvaluator eval = new CircuitEvaluator(
-					inputFile, outputFile, circuitParser.getGates(), 
-					circuitParser.getHeaders()[0], mode);
-			eval.run();
+			CircuitParser<List<Gate>> circuitParser = new CUDAParser(new File(args[2]));
+			evaluate(new File(args[1]), new File(args[3]), circuitParser, mode);
 		}
-
-
 		// -se inputfile outputfile
 		else if (mode.equals(SPACL_EVALUATOR)) {
-			inputFile = new File(args[1]);
-			circuitFile = new File(args[2]);
-			outputFile = new File(args[3]);
-			SPACLParser circuitParser = new SPACLParser(circuitFile);
-			CircuitEvaluator eval = new CircuitEvaluator(
-					inputFile, outputFile, circuitParser.getGates(), 
-					circuitParser.getHeaders()[0], mode);
-			eval.run();
+			CircuitParser<List<Gate>> circuitParser = new SPACLParser(new File(args[2]));
+			evaluate(new File(args[1]), new File(args[3]), circuitParser, mode);
 		}
 		else {
 			System.out.println(
@@ -173,7 +132,16 @@ public class Driver {
 			System.out.println(FAIRPLAY_EVALUATOR + ": Fairplay evaluation");
 			System.out.println(CUDA_EVALUATOR + ": CUDA evaluation");
 			System.out.println(VERILOG_TO_FAIRPLAY + ": Verilog to Fairplay format");
+			System.out.println(SPACL_EVALUATOR + ": SPACL evaluation");
 		}
+	}
+	
+	private static void evaluate(File inputFile, File outputFile, 
+			CircuitParser<List<Gate>> circuitParser, String mode) {
+		CircuitEvaluator eval = new CircuitEvaluator(
+				inputFile, outputFile, circuitParser.getGates(), 
+				circuitParser.getHeaders()[0], mode);
+		eval.run();
 	}
 
 	private static boolean checkArgs(String[] args, int expectedNumberOfArgs) {
@@ -186,10 +154,8 @@ public class Driver {
 
 	}
 
-	private static void executeConverter(CircuitConverter<Gate> circuitConverter, 
+	private static void executeConverter(CircuitParser<Gate> circuitConverter, 
 			File outputFile) {
-		List<Gate> layersOfGates = circuitConverter.getGates();
-		String[] headers = circuitConverter.getHeaders();
-		CommonUtilities.outputFairplayCircuit(layersOfGates, outputFile, headers);
+		CommonUtilities.outputFairplayCircuit(circuitConverter, outputFile);
 	}
 }
