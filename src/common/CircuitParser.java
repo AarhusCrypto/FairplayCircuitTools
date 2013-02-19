@@ -1,10 +1,7 @@
 package common;
 
 import java.io.File;
-import java.util.List;
 
-public interface CircuitParser<E> {
-	public List<E> getGates();
-	public String[] getHeaders();
+public interface CircuitParser<E> extends CircuitProvider<E> {
 	public File getCircuitFile();
 }
