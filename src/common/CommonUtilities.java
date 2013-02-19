@@ -9,9 +9,11 @@ import java.nio.charset.Charset;
 import java.util.HashSet;
 import java.util.List;
 
+import converters.FairplayToSPACLConverter;
+
 
 public class CommonUtilities {
-	public static void outputFairplayCircuit(CircuitParser<Gate> circuitParser,
+	public static void outputFairplayCircuit(CircuitProvider<Gate> circuitParser,
 			File outputFile) {
 		List<Gate> circuit = circuitParser.getGates();
 		String[] headers = circuitParser.getHeaders();
@@ -29,19 +31,13 @@ public class CommonUtilities {
 				fbw.write(g.toFairPlayString());
 				fbw.newLine();
 			}
-
+			fbw.close();
 		} catch (IOException e) {
 			e.printStackTrace();
-		} finally { 
-			try {
-				fbw.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
 		}
 	}
 
-	public static void outputCUDACircuit(CircuitParser<List<Gate>> circuitParser, 
+	public static void outputCUDACircuit(CircuitProvider<List<Gate>> circuitParser, 
 			File outputFile) {
 		List<List<Gate>> layersOfGates = circuitParser.getGates();
 		String header = circuitParser.getHeaders()[0];
@@ -69,16 +65,154 @@ public class CommonUtilities {
 					fbw.newLine();
 				}
 			}
-
+			fbw.close();
 		} catch (IOException e) {
 			e.printStackTrace();
-		} finally { 
-			try {
-				fbw.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
 		}
+	}
+
+	public static void outputSPACLCircuit(FairplayToSPACLConverter circuitConverter,
+			File outputFile, String circuitName) {
+		List<List<Gate>> gates = circuitConverter.getGates();
+		int[] headers = circuitConverter.getCircuitInfo();
+		
+		int sizeOfKey = headers[0];
+		int sizeOfPlaintext = headers[1];
+		int sizeOfCiphertext = headers[2];
+		int heapSize = headers[3];
+		int maxXOR = headers[4];
+		int maxINV = headers[5];
+		int maxAND = headers[6];
+
+		BufferedWriter bw;
+		try {
+			bw = new BufferedWriter(new OutputStreamWriter(
+					new FileOutputStream(outputFile), Charset.defaultCharset()));
+
+			// Function header
+			bw.write("spacl " + circuitName + "(");
+			bw.newLine();
+			bw.write("  private_common_in key[" + sizeOfKey + "],");
+			bw.newLine();
+			bw.write("  public_common_in plaintext[" + sizeOfPlaintext + "],");
+			bw.newLine();
+			bw.write("  public_common_out ciphertext[" + sizeOfCiphertext + "]) {");
+			bw.newLine();
+			bw.newLine();
+
+			// Size of heap
+			bw.write("  size_of_heap(" + heapSize + ");");
+			bw.newLine();
+			bw.newLine();
+
+			// Max_width specifications
+			bw.write(max_width("xor", maxXOR));
+			bw.newLine();
+			bw.write(max_width("and", maxINV));
+			bw.newLine();
+			bw.write(max_width("inv", maxAND));
+			bw.newLine();
+			bw.write(max_width("private_common_load", sizeOfKey));
+			bw.newLine();
+			bw.write(max_width("public_common_load", sizeOfPlaintext));
+			bw.newLine();
+			bw.write(max_width("public_common_out", sizeOfCiphertext));
+			bw.newLine();
+			bw.newLine();
+
+			// Init key
+			bw.write(begin_layer("private_common_load", sizeOfKey));
+			bw.newLine();
+			for (int i = 0; i < sizeOfKey; i++) { //Check which is key and which is plaintext
+				bw.write("    private_common_load(key[" + i + "]," + i + "," + i + ");");
+				bw.newLine();
+			}
+			bw.write(end_layer("private_common_load", sizeOfKey));
+			bw.newLine();
+			bw.newLine();
+
+			// Init plaintext
+			bw.write(begin_layer("public_common_load", sizeOfPlaintext));
+			bw.newLine();
+			for (int i = 0; i < sizeOfPlaintext; i++) { //TODO Check which is key and which is plaintext
+				bw.write("    public_common_load(plaintext[" + i + "]," + (sizeOfKey + i) + "," + i + ");");
+				bw.newLine();
+			}
+			bw.write(end_layer("public_common_load", sizeOfPlaintext));
+			bw.newLine();
+			bw.newLine();
+
+			// The layers
+			int index = 0;
+			for (List<Gate> list: gates) {
+				Gate tester = list.get(0);
+				int j = 0;
+				String layerString = "";
+				if (tester.isXOR()) {
+					layerString = "xor";
+
+				} else if (tester.isAND()) {
+					layerString = "and";
+				} else {
+					layerString = "inv";
+				}
+				bw.write(begin_layer(layerString, list.size()));
+				bw.newLine();
+				for (Gate g: list) {
+					if (g.isAND()) {
+						bw.write(getGateString(g, layerString, j++, index++));
+					} else {
+						bw.write(getGateString(g, layerString, j++));
+					}
+					bw.newLine();
+				}
+				bw.write(end_layer(layerString, list.size()));
+				bw.newLine();
+				bw.newLine();
+			}
+
+			// Write output
+			bw.write(begin_layer("public_common_out", sizeOfCiphertext));
+			bw.newLine();
+			for (int i = 0; i < sizeOfCiphertext; i++) {
+				bw.write("    public_common_out(ciphertext[" + (heapSize - sizeOfCiphertext + i)  + "]," + i + "," + i + ");");
+				bw.newLine();
+			}
+			bw.write(end_layer("public_common_out", sizeOfCiphertext));
+			bw.newLine();
+
+			bw.write("}");
+			bw.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private static String max_width(String suffix, int index) {
+		return "  max_width_" + suffix + "(" + index + ");";
+	}
+
+	private static String begin_layer(String suffix, int index) {
+		return "  begin_layer_" + suffix + "(" + index + ");";
+	}
+
+	private static String end_layer(String suffix, int index) {
+		return "  end_layer_" + suffix + "(" + index + ");";
+	}
+
+	private static String getGateString(Gate g, String gateType, int index, int gateNumber) {
+		return "    " + gateType + "(" + g.getOutputWireIndex() + "," + 
+				g.getLeftWireIndex() + "," + g.getRightWireIndex()
+				+ "," + index + "," + gateNumber + ");";
+	}
+
+	private static String getGateString(Gate g, String gateType, int index) {
+		if (gateType.equals("xor")) {
+			return "    " + gateType + "(" + g.getOutputWireIndex() + "," + 
+					g.getLeftWireIndex() + "," + g.getRightWireIndex()
+					+ "," + index + ");";
+		} else return "    " + gateType + "(" + g.getOutputWireIndex() + "," + 
+		g.getLeftWireIndex() + "," + index + ");";
 	}
 
 	public static int getWireCount(List<Gate> gates) {
