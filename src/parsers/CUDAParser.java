@@ -55,7 +55,6 @@ public class CUDAParser implements CircuitParser<List<Gate>> {
 		return layersOfGates;
 	}
 
-	// TODO: Fix this to not read the file each time
 	public String[] getHeaders() {
 		return new String[]{headerLine};
 	}
