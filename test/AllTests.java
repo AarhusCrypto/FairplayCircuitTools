@@ -25,7 +25,7 @@ public class AllTests {
 	
 	@Test
 	public void assertCircuitEvaluator(){
-		File inputFile = new File("test/data/input/input0.bin");
+		File inputFile = new File("test/data/input/aes_input_0.bin");
 		File outputFile = new File("test/data/out.bin");
 		File circuitFile = new File("test/data/aes_cuda.txt");
 
@@ -36,7 +36,7 @@ public class AllTests {
 				cudaCircuitParser.getHeaders()[0], Driver.FAIRPLAY_EVALUATOR);
 		eval.run();
 
-		File expectedResultFile = new File("test/data/input/expected0.bin");
+		File expectedResultFile = new File("test/data/input/aes_expected_0.bin");
 
 		boolean res = false;
 		try {
