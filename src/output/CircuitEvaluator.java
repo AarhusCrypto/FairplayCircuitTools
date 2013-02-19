@@ -57,12 +57,12 @@ public class CircuitEvaluator implements Runnable {
 		byte[] bytesRead = getBytesFromFile();
 
 		BitString input = byteArrayToBitSet(bytesRead);
-		if (mode.equals(Driver.FAIRPLAY_EVALUATOR_IA32)) {
+		if (mode.equals(Driver.EVAL_FAIRPLAY_IA32)) {
 			input = input.getIA32BitString();
-		} else if (mode.equals(Driver.FAIRPLAY_EVALUATOR_MIRRORED)) {
+		} else if (mode.equals(Driver.EVAL_FAIRPLAY_MIRRORED)) {
 			input = input.getMirroredBitString();
-		} else if (mode.equals(Driver.FAIRPLAY_EVALUATOR_REVERSED) ||
-				mode.equals(Driver.SPACL_EVALUATOR)) {
+		} else if (mode.equals(Driver.EVAL_FAIRPLAY_REVERSED) ||
+				mode.equals(Driver.EVAL_SPACL)) {
 			input = input.getReverseOrder();
 		}
 
