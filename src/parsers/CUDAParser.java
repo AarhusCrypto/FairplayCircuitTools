@@ -31,12 +31,12 @@ public class CUDAParser implements CircuitParser<List<Gate>> {
 			String line = fbr.readLine();
 			//hack to skip first line
 			List<Gate> currentLayer = null;
-			while((line = fbr.readLine()) != null) {
+			while ((line = fbr.readLine()) != null) {
 				if (line.isEmpty()){
 					continue;
 				}
 
-				if(line.startsWith("*")){
+				if (line.startsWith("*")){
 					currentLayer = new ArrayList<Gate>();
 					layersOfGates.add(currentLayer);
 					continue;
@@ -67,6 +67,10 @@ public class CUDAParser implements CircuitParser<List<Gate>> {
 			e.printStackTrace();
 		}
 		return new String[]{line};
+	}
+
+	public File getCircuitFile() {
+		return circuitFile;
 	}
 
 }

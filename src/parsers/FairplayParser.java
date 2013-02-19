@@ -202,6 +202,10 @@ public class FairplayParser implements CircuitParser<Gate> {
 	public String[] getHeaders() {
 		return getHeaderArray(secondHeader);
 	}
+	
+	public File getCircuitFile() {
+		return circuitFile;
+	}
 
 	public int getNumberOfInputs() {
 		return totalNumberOfInputs;

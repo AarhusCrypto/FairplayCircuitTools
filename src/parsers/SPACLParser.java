@@ -37,7 +37,7 @@ public class SPACLParser implements CircuitParser<List<Gate>> {
 		List<List<Gate>> layersOfGates = new ArrayList<List<Gate>>();
 		try {
 			BufferedReader fbr = new BufferedReader(new InputStreamReader(
-					new FileInputStream(circuitFile), Charset.defaultCharset()));
+					new FileInputStream(getCircuitFile()), Charset.defaultCharset()));
 			String line = fbr.readLine();
 			//hack to skip first line
 			int i= -1;
@@ -81,6 +81,10 @@ public class SPACLParser implements CircuitParser<List<Gate>> {
 		numberOfWires = CommonUtilities.getWireCountList(layersOfGates);
 
 		return layersOfGates;
+	}
+
+	public File getCircuitFile() {
+		return circuitFile;
 	}
 
 	private Gate getGate(String line, GateTypes type) {

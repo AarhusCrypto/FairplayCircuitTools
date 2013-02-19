@@ -74,6 +74,10 @@ public class VerilogParser implements CircuitParser<Gate> {
 	public String[] getHeaders() {
 		return new String[]{firstHeader, secondHeader};
 	}
+	
+	public File getCircuitFile() {
+		return circuitFile;
+	}
 
 	private List<String> getAnalyzedCircuit() {
 		List<String> res = new ArrayList<String>();
