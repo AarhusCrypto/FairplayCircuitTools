@@ -1,10 +1,11 @@
 package converters;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
-import common.CircuitConverter;
+import common.CircuitParser;
 import common.Gate;
 
 import org.apache.commons.collections.map.MultiValueMap;
@@ -15,7 +16,7 @@ import parsers.FairplayParser;
  * @author Roberto Trifiletti
  *
  */
-public class FairplayToCUDAConverter implements CircuitConverter<List<Gate>> {
+public class FairplayToCUDAConverter implements CircuitParser<List<Gate>> {
 
 //	private static final int NEW_LAYER_THRESHOLD = 0;
 
@@ -61,6 +62,10 @@ public class FairplayToCUDAConverter implements CircuitConverter<List<Gate>> {
 		return new String[]{totalNumberOfInputs + " " + totalNumberOfOutputs + " " +
 		actualNumberOfWires + " " + layersOfGates.size() + " " + maxLayerWidth + " " +
 		numberOfNonXORGates};
+	}
+
+	public File getCircuitFile() {
+		return circuitParser.getCircuitFile();
 	}
 	
 	public FairplayParser getParser() {

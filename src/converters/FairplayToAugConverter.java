@@ -1,16 +1,17 @@
 package converters;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import parsers.FairplayParser;
 
-import common.CircuitConverter;
+import common.CircuitParser;
 import common.CommonUtilities;
 import common.Gate;
 import common.InputGateType;
 
-public class FairplayToAugConverter implements CircuitConverter<Gate> {
+public class FairplayToAugConverter implements CircuitParser<Gate> {
 
 	private FairplayParser circuitParser;
 	private int numberOfNonXORGatesAdded;
@@ -69,6 +70,10 @@ public class FairplayToAugConverter implements CircuitConverter<Gate> {
 				newP2Output;
 
 		return res;
+	}
+
+	public File getCircuitFile() {
+		return circuitParser.getCircuitFile();
 	}
 
 	private List<Gate> getAugGates() {
