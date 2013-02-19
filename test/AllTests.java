@@ -12,12 +12,14 @@ import parsers.CUDAParser;
 import parsers.FairplayParser;
 import parsers.SPACLParser;
 
+import common.CircuitConverter;
 import common.CircuitParser;
+import common.CircuitProvider;
 import common.CommonUtilities;
 import common.Driver;
 import common.Gate;
 import converters.FairplayToCUDAConverter;
-import converters.SPACLOutputter;
+import converters.FairplayToSPACLConverter;
 
 import static org.junit.Assert.*;
 
@@ -33,7 +35,7 @@ public class AllTests {
 				new CUDAParser(circuitFile);
 		CircuitEvaluator eval = new CircuitEvaluator(
 				inputFile, outputFile, cudaCircuitParser.getGates(), 
-				cudaCircuitParser.getHeaders()[0], Driver.FAIRPLAY_EVALUATOR);
+				cudaCircuitParser.getHeaders()[0], Driver.EVAL_FAIRPLAY);
 		eval.run();
 
 		File expectedResultFile = new File("test/data/input/aes_expected_0.bin");
@@ -62,90 +64,63 @@ public class AllTests {
 		CircuitParser<List<Gate>> cudaCircuitParser = 
 				new CUDAParser(circuitOutputFile);
 		checkWithEvaluator(cudaCircuitParser, 4, "test/data/input/aes_input_", 
-				"test/data/input/aes_expected_", Driver.FAIRPLAY_EVALUATOR);
+				"test/data/input/aes_expected_", Driver.EVAL_FAIRPLAY);
 	}
 	
+	/*
+	 * For testing the SPACL parser
+	 */
 	@Test
 	public void assertAESCircuit() {
 		//parse MD5
-		File circuitFile = new File("test/data/nigel/AES-non-expanded.txt");
-		File spaclFile = new File("test/data/out/aes_spacl.txt");
-
-		FairplayParser circuitParser = 
-				new FairplayParser(circuitFile, true);
-		FairplayToCUDAConverter circuitConverter = 
-				new FairplayToCUDAConverter(circuitParser);
-		//output spacl
-		SPACLOutputter spacl = new SPACLOutputter(circuitConverter, spaclFile, "md5");
-		spacl.run();
+		File spaclFile = new File("test/data/aes_spacl.txt");
 		SPACLParser spaclCircuitParser = 
 				new SPACLParser(spaclFile);
 		checkWithEvaluator(spaclCircuitParser, 4, "test/data/input/aes_input_", 
-				"test/data/input/aes_expected_", Driver.FAIRPLAY_EVALUATOR_REVERSED);
+				"test/data/input/aes_expected_", Driver.EVAL_FAIRPLAY_REVERSED);
 	}
 
 	@Test
 	public void assertMD5Circuit() {
-		//parse MD5
 		File circuitFile = new File("test/data/nigel/md5.txt");
-		File spaclFile = new File("test/data/out/md5_spacl_tmp.txt");
-
-		FairplayParser circuitParser = 
-				new FairplayParser(circuitFile, true);
-		FairplayToCUDAConverter circuitConverter = 
-				new FairplayToCUDAConverter(circuitParser);
-		//output spacl
-		SPACLOutputter spacl = new SPACLOutputter(circuitConverter, spaclFile, "md5");
-		spacl.run();
-		SPACLParser spaclCircuitParser = 
-				new SPACLParser(spaclFile);
-		checkWithEvaluator(spaclCircuitParser, 4, "test/data/input/md5_input_", 
-				"test/data/input/md5_expected_", Driver.FAIRPLAY_EVALUATOR);
+		checkNigelCircuit(circuitFile, "test/data/input/md5_input_", "test/data/input/md5_expected_");
 	}
 	
 	@Test
 	public void assertSHA1Circuit() {
-		//parse MD5
 		File circuitFile = new File("test/data/nigel/sha-1.txt");
-		File spaclFile = new File("test/data/out/sha-1_spacl_tmp.txt");
-
-		FairplayParser circuitParser = 
-				new FairplayParser(circuitFile, true);
-		FairplayToCUDAConverter circuitConverter = 
-				new FairplayToCUDAConverter(circuitParser);
-		//output spacl
-		SPACLOutputter spacl = new SPACLOutputter(circuitConverter, spaclFile, "sha1");
-		spacl.run();
-		SPACLParser spaclCircuitParser = 
-				new SPACLParser(spaclFile);
-		checkWithEvaluator(spaclCircuitParser, 4, "test/data/input/sha1_input_", 
-				"test/data/input/sha1_expected_", Driver.FAIRPLAY_EVALUATOR);
+		checkNigelCircuit(circuitFile, "test/data/input/sha1_input_", "test/data/input/sha1_expected_");
 	}
 	
 	@Test
 	public void assertSHA256Circuit() {
-		//parse MD5
 		File circuitFile = new File("test/data/nigel/sha-256.txt");
-		File spaclFile = new File("test/data/out/sha-256_spacl_tmp.txt");
-
-		FairplayParser circuitParser = 
-				new FairplayParser(circuitFile, true);
-		FairplayToCUDAConverter circuitConverter = 
-				new FairplayToCUDAConverter(circuitParser);
-		//output spacl
-		SPACLOutputter spacl = new SPACLOutputter(circuitConverter, spaclFile, "sha1");
-		spacl.run();
-		SPACLParser spaclCircuitParser = 
-				new SPACLParser(spaclFile);
-		checkWithEvaluator(spaclCircuitParser, 4, "test/data/input/sha256_input_", 
-				"test/data/input/sha256_expected_", Driver.FAIRPLAY_EVALUATOR);
+		checkNigelCircuit(circuitFile, "test/data/input/sha256_input_", "test/data/input/sha256_expected_");
 	}
 	
-	private void checkWithEvaluator(CircuitParser<List<Gate>> circuitParser, 
+	private void checkNigelCircuit(File circuitFile, String inputPrefix, String outputPrefix) {
+		FairplayParser circuitParser = 
+				new FairplayParser(circuitFile, true);
+		CircuitConverter<List<Gate>> circuitConverter = 
+				new FairplayToCUDAConverter(circuitParser);
+		List<List<Gate>> gates = circuitConverter.getGates();
+		
+		int[] circuitInfo = new int[4];
+		circuitInfo[0] = circuitParser.getNumberOfP1Inputs();
+		circuitInfo[1] = circuitParser.getNumberOfP2Inputs();
+		circuitInfo[2] = circuitParser.getNumberOfInputs();
+		circuitInfo[3] = circuitParser.getNumberOfOutputs();
+
+		FairplayToSPACLConverter spaclConverter = new FairplayToSPACLConverter(gates, circuitInfo);
+		checkWithEvaluator(spaclConverter, 4, inputPrefix, 
+				outputPrefix, Driver.EVAL_FAIRPLAY);
+	}
+	
+	private void checkWithEvaluator(CircuitProvider<List<Gate>> circuitParser, 
 			int numberOfTests, String inputPrefix, String outputPrefix, String evalType){
 		//Checks that the converted circuit is correct
 		boolean res = true;
-		for(int i = 0; i < numberOfTests; i++){
+		for (int i = 0; i < numberOfTests; i++) {
 			File inputFile = new File(inputPrefix + i + ".bin");
 			File outputFile = new File("test/data/out/out.bin");
 			
@@ -163,7 +138,6 @@ public class AllTests {
 			} catch (IOException e) {
 			}
 		}
-		circuitParser.getCircuitFile().delete();
 		assertTrue("The converted circuit did not evaluate correctly", 
 				res);
 	}
