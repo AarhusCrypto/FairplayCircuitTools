@@ -4,8 +4,6 @@ package common;
 import java.io.File;
 import java.util.List;
 
-import org.apache.commons.io.FilenameUtils;
-
 import output.CircuitEvaluator;
 import parsers.CUDAParser;
 import parsers.FairplayParser;
@@ -102,8 +100,11 @@ public class Driver {
 	}
 	
 	private static void convertFairplayToSPACL(String[] args, boolean stripWires) {
-		File outputFile = new File(args[2]);
-		String circuitName = FilenameUtils.removeExtension(outputFile.getName());
+		String outputFileName = args[2];
+		int dotIndex = outputFileName.lastIndexOf('.');
+		if (dotIndex >= 0) { // to prevent exception if there is no dot
+			outputFileName = outputFileName.substring(0, dotIndex);
+		}
 
 		FairplayParser circuitParser = 
 				new FairplayParser(new File(args[1]), stripWires);
@@ -112,7 +113,7 @@ public class Driver {
 		FairplayToSPACLConverter fairplayToSPACL = 
 				new FairplayToSPACLConverter(circuitConverter);
 
-		CommonUtilities.outputSPACLCircuit(fairplayToSPACL, outputFile, circuitName);
+		CommonUtilities.outputSPACLCircuit(fairplayToSPACL, outputFileName);
 	}
 	
 	private static void convertVerilogToFairplay(String[] args) {

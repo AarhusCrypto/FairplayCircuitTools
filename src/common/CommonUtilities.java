@@ -11,8 +11,29 @@ import java.util.List;
 
 import converters.FairplayToSPACLConverter;
 
-
 public class CommonUtilities {
+	public static final String PRIVATE_IN = "private_common_in";
+	public static final String PUBLIC_IN = "public_common_in";
+	public static final String PUBLIC_OUT = "public_common_store";
+	public static final String INPUT_1 = "key";
+	public static final String INPUT_2 = "plaintext";
+	public static final String OUTPUT = "ciphertext";
+	public static final String HEAP_SIZE = "size_of_heap";
+	public static final String XOR = "XOR";
+	public static final String INV = "INV";
+	public static final String AND = "AND";
+
+	public static final String PRIVATE_LOAD = "private_common_load";
+	public static final String PUBLIC_LOAD = "public_common_load";
+	public static final String PUBLIC_STORE = "public_common_store";
+
+	public static final String MAX_WIDTH = "max_width_";
+
+	public static final String BEGIN_LAYER = "begin_layer_";
+	public static final String END_LAYER = "end_layer_";
+
+
+
 	public static void outputFairplayCircuit(CircuitProvider<Gate> circuitParser,
 			File outputFile) {
 		List<Gate> circuit = circuitParser.getGates();
@@ -72,10 +93,38 @@ public class CommonUtilities {
 	}
 
 	public static void outputSPACLCircuit(FairplayToSPACLConverter circuitConverter,
-			File outputFile, String circuitName) {
+			String outputFileName) {
 		List<List<Gate>> gates = circuitConverter.getGates();
 		int[] circuitInfo = circuitConverter.getCircuitInfo();
-		
+
+		outputMeta(outputFileName, circuitInfo);
+		outputActualSPACLCircuit(gates, outputFileName, circuitInfo);
+	}
+
+	private static void outputMeta(String circuitName, int[] circuitInfo) {
+		int sizeOfKey = circuitInfo[0];
+		int sizeOfPlaintext = circuitInfo[1];
+		int sizeOfCiphertext = circuitInfo[2];
+		String circuitMetaName = circuitName + ".spaclv";
+
+		BufferedWriter bw;
+		try {
+			bw = new BufferedWriter(new OutputStreamWriter(
+					new FileOutputStream(new File(circuitMetaName)), Charset.defaultCharset()));
+			bw.write(PRIVATE_IN + " " + INPUT_1 + "[" + sizeOfKey + "],");
+			bw.newLine();
+			bw.write(PUBLIC_IN + " " + INPUT_2 + "[" + sizeOfPlaintext + "],");
+			bw.newLine();
+			bw.write(PUBLIC_STORE + " " + OUTPUT + "[" + sizeOfCiphertext + "]){");
+
+			bw.close();
+		} catch (IOException e) {
+
+		}		
+	}
+
+	private static void outputActualSPACLCircuit(List<List<Gate>> gates, 
+			String circuitName, int[] circuitInfo) {
 		int sizeOfKey = circuitInfo[0];
 		int sizeOfPlaintext = circuitInfo[1];
 		int sizeOfCiphertext = circuitInfo[2];
@@ -83,62 +132,53 @@ public class CommonUtilities {
 		int maxXOR = circuitInfo[4];
 		int maxINV = circuitInfo[5];
 		int maxAND = circuitInfo[6];
+		String circuitMetaName = circuitName + ".spaclc";
+
 
 		BufferedWriter bw;
 		try {
 			bw = new BufferedWriter(new OutputStreamWriter(
-					new FileOutputStream(outputFile), Charset.defaultCharset()));
-
-			// Function header
-			bw.write("spacl " + circuitName + "(");
-			bw.newLine();
-			bw.write("  private_common_in key[" + sizeOfKey + "],");
-			bw.newLine();
-			bw.write("  public_common_in plaintext[" + sizeOfPlaintext + "],");
-			bw.newLine();
-			bw.write("  public_common_out ciphertext[" + sizeOfCiphertext + "]) {");
-			bw.newLine();
-			bw.newLine();
+					new FileOutputStream(new File(circuitMetaName)), Charset.defaultCharset()));
 
 			// Size of heap
-			bw.write("  size_of_heap(" + heapSize + ");");
+			bw.write("  " + HEAP_SIZE + "(" + heapSize + ");");
 			bw.newLine();
 			bw.newLine();
 
 			// Max_width specifications
-			bw.write(max_width("xor", maxXOR));
+			bw.write(max_width(XOR, maxXOR));
 			bw.newLine();
-			bw.write(max_width("and", maxINV));
+			bw.write(max_width(INV, maxINV));
 			bw.newLine();
-			bw.write(max_width("inv", maxAND));
+			bw.write(max_width(AND, maxAND));
 			bw.newLine();
-			bw.write(max_width("private_common_load", sizeOfKey));
+			bw.write(max_width(PRIVATE_LOAD, sizeOfKey));
 			bw.newLine();
-			bw.write(max_width("public_common_load", sizeOfPlaintext));
+			bw.write(max_width(PUBLIC_LOAD, sizeOfPlaintext));
 			bw.newLine();
-			bw.write(max_width("public_common_out", sizeOfCiphertext));
+			bw.write(max_width(PUBLIC_STORE, sizeOfCiphertext));
 			bw.newLine();
 			bw.newLine();
 
 			// Init key
-			bw.write(begin_layer("private_common_load", sizeOfKey));
+			bw.write(begin_layer(PRIVATE_LOAD, sizeOfKey));
 			bw.newLine();
-			for (int i = 0; i < sizeOfKey; i++) { //Check which is key and which is plaintext
-				bw.write("    private_common_load(key[" + i + "]," + i + "," + i + ");");
+			for (int i = 0; i < sizeOfKey; i++) { //Check which is key AND which is plaintext
+				bw.write("    " + PRIVATE_LOAD + "(" + INPUT_1 +"[" + i + "]," + i + "," + i + ");");
 				bw.newLine();
 			}
-			bw.write(end_layer("private_common_load", sizeOfKey));
+			bw.write(end_layer(PRIVATE_LOAD, sizeOfKey));
 			bw.newLine();
 			bw.newLine();
 
 			// Init plaintext
-			bw.write(begin_layer("public_common_load", sizeOfPlaintext));
+			bw.write(begin_layer(PUBLIC_LOAD, sizeOfPlaintext));
 			bw.newLine();
-			for (int i = 0; i < sizeOfPlaintext; i++) { //TODO Check which is key and which is plaintext
-				bw.write("    public_common_load(plaintext[" + i + "]," + (sizeOfKey + i) + "," + i + ");");
+			for (int i = 0; i < sizeOfPlaintext; i++) { //TODO Check which is key AND which is plaintext
+				bw.write("    " + PUBLIC_LOAD + "(" + INPUT_2 +"[" + i + "]," + (sizeOfKey + i) + "," + i + ");");
 				bw.newLine();
 			}
-			bw.write(end_layer("public_common_load", sizeOfPlaintext));
+			bw.write(end_layer(PUBLIC_LOAD, sizeOfPlaintext));
 			bw.newLine();
 			bw.newLine();
 
@@ -149,12 +189,12 @@ public class CommonUtilities {
 				int j = 0;
 				String layerString = "";
 				if (tester.isXOR()) {
-					layerString = "xor";
+					layerString = XOR;
 
 				} else if (tester.isAND()) {
-					layerString = "and";
+					layerString = AND;
 				} else {
-					layerString = "inv";
+					layerString = INV;
 				}
 				bw.write(begin_layer(layerString, list.size()));
 				bw.newLine();
@@ -172,32 +212,33 @@ public class CommonUtilities {
 			}
 
 			// Write output
-			bw.write(begin_layer("public_common_out", sizeOfCiphertext));
+			bw.write(begin_layer(PUBLIC_STORE, sizeOfCiphertext));
 			bw.newLine();
 			for (int i = 0; i < sizeOfCiphertext; i++) {
-				bw.write("    public_common_out(ciphertext[" + (heapSize - sizeOfCiphertext + i)  + "]," + i + "," + i + ");");
+				bw.write("    " + PUBLIC_STORE + "(" + OUTPUT +"[" + (heapSize - sizeOfCiphertext + i)  + "]," + i + "," + i + ");");
 				bw.newLine();
 			}
-			bw.write(end_layer("public_common_out", sizeOfCiphertext));
-			bw.newLine();
+			bw.write(end_layer(PUBLIC_STORE, sizeOfCiphertext));
+			//			bw.newLine();
+			//
+			//			bw.write("}");
 
-			bw.write("}");
 			bw.close();
 		} catch (IOException e) {
-			e.printStackTrace();
-		}
+
+		}	
 	}
 
 	private static String max_width(String suffix, int index) {
-		return "  max_width_" + suffix + "(" + index + ");";
+		return "  " + MAX_WIDTH + suffix + "(" + index + ");";
 	}
 
 	private static String begin_layer(String suffix, int index) {
-		return "  begin_layer_" + suffix + "(" + index + ");";
+		return "  " + BEGIN_LAYER + suffix + "(" + index + ");";
 	}
 
 	private static String end_layer(String suffix, int index) {
-		return "  end_layer_" + suffix + "(" + index + ");";
+		return "  " + END_LAYER + suffix + "(" + index + ");";
 	}
 
 	private static String getGateString(Gate g, String gateType, int index, int gateNumber) {
@@ -207,7 +248,7 @@ public class CommonUtilities {
 	}
 
 	private static String getGateString(Gate g, String gateType, int index) {
-		if (gateType.equals("xor")) {
+		if (gateType.equals(XOR)) {
 			return "    " + gateType + "(" + g.getOutputWireIndex() + "," + 
 					g.getLeftWireIndex() + "," + g.getRightWireIndex()
 					+ "," + index + ");";
