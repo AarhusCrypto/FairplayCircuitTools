@@ -74,15 +74,15 @@ public class CommonUtilities {
 	public static void outputSPACLCircuit(FairplayToSPACLConverter circuitConverter,
 			File outputFile, String circuitName) {
 		List<List<Gate>> gates = circuitConverter.getGates();
-		int[] headers = circuitConverter.getCircuitInfo();
+		int[] circuitInfo = circuitConverter.getCircuitInfo();
 		
-		int sizeOfKey = headers[0];
-		int sizeOfPlaintext = headers[1];
-		int sizeOfCiphertext = headers[2];
-		int heapSize = headers[3];
-		int maxXOR = headers[4];
-		int maxINV = headers[5];
-		int maxAND = headers[6];
+		int sizeOfKey = circuitInfo[0];
+		int sizeOfPlaintext = circuitInfo[1];
+		int sizeOfCiphertext = circuitInfo[2];
+		int heapSize = circuitInfo[3];
+		int maxXOR = circuitInfo[4];
+		int maxINV = circuitInfo[5];
+		int maxAND = circuitInfo[6];
 
 		BufferedWriter bw;
 		try {

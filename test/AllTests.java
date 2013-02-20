@@ -101,17 +101,12 @@ public class AllTests {
 	private void checkNigelCircuit(File circuitFile, String inputPrefix, String outputPrefix) {
 		FairplayParser circuitParser = 
 				new FairplayParser(circuitFile, true);
-		CircuitConverter<List<Gate>> circuitConverter = 
+		CircuitConverter<List<Gate>, Gate> circuitConverter = 
 				new FairplayToCUDAConverter(circuitParser);
-		List<List<Gate>> gates = circuitConverter.getGates();
-		
-		int[] circuitInfo = new int[4];
-		circuitInfo[0] = circuitParser.getNumberOfP1Inputs();
-		circuitInfo[1] = circuitParser.getNumberOfP2Inputs();
-		circuitInfo[2] = circuitParser.getNumberOfInputs();
-		circuitInfo[3] = circuitParser.getNumberOfOutputs();
 
-		FairplayToSPACLConverter spaclConverter = new FairplayToSPACLConverter(gates, circuitInfo);
+
+		FairplayToSPACLConverter spaclConverter = 
+				new FairplayToSPACLConverter(circuitConverter);
 		checkWithEvaluator(spaclConverter, 4, inputPrefix, 
 				outputPrefix, Driver.EVAL_FAIRPLAY);
 	}

@@ -4,7 +4,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+import parsers.FairplayParser;
+
 import common.CircuitConverter;
+import common.CircuitParser;
 import common.CommonUtilities;
 import common.Gate;
 import common.GateTypes;
@@ -12,32 +15,48 @@ import common.LayerComparator;
 import common.TopoTypeComparator;
 
 
-public class FairplayToSPACLConverter implements CircuitConverter<List<Gate>> {
+public class FairplayToSPACLConverter implements CircuitConverter<List<Gate>, Gate> {
 
-	private List<List<Gate>> gates;
+	CircuitConverter<List<Gate>, Gate> circuitConverter;
+	private String[] header;
 	private int[] circuitInfo;
 	private int heapSize;
 	private int[] widthSizes;
 	
-	public FairplayToSPACLConverter(List<List<Gate>> gates, int[] circuitInfo) {
-		this.gates = gates;
-		this.circuitInfo = circuitInfo;
+	public FairplayToSPACLConverter(CircuitConverter<List<Gate>, Gate> circuitConverter) {
+		this.circuitConverter = circuitConverter;
+		header = new String[1];
+		circuitInfo = new int[4];
 	}
 	
 	@Override
 	public List<List<Gate>> getGates() {
+		List<List<Gate>> gates = circuitConverter.getGates();
+		FairplayParser circuitParser = (FairplayParser) circuitConverter.getCircuitParser();
+		
+		circuitInfo[0] = circuitParser.getNumberOfP1Inputs();
+		circuitInfo[1] = circuitParser.getNumberOfP2Inputs();
+		circuitInfo[2] = circuitParser.getNumberOfInputs();
+		circuitInfo[3] = circuitParser.getNumberOfOutputs();
 		List<Gate> sortedGates = getLayeredGates(gates, circuitInfo[2]);
 		
 		gates = getSortedGates(sortedGates);
 		widthSizes = getWidthSizes(gates);
 		heapSize = CommonUtilities.getWireCountList(gates);
+		header[0] = Integer.toString(circuitInfo[2]) + " " + Integer.toString(circuitInfo[3]) +
+				" " + Integer.toString(heapSize);
 		
 		return gates;
 	}
 	
 	@Override
 	public String[] getHeaders() {
-		return new String[]{circuitInfo[2] + " " + circuitInfo[3] + " " + heapSize};
+		return header;
+	}
+	
+	@Override
+	public CircuitParser<Gate> getCircuitParser() {
+		return circuitConverter.getCircuitParser();
 	}
 
 	public int[] getCircuitInfo() {

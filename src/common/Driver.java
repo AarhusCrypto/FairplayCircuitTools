@@ -109,17 +109,8 @@ public class Driver {
 				new FairplayParser(new File(args[1]), stripWires);
 		FairplayToCUDAConverter circuitConverter =
 				new FairplayToCUDAConverter(circuitParser);
-
-		List<List<Gate>> gates = circuitConverter.getGates();
-
-		int[] circuitInfo = new int[4];
-		circuitInfo[0] = circuitParser.getNumberOfP1Inputs();
-		circuitInfo[1] = circuitParser.getNumberOfP2Inputs();
-		circuitInfo[2] = circuitParser.getNumberOfInputs();
-		circuitInfo[3] = circuitParser.getNumberOfOutputs();
-
 		FairplayToSPACLConverter fairplayToSPACL = 
-				new FairplayToSPACLConverter(gates, circuitInfo);
+				new FairplayToSPACLConverter(circuitConverter);
 
 		CommonUtilities.outputSPACLCircuit(fairplayToSPACL, outputFile, circuitName);
 	}
@@ -152,7 +143,7 @@ public class Driver {
 			String mode) {
 		FairplayParser circuitParser = 
 				new FairplayParser(new File(args[2]), stripWires);
-		CircuitConverter<List<Gate>> circuitConverter = 
+		CircuitConverter<List<Gate>, Gate> circuitConverter = 
 				new FairplayToCUDAConverter(circuitParser);
 		evaluate(new File(args[1]), new File(args[3]), circuitConverter, mode);
 	}
