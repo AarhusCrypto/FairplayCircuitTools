@@ -48,7 +48,6 @@ public class SPACLParser implements CircuitParser<List<Gate>> {
 				line = line.trim();
 				if (line.contains(CommonUtilities.MAX_WIDTH + CommonUtilities.XOR)) {
 					int length = (CommonUtilities.MAX_WIDTH + CommonUtilities.XOR).length() + 1;
-					System.out.println(length);
 					xorMaxlayerSize = line.substring(length, line.length() - 2);
 				} else if (line.contains(CommonUtilities.MAX_WIDTH + CommonUtilities.INV)) {
 					int length = (CommonUtilities.MAX_WIDTH + CommonUtilities.INV).length() + 1;
