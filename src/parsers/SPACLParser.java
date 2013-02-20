@@ -46,29 +46,36 @@ public class SPACLParser implements CircuitParser<List<Gate>> {
 					continue;
 				}
 				line = line.trim();
-				if (line.contains("max_width_xor")) {
-					xorMaxlayerSize = line.substring(14, line.length() - 2);
-				} else if (line.contains("max_width_inv")) {
-					invMaxlayerSize = line.substring(14, line.length() - 2);
-				} else if (line.contains("max_width_and")) {
-					andMaxlayerSize = line.substring(14, line.length() - 2);
-				} else if (line.contains("max_width_private_common_load")) {
-					numberOfleftInput = line.substring(30, line.length() - 2);
-				} else if (line.contains("max_width_public_common_load")) {
-					numberOfrightInput = line.substring(29, line.length() - 2);
-				} else if (line.contains("max_width_public_common_out")) {
-					numberOfOutput = line.substring(28, line.length() - 2);
-				} else if (line.contains("begin_layer_xor") || 
-						line.contains("begin_layer_inv") ||
-						line.contains("begin_layer_and")) {
+				if (line.contains(CommonUtilities.MAX_WIDTH + CommonUtilities.XOR)) {
+					int length = (CommonUtilities.MAX_WIDTH + CommonUtilities.XOR).length() + 1;
+					System.out.println(length);
+					xorMaxlayerSize = line.substring(length, line.length() - 2);
+				} else if (line.contains(CommonUtilities.MAX_WIDTH + CommonUtilities.INV)) {
+					int length = (CommonUtilities.MAX_WIDTH + CommonUtilities.INV).length() + 1;
+					invMaxlayerSize = line.substring(length, line.length() - 2);
+				} else if (line.contains(CommonUtilities.MAX_WIDTH + CommonUtilities.AND)) {
+					int length = (CommonUtilities.MAX_WIDTH + CommonUtilities.AND).length() + 1;
+					andMaxlayerSize = line.substring(length, line.length() - 2);
+				} else if (line.contains(CommonUtilities.MAX_WIDTH + CommonUtilities.PRIVATE_LOAD)) {
+					int length = (CommonUtilities.MAX_WIDTH + CommonUtilities.PRIVATE_LOAD).length() + 1;
+					numberOfleftInput = line.substring(length, line.length() - 2);
+				} else if (line.contains(CommonUtilities.MAX_WIDTH + CommonUtilities.PUBLIC_LOAD)) {
+					int length = (CommonUtilities.MAX_WIDTH + CommonUtilities.PUBLIC_LOAD).length() + 1;
+					numberOfrightInput = line.substring(length, line.length() - 2);
+				} else if (line.contains(CommonUtilities.MAX_WIDTH + CommonUtilities.PUBLIC_STORE)) {
+					int length = (CommonUtilities.MAX_WIDTH + CommonUtilities.PUBLIC_STORE).length() + 1;
+					numberOfOutput = line.substring(length, line.length() - 2);
+				} else if (line.contains(CommonUtilities.BEGIN_LAYER + CommonUtilities.XOR) || 
+						line.contains(CommonUtilities.BEGIN_LAYER + CommonUtilities.INV) ||
+						line.contains(CommonUtilities.BEGIN_LAYER + CommonUtilities.AND)) {
 					layersOfGates.add(new ArrayList<Gate>());
 					i++;
-				} else if (line.startsWith("xor(")) {
+				} else if (line.startsWith(CommonUtilities.XOR + "(")) {
 					layersOfGates.get(i).add(getGate(line, GateTypes.XOR));
-				} else if (line.startsWith("inv(")) {
+				} else if (line.startsWith(CommonUtilities.INV + "(")) {
 					layersOfGates.get(i).add(getGate(line, GateTypes.INV));
 					numberOfNonXorGates++;
-				} else if (line.startsWith("and(")) {
+				} else if (line.startsWith(CommonUtilities.AND + "(")) {
 					layersOfGates.get(i).add(getGate(line, GateTypes.AND));
 					numberOfNonXorGates++;
 				}
