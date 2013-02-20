@@ -72,8 +72,7 @@ public class AllTests {
 	 */
 	@Test
 	public void assertAESCircuit() {
-		//parse MD5
-		File spaclFile = new File("test/data/aes_spacl.txt");
+		File spaclFile = new File("test/data/out/aes_spacl.spaclc");
 		SPACLParser spaclCircuitParser = 
 				new SPACLParser(spaclFile);
 		checkWithEvaluator(spaclCircuitParser, 4, "test/data/input/aes_input_", 
