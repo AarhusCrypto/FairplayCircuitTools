@@ -1,6 +1,7 @@
 package converters;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -11,6 +12,7 @@ import parsers.FairplayParser;
 import common.CircuitConverter;
 import common.CircuitParser;
 import common.Gate;
+import common.OutputWireComparator;
 
 /**
  * @author Roberto Trifiletti
@@ -18,12 +20,11 @@ import common.Gate;
  */
 public class FairplayToCUDAConverter implements CircuitConverter<List<Gate>, Gate> {
 
-//	private static final int NEW_LAYER_THRESHOLD = 0;
-
 	private MultiValueMap leftMap;
 	private MultiValueMap rightMap;
+	private HashMap<Integer, Integer> replacementMap;
 	private List<List<Gate>> layersOfGates;
-	private HashMap<Integer, Gate> outputMap;
+	private int currentWireIndex;
 
 	private FairplayParser circuitParser;
 
@@ -36,12 +37,16 @@ public class FairplayToCUDAConverter implements CircuitConverter<List<Gate>, Gat
 
 		leftMap = new MultiValueMap();
 		rightMap = new MultiValueMap();
-		outputMap = new HashMap<Integer, Gate>();
+		replacementMap = new HashMap<Integer, Integer>();
 	}
-	
+
 	public List<List<Gate>> getGates() {
 		List<Gate> gates = circuitParser.getGates();
+		currentWireIndex = circuitParser.getNumberOfInputs();
 		layersOfGates = getLayersOfGates(gates);
+		int startOutputWire = circuitParser.getNumberOfWiresParsed() - circuitParser.getNumberOfOutputs();
+		replaceWires(layersOfGates, circuitParser.getNumberOfInputs(), 
+				startOutputWire);
 		
 		return layersOfGates;
 	}
@@ -60,10 +65,10 @@ public class FairplayToCUDAConverter implements CircuitConverter<List<Gate>, Gat
 		int numberOfNonXORGates = circuitParser.getNumberOfNonXORGates();
 
 		return new String[]{totalNumberOfInputs + " " + totalNumberOfOutputs + " " +
-		actualNumberOfWires + " " + layersOfGates.size() + " " + maxLayerWidth + " " +
-		numberOfNonXORGates};
+				actualNumberOfWires + " " + layersOfGates.size() + " " + maxLayerWidth + " " +
+				numberOfNonXORGates};
 	}
-	
+
 	@Override
 	public CircuitParser<Gate> getCircuitParser() {
 		return circuitParser;
@@ -128,7 +133,6 @@ public class FairplayToCUDAConverter implements CircuitConverter<List<Gate>, Gat
 			if (g.getNumberOfInputWires() == 2) {
 				rightMap.put(g.getRightWireIndex(), g);
 			}
-			outputMap.put(g.getOutputWireIndex(), g);
 		}
 	}
 
@@ -139,6 +143,8 @@ public class FairplayToCUDAConverter implements CircuitConverter<List<Gate>, Gat
 	 * @return A list of lists representing each layer in the converted circuit
 	 */
 	private List<List<Gate>> visitGate(Gate g, int time, List<List<Gate>> layersOfGates) {
+
+		//update gates to outputWireIndex (increment), then run through all dependents and rename these.
 		g.decCounter();
 		g.setLayer(time);
 		if (g.getCounter() == 0) {
@@ -148,6 +154,33 @@ public class FairplayToCUDAConverter implements CircuitConverter<List<Gate>, Gat
 			}
 		}
 		return layersOfGates;
+	}
+
+	private void replaceWires(List<List<Gate>> layersOfGates,int numberOfInputs,
+			int startOutputWire) {
+		for (List<Gate> list: layersOfGates) {
+			for (Gate g: list) {
+				int leftIndex = g.getLeftWireIndex();
+				int rightIndex = g.getRightWireIndex();
+				int outputWireIndex = g.getOutputWireIndex();
+				if (outputWireIndex < startOutputWire) {
+					int newIndex = currentWireIndex++;
+					g.setOutputWireIndex(newIndex);
+					replacementMap.put(outputWireIndex, newIndex);
+				} else {
+					replacementMap.put(outputWireIndex, outputWireIndex);
+				}
+				
+				if (leftIndex >= numberOfInputs) {
+					g.setLeftWireIndex(replacementMap.get(leftIndex));
+				}
+
+				if (rightIndex >= numberOfInputs) {
+					g.setRightWireIndex(replacementMap.get(rightIndex));
+				}
+			}
+			Collections.sort(list, new OutputWireComparator());
+		}
 	}
 
 	/**
@@ -171,39 +204,6 @@ public class FairplayToCUDAConverter implements CircuitConverter<List<Gate>, Gat
 
 		return res;
 	}
-
-//	/**
-//	 * 
-//	 * @param layersOfGates
-//	 * @return A list of lists where all layers either are xor-only or not
-//	 * containing any xors at all
-//	 */
-//	private List<List<Gate>> getXorSortedLayers(List<List<Gate>> layersOfGates) {
-//		List<List<Gate>> res = new ArrayList<List<Gate>>();
-//		for (List<Gate> l: layersOfGates) {
-//			List<Gate> xorLayer = new ArrayList<Gate>();
-//			List<Gate> nonXorLayer = new ArrayList<Gate>();
-//			for (Gate g: l) {
-//				if (g.isXOR()) {
-//					xorLayer.add(g);
-//				} else {
-//					nonXorLayer.add(g);
-//				}
-//			}
-//			res.add(xorLayer);
-//			/**
-//			 * Can now adjust how many nonXors there has to be to
-//			 * justify creating a new layer
-//			 */
-//
-//			if (nonXorLayer.size() > NEW_LAYER_THRESHOLD) {
-//				res.add(nonXorLayer);
-//			} else {
-//				xorLayer.addAll(nonXorLayer); //Not sure this works for threshold neq 0.
-//			}
-//		}
-//		return res;
-//	}
 
 	/**
 	 * @param g
