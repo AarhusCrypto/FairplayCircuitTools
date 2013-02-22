@@ -215,7 +215,7 @@ public class CommonUtilities {
 			bw.write(begin_layer(PUBLIC_STORE, sizeOfCiphertext));
 			bw.newLine();
 			for (int i = 0; i < sizeOfCiphertext; i++) {
-				bw.write("    " + PUBLIC_STORE + "(" + OUTPUT +"[" + (heapSize - sizeOfCiphertext + i)  + "]," + i + "," + i + ");");
+				bw.write("    " + PUBLIC_STORE + "(" + OUTPUT +"[" + i  + "]," + (heapSize - sizeOfCiphertext + i) + "," + i + ");");
 				bw.newLine();
 			}
 			bw.write(end_layer(PUBLIC_STORE, sizeOfCiphertext));
