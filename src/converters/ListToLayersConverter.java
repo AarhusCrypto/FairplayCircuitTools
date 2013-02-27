@@ -7,8 +7,6 @@ import java.util.List;
 
 import org.apache.commons.collections.map.MultiValueMap;
 
-import parsers.FairplayParser;
-
 import common.CircuitConverter;
 import common.CircuitParser;
 import common.Gate;
@@ -18,7 +16,7 @@ import common.OutputWireComparator;
  * @author Roberto Trifiletti
  *
  */
-public class FairplayToCUDAConverter implements CircuitConverter<List<Gate>, Gate> {
+public class ListToLayersConverter implements CircuitConverter<List<Gate>, Gate> {
 
 	private MultiValueMap leftMap;
 	private MultiValueMap rightMap;
@@ -26,33 +24,35 @@ public class FairplayToCUDAConverter implements CircuitConverter<List<Gate>, Gat
 	private List<List<Gate>> layersOfGates;
 	private int currentWireIndex;
 
-	private FairplayParser circuitParser;
+	private CircuitParser<Gate> circuitParser;
 
 	/**
 	 * @param circuitFile
 	 * @param outputFile
 	 */
-	public FairplayToCUDAConverter(FairplayParser circuitParser) {
+	public ListToLayersConverter(CircuitParser<Gate> circuitParser) {
 		this.circuitParser = circuitParser;
 
 		leftMap = new MultiValueMap();
 		rightMap = new MultiValueMap();
 		replacementMap = new HashMap<Integer, Integer>();
 	}
-
+	
+	@Override
 	public List<List<Gate>> getGates() {
 		List<Gate> gates = circuitParser.getGates();
 		currentWireIndex = circuitParser.getNumberOfInputs();
 		layersOfGates = getLayersOfGates(gates);
-		int startOutputWire = circuitParser.getNumberOfWiresParsed() - circuitParser.getNumberOfOutputs();
+		int startOutputWire = circuitParser.getNumberOfWires() - circuitParser.getNumberOfOutputs();
 		replaceWires(layersOfGates, circuitParser.getNumberOfInputs(), 
 				startOutputWire);
 		
 		return layersOfGates;
 	}
-
+	
+	@Override
 	public String[] getHeaders() {
-		int actualNumberOfWires = circuitParser.getNumberOfWiresParsed();
+		int actualNumberOfWires = circuitParser.getNumberOfWires();
 
 		//We have to figure out the max layer size before writing to the file.
 		int maxLayerWidth = 0;
