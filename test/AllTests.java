@@ -18,7 +18,7 @@ import common.CircuitProvider;
 import common.CommonUtilities;
 import common.Driver;
 import common.Gate;
-import converters.FairplayToCUDAConverter;
+import converters.ListToLayersConverter;
 import converters.FairplayToSPACLConverter;
 
 import static org.junit.Assert.*;
@@ -57,8 +57,8 @@ public class AllTests {
 
 		FairplayParser circuitParser = 
 				new FairplayParser(circuitFile, true);
-		FairplayToCUDAConverter circuitConverter = 
-				new FairplayToCUDAConverter(circuitParser);
+		ListToLayersConverter circuitConverter = 
+				new ListToLayersConverter(circuitParser);
 		CommonUtilities.outputCUDACircuit(circuitConverter, circuitOutputFile);
 		
 		CircuitParser<List<Gate>> cudaCircuitParser = 
@@ -101,7 +101,7 @@ public class AllTests {
 		FairplayParser circuitParser = 
 				new FairplayParser(circuitFile, true);
 		CircuitConverter<List<Gate>, Gate> circuitConverter = 
-				new FairplayToCUDAConverter(circuitParser);
+				new ListToLayersConverter(circuitParser);
 
 
 		FairplayToSPACLConverter spaclConverter = 

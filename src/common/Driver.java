@@ -11,7 +11,7 @@ import parsers.SPACLParser;
 import parsers.VerilogParser;
 import converters.FairplayToAugConverter;
 import converters.FairplayToAugMultipleConverter;
-import converters.FairplayToCUDAConverter;
+import converters.ListToLayersConverter;
 import converters.FairplayToSPACLConverter;
 
 
@@ -93,8 +93,8 @@ public class Driver {
 	}
 	
 	private static void convertFairplayToCUDA(String[] args, boolean stripWires) {
-		FairplayParser circuitParser = new FairplayParser(new File(args[1]), stripWires);
-		FairplayToCUDAConverter circuitConverter = new FairplayToCUDAConverter(
+		CircuitParser<Gate> circuitParser = new FairplayParser(new File(args[1]), stripWires);
+		ListToLayersConverter circuitConverter = new ListToLayersConverter(
 				circuitParser);
 		CommonUtilities.outputCUDACircuit(circuitConverter, new File(args[2]));
 	}
@@ -106,10 +106,10 @@ public class Driver {
 			outputFileName = outputFileName.substring(0, dotIndex);
 		}
 
-		FairplayParser circuitParser = 
+		CircuitParser<Gate> circuitParser = 
 				new FairplayParser(new File(args[1]), stripWires);
-		FairplayToCUDAConverter circuitConverter =
-				new FairplayToCUDAConverter(circuitParser);
+		ListToLayersConverter circuitConverter =
+				new ListToLayersConverter(circuitParser);
 		FairplayToSPACLConverter fairplayToSPACL = 
 				new FairplayToSPACLConverter(circuitConverter);
 
@@ -128,24 +128,24 @@ public class Driver {
 		int l = Integer.parseInt(args[3]);
 
 		FairplayParser circuitParser = new FairplayParser(new File(args[1]), stripWires);
-		CircuitParser<Gate> circuitConverter = new FairplayToAugConverter(circuitParser, l);
+		CircuitConverter<Gate, Gate> circuitConverter = new FairplayToAugConverter(circuitParser, l);
 		executeConverter(circuitConverter, new File(args[2]));
 	}
 	
 	private static void augmentFairplayMultiOutput(String[] args,
 			boolean stripWires) {
 		FairplayParser circuitParser = new FairplayParser(new File(args[1]), stripWires);
-		CircuitParser<Gate> circuitConverter = 
+		CircuitConverter<Gate, Gate> circuitConverter = 
 				new FairplayToAugMultipleConverter(circuitParser);
 		executeConverter(circuitConverter, new File(args[2]));
 	}
 	
 	private static void evalFairplay(String[] args, boolean stripWires,
 			String mode) {
-		FairplayParser circuitParser = 
+		CircuitParser<Gate> circuitParser = 
 				new FairplayParser(new File(args[2]), stripWires);
 		CircuitConverter<List<Gate>, Gate> circuitConverter = 
-				new FairplayToCUDAConverter(circuitParser);
+				new ListToLayersConverter(circuitParser);
 		evaluate(new File(args[1]), new File(args[3]), circuitConverter, mode);
 	}
 	
@@ -177,7 +177,7 @@ public class Driver {
 
 	}
 
-	private static void executeConverter(CircuitParser<Gate> circuitConverter, 
+	private static void executeConverter(CircuitConverter<Gate, Gate> circuitConverter, 
 			File outputFile) {
 		CommonUtilities.outputFairplayCircuit(circuitConverter, outputFile);
 	}
