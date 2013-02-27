@@ -96,13 +96,13 @@ public class Gate {
 	}
 
 	public boolean isXOR() {
-		if (boolTable.matches("0110")) {
+		if (boolTable.matches("0110") || boolTable.matches("110")) {
 			return true;
 		} else return false;
 	}
 
 	public boolean isAND() {
-		if (boolTable.matches("0001")) {
+		if (boolTable.matches("0001") || boolTable.matches("1")) {
 			return true;
 		} else return false;
 	}
