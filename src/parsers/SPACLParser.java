@@ -18,20 +18,26 @@ import common.InputGateType;
 public class SPACLParser implements CircuitParser<List<Gate>> {
 
 	private File circuitFile;
-	private String numberOfleftInput;
-	private String numberOfrightInput;
-	private String numberOfOutput;
+	
+	private int numberOfOutputs;
+	
+	private int numberOfNonXORGates;
+	private int numberOfP1Inputs;
+	private int numberOfP2Inputs;
+	
+	private int numberOfWires;
+	
 	private String xorMaxlayerSize;
 	private String invMaxlayerSize;
 	private String andMaxlayerSize;
+
 	private int numberOfLayers;
-	private int numberOfNonXorGates;
-	private int numberOfWires;
 
 	public SPACLParser(File circuitFile) {
 		this.circuitFile = circuitFile;
-		numberOfNonXorGates = 0;
+		numberOfNonXORGates = 0;
 	}
+	
 	@Override
 	public List<List<Gate>> getGates() {
 		List<List<Gate>> layersOfGates = new ArrayList<List<Gate>>();
@@ -57,13 +63,13 @@ public class SPACLParser implements CircuitParser<List<Gate>> {
 					andMaxlayerSize = line.substring(length, line.length() - 2);
 				} else if (line.contains(CommonUtilities.MAX_WIDTH + CommonUtilities.PRIVATE_LOAD)) {
 					int length = (CommonUtilities.MAX_WIDTH + CommonUtilities.PRIVATE_LOAD).length() + 1;
-					numberOfleftInput = line.substring(length, line.length() - 2);
+					numberOfP1Inputs = Integer.parseInt(line.substring(length, line.length() - 2));
 				} else if (line.contains(CommonUtilities.MAX_WIDTH + CommonUtilities.PUBLIC_LOAD)) {
 					int length = (CommonUtilities.MAX_WIDTH + CommonUtilities.PUBLIC_LOAD).length() + 1;
-					numberOfrightInput = line.substring(length, line.length() - 2);
+					numberOfP2Inputs = Integer.parseInt(line.substring(length, line.length() - 2));
 				} else if (line.contains(CommonUtilities.MAX_WIDTH + CommonUtilities.PUBLIC_STORE)) {
 					int length = (CommonUtilities.MAX_WIDTH + CommonUtilities.PUBLIC_STORE).length() + 1;
-					numberOfOutput = line.substring(length, line.length() - 2);
+					numberOfOutputs = Integer.parseInt(line.substring(length, line.length() - 2));
 				} else if (line.contains(CommonUtilities.BEGIN_LAYER + CommonUtilities.XOR) || 
 						line.contains(CommonUtilities.BEGIN_LAYER + CommonUtilities.INV) ||
 						line.contains(CommonUtilities.BEGIN_LAYER + CommonUtilities.AND)) {
@@ -73,10 +79,10 @@ public class SPACLParser implements CircuitParser<List<Gate>> {
 					layersOfGates.get(i).add(getGate(line, GateTypes.XOR));
 				} else if (line.startsWith(CommonUtilities.INV + "(")) {
 					layersOfGates.get(i).add(getGate(line, GateTypes.INV));
-					numberOfNonXorGates++;
+					numberOfNonXORGates++;
 				} else if (line.startsWith(CommonUtilities.AND + "(")) {
 					layersOfGates.get(i).add(getGate(line, GateTypes.AND));
-					numberOfNonXorGates++;
+					numberOfNonXORGates++;
 				}
 			}
 			fbr.close();
@@ -91,6 +97,46 @@ public class SPACLParser implements CircuitParser<List<Gate>> {
 
 	public File getCircuitFile() {
 		return circuitFile;
+	}
+
+	@Override
+	public String[] getHeaders() {
+		int input = numberOfP1Inputs + numberOfP2Inputs;
+		int maxLayer = Math.max(Integer.parseInt(xorMaxlayerSize), Integer.parseInt(invMaxlayerSize));
+		maxLayer = Math.max(maxLayer, Integer.parseInt(andMaxlayerSize));
+
+		return new String[]{input + " " + numberOfOutputs + " " + numberOfWires +
+				" " + numberOfLayers + " " + maxLayer + " " + numberOfNonXORGates};
+	}
+	
+	@Override
+	public int getNumberOfInputs() {
+		return numberOfP1Inputs + numberOfP2Inputs;
+	}
+	
+	@Override
+	public int getNumberOfOutputs() {
+		return numberOfOutputs;
+	}
+	
+	@Override
+	public int getNumberOfNonXORGates() {
+		return numberOfNonXORGates;
+	}
+	
+	@Override
+	public int getNumberOfP1Inputs() {
+		return numberOfP1Inputs;
+	}
+	
+	@Override
+	public int getNumberOfP2Inputs() {
+		return numberOfP2Inputs;
+	}
+	
+	@Override
+	public int getNumberOfWires() {
+		return numberOfWires;
 	}
 
 	private Gate getGate(String line, GateTypes type) {
@@ -118,15 +164,4 @@ public class SPACLParser implements CircuitParser<List<Gate>> {
 			return new Gate(gateString, InputGateType.FAIRPLAY);
 		}
 	}
-
-	@Override
-	public String[] getHeaders() {
-		int input = Integer.parseInt(numberOfleftInput) + Integer.parseInt(numberOfrightInput);
-		int maxLayer = Math.max(Integer.parseInt(xorMaxlayerSize), Integer.parseInt(invMaxlayerSize));
-		maxLayer = Math.max(maxLayer, Integer.parseInt(andMaxlayerSize));
-
-		return new String[]{input + " " + numberOfOutput + " " + numberOfWires +
-				" " + numberOfLayers + " " + maxLayer + " " + numberOfNonXorGates};
-	}
-
 }

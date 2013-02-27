@@ -22,8 +22,16 @@ import org.apache.commons.lang3.StringUtils;
 
 public class VerilogParser implements CircuitParser<Gate> {
 	private File circuitFile;
+	
 	private int numberOfInputs;
 	private int numberOfOutputs;
+	
+	private int numberOfNonXORGates;
+	private int numberOfP1Inputs; // Incomplete
+	private int numberOfP2Inputs; // Incomplete
+	
+	private int numberOfWires;
+	
 	private String firstHeader;
 	private String secondHeader;
 	private HashMap<String, Integer> stringMap;
@@ -54,15 +62,19 @@ public class VerilogParser implements CircuitParser<Gate> {
 
 	}
 	
+	@Override
 	public List<Gate> getGates() {
 		List<String> gateStrings = getAnalyzedCircuit();
 
 		List<Gate> gates = getGates(gateStrings);
 		List<Gate> res = getIncrementedGates(gates);
-		firstHeader = res.size() + " " + CommonUtilities.getWireCount(res);
+		numberOfWires = CommonUtilities.getWireCount(res);
+		numberOfP1Inputs = numberOfInputs /2;
+		numberOfP2Inputs = numberOfInputs /2;
+		firstHeader = res.size() + " " + numberOfWires;
 
 		if (inputMap.size() > 1) {
-			secondHeader = numberOfInputs/2 + " " + numberOfInputs/2 + " " +
+			secondHeader = numberOfP1Inputs + " " + numberOfP2Inputs + " " +
 					"0" + " " + numberOfOutputs;
 		} else {
 			secondHeader = "0" + " " + numberOfInputs + " " + "0" + " " + numberOfOutputs;
@@ -71,12 +83,50 @@ public class VerilogParser implements CircuitParser<Gate> {
 		return res;
 	}
 	
+	@Override
 	public String[] getHeaders() {
 		return new String[]{firstHeader, secondHeader};
 	}
 	
+	@Override
 	public File getCircuitFile() {
 		return circuitFile;
+	}
+	
+	@Override
+	public int getNumberOfInputs() {
+		return numberOfInputs;
+	}
+
+	@Override
+	public int getNumberOfOutputs() {
+		return numberOfOutputs;
+	}
+
+	@Override
+	public int getNumberOfNonXORGates() {
+		return numberOfNonXORGates;
+	}
+
+	/*
+	 * Incomplete
+	 */
+	@Override
+	public int getNumberOfP1Inputs() {
+		return 0;
+	}
+
+	/*
+	 * Incomplete
+	 */
+	@Override
+	public int getNumberOfP2Inputs() {
+		return 0;
+	}
+
+	@Override
+	public int getNumberOfWires() {
+		return numberOfWires;
 	}
 
 	private List<String> getAnalyzedCircuit() {
@@ -144,6 +194,7 @@ public class VerilogParser implements CircuitParser<Gate> {
 		String nAND2 = "2 1 0 " + numberOfInputs + " " + (numberOfInputs + 1) + " 1110";
 		Gate g1 = new Gate(nAND1, InputGateType.FAIRPLAY);
 		Gate g2 = new Gate(nAND2, InputGateType.FAIRPLAY);
+		numberOfNonXORGates += 2;
 		res.add(g1);
 		res.add(g2);
 
@@ -206,7 +257,9 @@ public class VerilogParser implements CircuitParser<Gate> {
 
 			Gate g = new Gate(gateString, InputGateType.FAIRPLAY);
 			maxOutputWire = Math.max(maxOutputWire, g.getOutputWireIndex());
-
+			if (!g.isXOR()) {
+				numberOfNonXORGates++;
+			}
 			
 			if (leftOutputFlag) {
 				leftOutputGates.add(g);

@@ -17,6 +17,14 @@ import common.InputGateType;
 public class CUDAParser implements CircuitParser<List<Gate>> {
 
 	private File circuitFile;
+
+	private int numberOfInputs;
+	private int numberOfOutputs;
+
+	private int numberOfNonXORGates;
+
+	private int numberOfWires;
+
 	private String headerLine;
 
 	public CUDAParser(File circuitFile) {
@@ -37,6 +45,13 @@ public class CUDAParser implements CircuitParser<List<Gate>> {
 				if (line.isEmpty()){
 				} else if (firstLine) {
 					headerLine = line;
+					String[] split = headerLine.split(" ");
+					numberOfInputs = Integer.parseInt(split[0]);
+					numberOfInputs = Integer.parseInt(split[1]);
+					numberOfWires = Integer.parseInt(split[2]);
+					numberOfNonXORGates = Integer.parseInt(split[5]);
+
+
 					firstLine = false;
 				} else if (line.startsWith("*")) {
 					currentLayer = new ArrayList<Gate>();
@@ -61,6 +76,42 @@ public class CUDAParser implements CircuitParser<List<Gate>> {
 
 	public File getCircuitFile() {
 		return circuitFile;
+	}
+
+	@Override
+	public int getNumberOfInputs() {
+		return numberOfInputs;
+	}
+
+	@Override
+	public int getNumberOfOutputs() {
+		return numberOfOutputs;
+	}
+
+	@Override
+	public int getNumberOfNonXORGates() {
+		return numberOfNonXORGates;
+	}
+
+	/*
+	 * Unavailible
+	 */
+	@Override
+	public int getNumberOfP1Inputs() {
+		return 0;
+	}
+
+	/*
+	 * Unavailible
+	 */
+	@Override
+	public int getNumberOfP2Inputs() {
+		return 0;
+	}
+
+	@Override
+	public int getNumberOfWires() {
+		return numberOfWires;
 	}
 
 }

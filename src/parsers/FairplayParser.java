@@ -22,16 +22,19 @@ import org.apache.commons.collections.map.MultiValueMap;
 public class FairplayParser implements CircuitParser<Gate> {
 
 	private File circuitFile;
-	private int originalNumberOfWires;
-	private int numberOfWiresParsed;
-
+	
+	private int numberOfInputs;
+	private int numberOfOutputs;
+	
+	private int numberOfNonXORGates;
 	private int numberOfP1Inputs;
 	private int numberOfP2Inputs;
+	
+	private int numberOfWires;
+	
+	private int originalNumberOfWires;
 	private int numberOfP1Outputs;
 	private int numberOfP2Outputs;
-	private int numberOfNonXORGates;
-	private int totalNumberOfInputs;
-	private int totalNumberOfOutputs;
 
 	private boolean[] blankWires;
 	MultiValueMap leftMap;
@@ -51,6 +54,7 @@ public class FairplayParser implements CircuitParser<Gate> {
 
 	/**
 	 * @return A list of gates in the given circuitFile
+	 * @Override
 	 */
 	public List<Gate> getGates() {
 		boolean secondLine = false;
@@ -95,8 +99,8 @@ public class FairplayParser implements CircuitParser<Gate> {
 						numberOfP2Outputs = Integer.parseInt(split[3]);
 					}
 
-					totalNumberOfInputs = numberOfP1Inputs + numberOfP2Inputs;
-					totalNumberOfOutputs = numberOfP1Outputs + numberOfP2Outputs;
+					numberOfInputs = numberOfP1Inputs + numberOfP2Inputs;
+					numberOfOutputs = numberOfP1Outputs + numberOfP2Outputs;
 					secondLine = false;
 					continue;
 				}
@@ -133,7 +137,7 @@ public class FairplayParser implements CircuitParser<Gate> {
 		}
 		
 		//This is the number of unique wires parsed
-		numberOfWiresParsed = CommonUtilities.getWireCount(res);
+		numberOfWires = CommonUtilities.getWireCount(res);
 		if (stripWires) {
 			stripBlankWires(res);
 		} else {
@@ -143,12 +147,60 @@ public class FairplayParser implements CircuitParser<Gate> {
 					nonStrippedWires++;
 				}
 			}
-			numberOfWiresParsed += nonStrippedWires;
+			numberOfWires += nonStrippedWires;
 		}	
 
 		return res;
 	}
 
+	@Override
+	public String[] getHeaders() {
+		return getHeaderArray(secondHeader);
+	}
+	
+	@Override
+	public File getCircuitFile() {
+		return circuitFile;
+	}
+
+	@Override
+	public int getNumberOfInputs() {
+		return numberOfInputs;
+	}
+	
+	@Override
+	public int getNumberOfOutputs() {
+		return numberOfOutputs;
+	}
+	
+	@Override
+	public int getNumberOfNonXORGates() {
+		return numberOfNonXORGates;
+	}
+
+	@Override
+	public int getNumberOfP1Inputs() {
+		return numberOfP1Inputs;
+	}
+
+	@Override
+	public int getNumberOfP2Inputs() {
+		return numberOfP2Inputs;
+	}
+
+	@Override
+	public int getNumberOfWires() {
+		return numberOfWires;
+	}
+	
+	public int getNumberOfP1Outputs() {
+		return numberOfP1Outputs;
+	}
+
+	public int getNumberOfP2Outputs() {
+		return numberOfP2Outputs;
+	}
+	
 	private void addToWireInfo(Gate g) {
 		int leftIndex = g.getLeftWireIndex();
 		int rightIndex = g.getRightWireIndex();
@@ -197,50 +249,6 @@ public class FairplayParser implements CircuitParser<Gate> {
 				}
 			}
 		}
-	}
-
-	public String[] getHeaders() {
-		return getHeaderArray(secondHeader);
-	}
-	
-	public File getCircuitFile() {
-		return circuitFile;
-	}
-
-	public int getNumberOfInputs() {
-		return totalNumberOfInputs;
-	}
-	
-	public int getNumberOfOutputs() {
-		return totalNumberOfOutputs;
-	}
-	
-	public int getNumberOfNonXORGates() {
-		return numberOfNonXORGates;
-	}
-
-	public int getNumberOfP1Inputs() {
-		return numberOfP1Inputs;
-	}
-
-	public int getNumberOfP2Inputs() {
-		return numberOfP2Inputs;
-	}
-
-	public int getNumberOfP1Outputs() {
-		return numberOfP1Outputs;
-	}
-
-	public int getNumberOfP2Outputs() {
-		return numberOfP2Outputs;
-	}
-
-	public int getOriginalNumberOfWires() {
-		return originalNumberOfWires;
-	}
-
-	public int getNumberOfWiresParsed() {
-		return numberOfWiresParsed;
 	}
 
 	private String[] getHeaderArray(String line) {
