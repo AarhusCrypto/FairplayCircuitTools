@@ -54,6 +54,10 @@ public class AllTests {
 	public void assertAESCircuitConverted() {
 		File circuitFile = new File("test/data/aes_fairplay.txt");
 		File circuitOutputFile = new File("test/data/out/aes_cuda_tmp.txt");
+		File outDir = new File("test/data/out/");
+		if (!outDir.isDirectory()) {
+			outDir.mkdir();
+		}
 
 		FairplayParser circuitParser = 
 				new FairplayParser(circuitFile, true);
@@ -72,7 +76,7 @@ public class AllTests {
 	 */
 	@Test
 	public void assertAESCircuit() {
-		File spaclFile = new File("test/data/out/aes_spacl.spaclc");
+		File spaclFile = new File("test/data/aes_spacl.spaclc");
 		SPACLParser spaclCircuitParser = 
 				new SPACLParser(spaclFile);
 		checkWithEvaluator(spaclCircuitParser, 4, "test/data/input/aes_input_", 
@@ -114,6 +118,10 @@ public class AllTests {
 			int numberOfTests, String inputPrefix, String outputPrefix, String evalType){
 		//Checks that the converted circuit is correct
 		boolean res = true;
+		File outDir = new File("test/data/out/");
+		if (!outDir.isDirectory()) {
+			outDir.mkdir();
+		}
 		for (int i = 0; i < numberOfTests; i++) {
 			File inputFile = new File(inputPrefix + i + ".bin");
 			File outputFile = new File("test/data/out/out.bin");
