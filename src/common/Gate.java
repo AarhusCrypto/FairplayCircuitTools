@@ -43,9 +43,8 @@ public class Gate {
 		this.numberOfInputWires = numberOfInputWires;
 		this.numberOfOutputWires = numberOfOutputWires;
 		this.leftWireIndex = leftWireIndex;
-		if (numberOfInputWires == 2) {
-			this.rightWireIndex = rightWireIndex;
-		}
+		this.rightWireIndex = rightWireIndex;
+		
 		this.outputWireIndex = outputWireIndex;
 		this.boolTable = boolTable; //.replaceFirst("^0*", ""); //Removes leading 0's. Uncommented since it just adds work for the evaluator
 	}

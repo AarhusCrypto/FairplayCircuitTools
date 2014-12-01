@@ -131,8 +131,10 @@ public class CircuitEvaluator implements Runnable {
 						evals.get(g.getLeftWireIndex()) != null);
 
 				boolean leftInput = evals.get(g.getLeftWireIndex());
-				boolean rightInput = evals.get(g.getRightWireIndex());
-				
+				boolean rightInput = false;
+				if (!g.isINV()){
+					rightInput = evals.get(g.getRightWireIndex());
+				}
 				// Make sure to only use leftInput if g is INV gate.
 				if (g.getNumberOfInputWires() == 1) {
 					evals.put(g.getOutputWireIndex(), !leftInput);

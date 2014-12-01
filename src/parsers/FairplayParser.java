@@ -122,6 +122,7 @@ public class FairplayParser implements CircuitParser<Gate> {
 				/*
 				 * Parse each gate line and count numberOfNonXORGates
 				 */
+				
 				Gate g = new Gate(line, InputGateType.FAIRPLAY);
 				addToWireInfo(g);
 
@@ -207,12 +208,19 @@ public class FairplayParser implements CircuitParser<Gate> {
 		int outputIndex = g.getOutputWireIndex();
 
 		// Accumulate information for later usage
+		if (!g.isINV()) {
 		leftMap.put(leftIndex, g);
 		rightMap.put(rightIndex, g);
 		outputMap.put(outputIndex, g);
 		blankWires[leftIndex] = true;
 		blankWires[rightIndex] = true;
 		blankWires[outputIndex] = true;	
+		} else {
+			leftMap.put(leftIndex, g);
+			outputMap.put(outputIndex, g);
+			blankWires[leftIndex] = true;
+			blankWires[outputIndex] = true;	
+		}
 
 	}
 

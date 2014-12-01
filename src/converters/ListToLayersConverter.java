@@ -43,6 +43,7 @@ public class ListToLayersConverter implements CircuitConverter<List<Gate>, Gate>
 		List<Gate> gates = circuitParser.getGates();
 		currentWireIndex = circuitParser.getNumberOfInputs();
 		layersOfGates = getLayersOfGates(gates);
+
 		int startOutputWire = circuitParser.getNumberOfWires() - circuitParser.getNumberOfOutputs();
 		replaceWires(layersOfGates, circuitParser.getNumberOfInputs(), 
 				startOutputWire);
