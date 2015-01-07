@@ -21,7 +21,7 @@ public class CUDAParser implements CircuitParser<List<Gate>> {
 	private int numberOfInputs;
 	private int numberOfOutputs;
 
-	private int numberOfNonXORGates;
+	private int numberOfANDGates;
 
 	private int numberOfWires;
 
@@ -49,7 +49,7 @@ public class CUDAParser implements CircuitParser<List<Gate>> {
 					numberOfInputs = Integer.parseInt(split[0]);
 					numberOfInputs = Integer.parseInt(split[1]);
 					numberOfWires = Integer.parseInt(split[2]);
-					numberOfNonXORGates = Integer.parseInt(split[5]);
+					numberOfANDGates = Integer.parseInt(split[5]);
 
 
 					firstLine = false;
@@ -89,8 +89,8 @@ public class CUDAParser implements CircuitParser<List<Gate>> {
 	}
 
 	@Override
-	public int getNumberOfNonXORGates() {
-		return numberOfNonXORGates;
+	public int getNumberOfANDGates() {
+		return numberOfANDGates;
 	}
 
 	/*

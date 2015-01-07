@@ -63,7 +63,7 @@ public class ListToLayersConverter implements CircuitConverter<List<Gate>, Gate>
 
 		int totalNumberOfInputs = circuitParser.getNumberOfInputs();
 		int totalNumberOfOutputs = circuitParser.getNumberOfOutputs();
-		int numberOfNonXORGates = circuitParser.getNumberOfNonXORGates();
+		int numberOfNonXORGates = circuitParser.getNumberOfANDGates();
 
 		return new String[]{totalNumberOfInputs + " " + totalNumberOfOutputs + " " +
 				actualNumberOfWires + " " + layersOfGates.size() + " " + maxLayerWidth + " " +

@@ -9,7 +9,7 @@ public interface CircuitParser<E> extends CircuitProvider<E> {
 	public String[] getHeaders();
 	public int getNumberOfInputs();
 	public int getNumberOfOutputs();
-	public int getNumberOfNonXORGates();
+	public int getNumberOfANDGates();
 	public int getNumberOfP1Inputs();
 	public int getNumberOfP2Inputs();
 	public int getNumberOfWires();

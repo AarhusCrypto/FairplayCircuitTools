@@ -6,8 +6,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import converters.FairplayToSPACLConverter;
 
@@ -61,7 +64,10 @@ public class CommonUtilities {
 	public static void outputCUDACircuit(CircuitProvider<List<Gate>> circuitParser, 
 			File outputFile) {
 		List<List<Gate>> layersOfGates = circuitParser.getGates();
+		
+		
 		String header = circuitParser.getHeaders()[0];
+		
 		BufferedWriter fbw = null;
 		try {
 			fbw = new BufferedWriter(new OutputStreamWriter(
@@ -91,6 +97,81 @@ public class CommonUtilities {
 			e.printStackTrace();
 		}
 	}
+	
+//	public static void outputSCDCircuit(CircuitProvider<List<Gate>> circuitParser, 
+//			File outputFile) {
+//		List<List<Gate>> layersOfGates = circuitParser.getGates();
+//		int q = 0;
+//		for (List<Gate> l: layersOfGates) {
+//			q = q + l.size();
+//		}
+//		String header = circuitParser.getHeaders()[0];
+//		String[] split = header.split(" ");
+//		int n = Integer.parseInt(split[0]);
+//		int m = Integer.parseInt(split[1]);
+//		
+//		Map<Integer, Integer> convert = new TreeMap<Integer, Integer>();
+//		int current = n;
+//		
+//		for (List<Gate> l: layersOfGates) {
+//			for (Gate g: l) {
+//				int leftIndex = g.getLeftWireIndex();
+//				int rightIndex = g.getRightWireIndex();
+//				int outIndex = g.getOutputWireIndex();
+//				
+//				convert.put(outIndex, current++);
+//				
+//				if (convert.containsKey(leftIndex)) {
+//					g.setLeftWireIndex(convert.get(leftIndex));
+//				}
+//				if (convert.containsKey(rightIndex)) {
+//					g.setRightWireIndex(convert.get(rightIndex));
+//				}
+//				if (convert.containsKey(outIndex)) {
+//					g.setOutputWireIndex(convert.get(outIndex));
+//				}
+//			}
+//		}
+//		
+//		
+//
+//		List<Integer> A = new ArrayList<Integer>();
+//		List<Integer> B = new ArrayList<Integer>();
+//		List<Integer> T = new ArrayList<Integer>();
+//		
+//		for (List<Gate> l: layersOfGates) {
+//			for (Gate g: l) {
+//				A.add(g.getLeftWireIndex());
+//				B.add(g.getRightWireIndex());
+//				if (g.isAND()) {
+//					T.add(8);
+//				} else if (g.isXOR()) {
+//					T.add(6);
+//				} else if (g.isINV()) {
+//					T.add(3); //Dummy wire on right input
+//				}
+//			}
+//		}
+//		int numberOfWires = Integer.parseInt(split[2]);
+//		List<Integer> O = new ArrayList<Integer>();
+//		for (int i = 0; i < m; i++) {
+//			O.add(convert.get(numberOfWires - m + i));
+//		}
+//			
+//		BufferedWriter fbw = null;
+//		try {
+//			fbw = new BufferedWriter(new OutputStreamWriter(
+//					new FileOutputStream(outputFile), Charset.defaultCharset()));
+//			String AString = A.toString().replace(" ", "");
+//			String BString = B.toString().replace(" ", "");
+//			String TString = T.toString().replace(" ", "");
+//			String OString = O.toString().replace(" ", "");
+//			fbw.write("(" + n + ", "+ m + ", " + q + ", " + AString + ", " + BString + ", " + TString + ", " + OString + ")");
+//			fbw.close();
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+//	}
 
 	public static void outputSPACLCircuit(FairplayToSPACLConverter circuitConverter,
 			String outputFileName) {

@@ -19,8 +19,8 @@ public class Gate {
 		//Example string: 2 1 96 99 256 0110
 		String[] split = s.split(" ");
 		layer = -1;
-		gateNumber = -1;
 		if (type == InputGateType.FAIRPLAY) {
+			gateNumber = -1;
 			if (split[0].startsWith("1")) {
 				initGate(Integer.parseInt(split[0]), 
 						Integer.parseInt(split[1]), Integer.parseInt(split[2]),
@@ -31,8 +31,9 @@ public class Gate {
 						Integer.parseInt(split[3]), Integer.parseInt(split[4]), split[5]);
 			}
 		} else {
-			initGate(2, Integer.parseInt(split[1]), Integer.parseInt(split[2]),
-					Integer.parseInt(split[3]), Integer.parseInt(split[4]), split[5]);
+			gateNumber = Integer.parseInt(split[1]);
+			initGate(2, 1, Integer.parseInt(split[2]), Integer.parseInt(split[3]), 
+					Integer.parseInt(split[4]), split[5]);
 			layer = Integer.parseInt(split[0]);
 		}
 	}
@@ -78,11 +79,11 @@ public class Gate {
 	}
 
 	public String toFairPlayString() {
-		if (getNumberOfInputWires() == 2) {
-			return numberOfInputWires + " " +  numberOfOutputWires + " " + getLeftWireIndex() + " " +
-					getRightWireIndex() + " " + getOutputWireIndex() + " " + getBoolTable();
+		if (isINV()) {
+			return 1 + " " + numberOfOutputWires + " " + getLeftWireIndex() + " " +
+					getOutputWireIndex() + " " + getBoolTable();
 		} else return numberOfInputWires + " " +  numberOfOutputWires + " " + getLeftWireIndex() + " " +
-		getOutputWireIndex() + " " + getBoolTable();
+				getRightWireIndex() + " " + getOutputWireIndex() + " " + getBoolTable();
 	}
 
 	public String toCUDAString() {

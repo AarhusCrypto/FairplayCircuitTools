@@ -120,7 +120,7 @@ public class SPACLParser implements CircuitParser<List<Gate>> {
 	}
 	
 	@Override
-	public int getNumberOfNonXORGates() {
+	public int getNumberOfANDGates() {
 		return numberOfNonXORGates;
 	}
 	

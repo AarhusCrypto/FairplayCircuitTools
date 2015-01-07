@@ -26,7 +26,7 @@ public class VerilogParser implements CircuitParser<Gate> {
 	private int numberOfInputs;
 	private int numberOfOutputs;
 	
-	private int numberOfNonXORGates;
+	private int numberOfANDGates;
 	private int numberOfP1Inputs; // Incomplete
 	private int numberOfP2Inputs; // Incomplete
 	
@@ -104,8 +104,8 @@ public class VerilogParser implements CircuitParser<Gate> {
 	}
 
 	@Override
-	public int getNumberOfNonXORGates() {
-		return numberOfNonXORGates;
+	public int getNumberOfANDGates() {
+		return numberOfANDGates;
 	}
 
 	/*
@@ -194,7 +194,7 @@ public class VerilogParser implements CircuitParser<Gate> {
 		String nAND2 = "2 1 0 " + numberOfInputs + " " + (numberOfInputs + 1) + " 1110";
 		Gate g1 = new Gate(nAND1, InputGateType.FAIRPLAY);
 		Gate g2 = new Gate(nAND2, InputGateType.FAIRPLAY);
-		numberOfNonXORGates += 2;
+		numberOfANDGates += 2;
 		res.add(g1);
 		res.add(g2);
 
@@ -258,7 +258,7 @@ public class VerilogParser implements CircuitParser<Gate> {
 			Gate g = new Gate(gateString, InputGateType.FAIRPLAY);
 			maxOutputWire = Math.max(maxOutputWire, g.getOutputWireIndex());
 			if (!g.isXOR()) {
-				numberOfNonXORGates++;
+				numberOfANDGates++;
 			}
 			
 			if (leftOutputFlag) {

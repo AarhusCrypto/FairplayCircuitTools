@@ -26,11 +26,12 @@ public class FairplayParser implements CircuitParser<Gate> {
 	private int numberOfInputs;
 	private int numberOfOutputs;
 	
-	private int numberOfNonXORGates;
+	private int numberOfANDGates;
 	private int numberOfP1Inputs;
 	private int numberOfP2Inputs;
 	
 	private int numberOfWires;
+	private int numberOfGates;
 	
 	private int originalNumberOfWires;
 	private int numberOfP1Outputs;
@@ -74,6 +75,7 @@ public class FairplayParser implements CircuitParser<Gate> {
 				 */
 				if (line.matches("[0-9]* [0-9]*")) {
 					String[] sizeInfo = line.split(" ");
+					numberOfGates = Integer.parseInt(sizeInfo[0]);
 					originalNumberOfWires = Integer.parseInt(sizeInfo[1]);
 					blankWires = new boolean[originalNumberOfWires];
 					secondLine = true;
@@ -120,15 +122,13 @@ public class FairplayParser implements CircuitParser<Gate> {
 				}
 
 				/*
-				 * Parse each gate line and count numberOfNonXORGates
+				 * Construct each gate and count number of AND gates
 				 */
-				
 				Gate g = new Gate(line, InputGateType.FAIRPLAY);
 				addToWireInfo(g);
 
-				if (!g.isXOR()){
-					g.setGateNumber(numberOfNonXORGates);
-					numberOfNonXORGates++;
+				if (!(g.isXOR() || g.isINV())){
+					g.setGateNumber(numberOfANDGates++);
 				}
 				res.add(g);
 			}
@@ -175,8 +175,8 @@ public class FairplayParser implements CircuitParser<Gate> {
 	}
 	
 	@Override
-	public int getNumberOfNonXORGates() {
-		return numberOfNonXORGates;
+	public int getNumberOfANDGates() {
+		return numberOfANDGates;
 	}
 
 	@Override
