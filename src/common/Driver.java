@@ -37,7 +37,7 @@ public class Driver {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		boolean stripWires = true;
+		boolean stripWires = false;
 
 		String mode = args[0];
 		// -fc circuitfile outputfile
