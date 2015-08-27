@@ -13,12 +13,14 @@ import converters.FairplayToAugConverter;
 import converters.FairplayToAugMultipleConverter;
 import converters.ListToLayersConverter;
 import converters.FairplayToSPACLConverter;
+import converters.FairplayToTinyLegoConverter;
 
 
 public class Driver {
 
 	// Converters
 	public static final String CONVERT_FAIRPLAY_TO_CUDA = "-fc";
+	public static final String CONVERT_FAIRPLAY_TO_TINY = "-ft";
 	public static final String CONVERT_FAIRPLAY_TO_SPACL = "-spacl";
 	public static final String CONVERT_VERILOG_TO_FAIRPLAY = "-vc";
 	public static final String AUG_FAIRPLAY_CHECKSUM = "-ac";
@@ -43,6 +45,10 @@ public class Driver {
 		// -fc circuitfile outputfile
 		if (mode.equals(CONVERT_FAIRPLAY_TO_CUDA) && checkArgs(args, 3)) {
 			convertFairplayToCUDA(args, stripWires);
+		}
+		// -ft circuitfile outputfile
+		else if (mode.equals(CONVERT_FAIRPLAY_TO_TINY) && checkArgs(args, 3)) {
+			convertFairplayToTINY(args, stripWires);
 		}
 		// -spacl circuitfile outputfile
 		else if (mode.equals(CONVERT_FAIRPLAY_TO_SPACL) && checkArgs(args, 3)) {
@@ -96,6 +102,13 @@ public class Driver {
 		CircuitParser<Gate> circuitParser = new FairplayParser(new File(args[1]), stripWires);
 		ListToLayersConverter circuitConverter = new ListToLayersConverter(
 				circuitParser);
+		CommonUtilities.outputCUDACircuit(circuitConverter, new File(args[2]));
+	}
+	
+	private static void convertFairplayToTINY(String[] args, boolean stripWires) {
+		CircuitParser<Gate> circuitParser = new FairplayParser(new File(args[1]), stripWires);
+		FairplayToTinyLegoConverter circuitConverter = new FairplayToTinyLegoConverter(circuitParser);
+//		circuitConverter.getGates();
 		CommonUtilities.outputCUDACircuit(circuitConverter, new File(args[2]));
 	}
 	
