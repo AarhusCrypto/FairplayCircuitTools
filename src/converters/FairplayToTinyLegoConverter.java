@@ -89,14 +89,18 @@ public class FairplayToTinyLegoConverter implements CircuitConverter<List<Gate>,
 		};
 		
 		listConverter = new ListToLayersConverter(newCircuitParser);
-		
-		List<List<Gate>> layersOfGates = listConverter.getGates();
-		
-		return layersOfGates;
+		return listConverter.getGates();
+//		return gates;
 	}
 
 	@Override
 	public String[] getHeaders() {
+//		int newNumberOfWires = circuitParser.getNumberOfWires() + circuitParser.getNumberOfOutputs(); 
+//		int numberOfGates = newNumberOfWires - circuitParser.getNumberOfInputs();
+//		String header0 = numberOfGates + " " + newNumberOfWires;
+//		String[] currentHeaders = circuitParser.getHeaders();
+//		String header1 = currentHeaders[0] + " " + currentHeaders[1] + " " + currentHeaders[2];
+//		return new String[]{header0, header1};
 		return listConverter.getHeaders();
 	}
 

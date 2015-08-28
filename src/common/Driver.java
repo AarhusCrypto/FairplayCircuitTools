@@ -108,7 +108,6 @@ public class Driver {
 	private static void convertFairplayToTINY(String[] args, boolean stripWires) {
 		CircuitParser<Gate> circuitParser = new FairplayParser(new File(args[1]), stripWires);
 		FairplayToTinyLegoConverter circuitConverter = new FairplayToTinyLegoConverter(circuitParser);
-//		circuitConverter.getGates();
 		CommonUtilities.outputCUDACircuit(circuitConverter, new File(args[2]));
 	}
 	
